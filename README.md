@@ -77,5 +77,3 @@ Database Information
 - [transactions](sql/transactions.sql)
 
 Helpful? Donate BTC, XCP or any Counterparty asset to 1JDogZS6tQcSxwfxhv6XKKjcyicYA4Feev
-`J-Dog <j-dog@j-dog.net>`
-

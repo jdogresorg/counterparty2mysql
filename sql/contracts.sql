@@ -1,6 +1,6 @@
 DROP TABLE IF EXISTS contracts;
 CREATE TABLE contracts (
-    row_index   INTEGER UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY, -- unique id for this contract
+    row_index   INTEGER UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
     contract_id INTEGER UNSIGNED, -- id of record in contract_ids
     tx_index    INTEGER UNSIGNED,
     -- tx_hash  TEXT,
