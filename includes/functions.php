@@ -98,7 +98,7 @@ function getAssetId($asset){
 }
 
 
-// Create/update records in the 'blocks' table and return record id
+// Create/Update records in the 'blocks' table and return record id
 function createBlock( $block_index ){
     global $mysqli, $counterparty;
     $data = (object) $counterparty->execute('get_block_info', array('block_index' => $block_index));
@@ -215,7 +215,6 @@ function createAsset( $asset ){
             if($results){
                 return $mysqli->insert_id;
             } else {
-                print $sql;
                 byeLog('Error while trying to create asset record for ' . $asset);
             }
         }
@@ -225,11 +224,10 @@ function createAsset( $asset ){
 }
 
 
-
-// create records in the 'addresses' table and return record id
+// Create records in the 'addresses' table and return record id
 function createAddress( $address ){
     global $mysqli;
-    if(!isset($address))
+    if(!isset($address) || $address=='')
         return;
     $address = $mysqli->real_escape_string($address);
     $results = $mysqli->query("SELECT id FROM addresses WHERE address='{$address}' LIMIT 1");
@@ -251,9 +249,11 @@ function createAddress( $address ){
 }
 
 
-// create records in the 'transactions' table and return record id
+// Create records in the 'transactions' table and return record id
 function createTransaction( $hash ){
     global $mysqli;
+    if(!isset($hash) || $hash=='')
+        return;
     $hash    = $mysqli->real_escape_string($hash);
     $results = $mysqli->query("SELECT id FROM transactions WHERE `hash`='{$hash}' LIMIT 1");
     if($results){
@@ -265,12 +265,36 @@ function createTransaction( $hash ){
             if($results){
                 return $mysqli->insert_id;
             } else {
-                print "INSERT INTO transactions (`hash`) values ('{$hash}')";
                 byeLog('Error while trying to create transaction record');
             }
         }
     } else {
         byeLog('Error while trying to lookup transaction record');
+    }
+}
+
+
+// Create records in the 'contract_ids' table and return record id
+function createContract( $contract ){
+    global $mysqli;
+    if(!isset($contract) || $contract=='')
+        return;
+    $contract = $mysqli->real_escape_string($contract);
+    $results  = $mysqli->query("SELECT id FROM contract_ids WHERE contract_id='{$contract}' LIMIT 1");
+    if($results){
+        if($results->num_rows){
+            $row = $results->fetch_assoc();
+            return $row['id'];
+        } else {
+            $results = $mysqli->query("INSERT INTO contract_ids (contract_id) values ('{$contract}')");
+            if($results){
+                return $mysqli->insert_id;
+            } else {
+                byeLog('Error while trying to create contract_id record');
+            }
+        }
+    } else {
+        byeLog('Error while trying to lookup contract_id record');
     }
 }
 
@@ -308,8 +332,6 @@ function updateAddressBalance( $address, $asset_list ){
             }
         }
     }
-
-
 }
 
 

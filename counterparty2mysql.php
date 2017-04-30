@@ -13,7 +13,7 @@
 require_once('includes/config.php');
 
 // Parse in the command line args and set some flags based on them
-$args    = getopt("t::b::s::v::", array("testnet::","block::","single::","verbose::"));
+$args    = getopt("", array("testnet::","block::","single::","verbose::"));
 $testnet = (isset($args['testnet'])) ? true : false;
 $single  = (isset($args['single'])) ? true : false;
 $network = ($testnet) ? 'testnet' : 'mainnet';
@@ -43,16 +43,18 @@ createLockFile();
 // If no block given, load last block from state file, or use first block with CP tx
 if(!$block){
     $last  = file_get_contents(LASTFILE);
-    $block = (isset($last) && $last>=278319) ? (intval($last) + 1) : 278319;
+    $first = ($testnet) ? 310546 : 278319;
+    $block = (isset($last) && $last>=278319) ? (intval($last) + 1) : $first;
 }
 
 // Get the current block index from status info
 $current = $counterparty->status['last_block']['block_index'];
 
-// Define array of fields that contain assets, addresses, and transaction hashes
+// Define array of fields that contain assets, addresses, transactions, and contracts
 $fields_asset       = array('asset', 'backward_asset', 'dividend_asset', 'forward_asset', 'get_asset', 'give_asset');
 $fields_address     = array('address', 'bet_hash', 'destination', 'feed_address', 'issuer', 'source', 'tx0_address', 'tx1_address');
 $fields_transaction = array('event', 'move_random_hash', 'offer_hash', 'order_hash', 'rps_hash', 'tx_hash', 'tx0_hash', 'tx0_move_random_hash', 'tx1_hash', 'tx1_move_random_hash');
+$fields_contract    = array('contract_id');
 
 // Loop through the blocks until we are current
 while($block <= $current){
@@ -67,6 +69,7 @@ while($block <= $current){
     $assets       = array(); // array of asset id mappings
     $addresses    = array(); // array of address id mappings
     $transactions = array(); // array of transaction id mappings
+    $contracts    = array(); // arrray of contract id mappings
 
     // Get list of messages (updates to counterparty tables)
     $messages = $counterparty->execute('get_messages', array('block_index' => $block));
@@ -87,6 +90,10 @@ while($block <= $current){
             foreach($fields_transaction as $name)
                 if($field==$name && !isset($transactions[$value]))
                     $transactions[$value] = createTransaction($value);
+            // contracts
+            foreach($fields_contract as $name)
+                if($field==$name && !isset($contracts[$value]))
+                    $contracts[$value] = createContract($value);
         }
     }
 
@@ -124,13 +131,30 @@ while($block <= $current){
                     $field = $name . '_id';
                     $value = $transactions[$value];
                 }
-            // Translate certain fields
-            if($table=='credits' && $field=='action')
-                $field='calling_function';
+            // swap contract for id
+            foreach($fields_contract as $name)
+                if($field==$name)
+                    $value = $contracts[$value];
+            // Encode some values to make safe for SQL queries  
             if($table=='broadcasts' && $field=='text')
                 $value = $mysqli->real_escape_string($value);
             if($table=='issuances' && $field=='description')
                 $value = $mysqli->real_escape_string($value);
+            // Translate some field names where bindings field names and table field names differ
+            if($table=='credits' && $field=='action')
+                $field='calling_function';
+            // EVM fields
+            if($field=='gasprice')
+                $field = 'gas_price';
+            if($field=='startgas')
+                $field = 'gas_start';
+            if($field=='payload')
+                $field = 'data';
+            // Escape key/value field names to prevent sql errors 
+            if($field=='key')
+                $field = '`key`';            
+            if($field=='value')
+                $field = '`value`';            
             // Add final field and value values to arrays
             array_push($fields, $field);
             array_push($values, $value);
@@ -170,8 +194,11 @@ while($block <= $current){
                 } else if(in_array($table,array('order_matches','bet_matches','rps_matches')) && 
                           in_array($field,array('order_match_id','bet_match_id','rps_match_id'))){
                     $where .= " AND id='{$values[$index]}'";
-                // Update rps tables using tx_hash or tx_index
+                // Update rps table using tx_hash or tx_index
                 } else if($table=='rps' && in_array($field,array('tx_hash_id','tx_index'))){
+                    $where .= " AND {$field}='{$values[$index]}'";
+                // Update nonces table using address_id
+                } else if($table=='nonces' && $field=='address_id'){
                     $where .= " AND {$field}='{$values[$index]}'";
                 } else {
                     $sql .= " {$field}='{$values[$index]}',";

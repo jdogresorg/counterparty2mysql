@@ -10,7 +10,7 @@ CREATE TABLE assets (
     issuer_id      INTEGER UNSIGNED,     -- id of record in addresses
     locked         TINYINT(1),
     supply         BIGINT(20) UNSIGNED,
-    type           TINYINT(1)            -- asset type (1=Named, 2=Numeric, 3=Subasset)
+    type           TINYINT(1)            -- asset type (1=Named, 2=Numeric, 3=Subasset, 4=Failed issuance)
 ) ENGINE=MyISAM;
 
 INSERT INTO assets (asset_id, asset, divisible, locked) values (0,'BTC', 1, 1);
