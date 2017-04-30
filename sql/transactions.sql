@@ -1,0 +1,7 @@
+DROP TABLE IF EXISTS transactions;
+CREATE TABLE transactions (
+  id   INTEGER UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  hash VARCHAR(129) NOT NULL
+) ENGINE=MyISAM;
+
+CREATE INDEX hash on transactions (hash(10));
