@@ -166,9 +166,10 @@ while($block <= $current){
         // Handle 'insert' commands
         if($command=='insert'){
             // Check if this record already exists
-            $sql = "SELECT block_index FROM {$table} WHERE block_index IS NOT NULL ";
+            $sql = "SELECT * FROM {$table} WHERE";
             foreach($fields as $index => $field)
-                $sql .= " AND {$field}='{$values[$index]}'";
+                $sql .= " {$field}='{$values[$index]}' AND";
+            $sql = rtrim($sql, " AND");
             // print $sql;
             $results = $mysqli->query($sql);
             if($results){
@@ -192,31 +193,30 @@ while($block <= $current){
             foreach($fields as $index => $field){
                 // Update bets and orders records using tx_hash
                 if(in_array($table,array('orders','bets')) && $field=='tx_hash_id'){
-                    $where .= " AND tx_hash_id='{$values[$index]}'";
+                    $where .= " tx_hash_id='{$values[$index]}'";
                 // Update *_matches tables using id field
                 } else if(in_array($table,array('order_matches','bet_matches','rps_matches')) && 
                           in_array($field,array('order_match_id','bet_match_id','rps_match_id'))){
-                    $where .= " AND id='{$values[$index]}'";
+                    $where .= " id='{$values[$index]}'";
                 // Update rps table using tx_hash or tx_index
                 } else if($table=='rps' && in_array($field,array('tx_hash_id','tx_index'))){
-                    $where .= " AND {$field}='{$values[$index]}'";
+                    $where .= " {$field}='{$values[$index]}'";
                 // Update nonces table using address_id
                 } else if($table=='nonces' && $field=='address_id'){
-                    $where .= " AND {$field}='{$values[$index]}'";
+                    $where .= " {$field}='{$values[$index]}'";
                 } else {
                     $sql .= " {$field}='{$values[$index]}',";
                 }
             }
             // Only proceed if we have a valid where criteria
             if($where!=""){
-                $sql = rtrim($sql,',');
-                $sql .= " WHERE block_index IS NOT NULL" . $where;
+                $sql = rtrim($sql,',') . " WHERE " .  $where;
             } else {
                 byeLog('Error - no WHERE criteria found');
             }
             $results = $mysqli->query($sql);
             if(!$results)
-                byeLog('Error while trying to update record in ' . $table);
+                byeLog('Error while trying to update record in ' . $table . ' : ' . $sql);
         }
 
     }

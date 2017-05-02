@@ -239,11 +239,11 @@ function createAddress( $address ){
             if($results){
                 return $mysqli->insert_id;
             } else {
-                byeLog('Error while trying to create record in index_addresses');
+                byeLog('Error while trying to create record in index_addresses table');
             }
         }
     } else {
-        byeLog('Error while trying to lookup record in index_addresses');
+        byeLog('Error while trying to lookup record in index_addresses table');
     }
 }
 
@@ -264,11 +264,11 @@ function createTransaction( $hash ){
             if($results){
                 return $mysqli->insert_id;
             } else {
-                byeLog('Error while trying to create record in index_transactions');
+                byeLog('Error while trying to create record in index_transactions table');
             }
         }
     } else {
-        byeLog('Error while trying to lookup record in index_transactions');
+        byeLog('Error while trying to lookup record in index_transactions table');
     }
 }
 
@@ -289,11 +289,11 @@ function createContract( $contract ){
             if($results){
                 return $mysqli->insert_id;
             } else {
-                byeLog('Error while trying to create contract_id record');
+                byeLog('Error while trying to create record in index_contracts table');
             }
         }
     } else {
-        byeLog('Error while trying to lookup contract_id record');
+        byeLog('Error while trying to lookup record in index_contracts table');
     }
 }
 
