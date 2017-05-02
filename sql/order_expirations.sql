@@ -1,11 +1,10 @@
 DROP TABLE IF EXISTS order_expirations;
 CREATE TABLE order_expirations (
-    row_index     INTEGER UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
     order_index   INTEGER UNSIGNED,
-    -- order_hash    TEXT,
-    order_hash_id INTEGER UNSIGNED, -- id of record in transactions
-    -- source        TEXT,
-    source_id     INTEGER UNSIGNED, -- id of record in addresses
+    -- order_hash TEXT,
+    order_hash_id INTEGER UNSIGNED, -- id of record in index_transactions
+    -- source     TEXT,
+    source_id     INTEGER UNSIGNED, -- id of record in index_addresses
     block_index   INTEGER UNSIGNED
 ) ENGINE=MyISAM;
 

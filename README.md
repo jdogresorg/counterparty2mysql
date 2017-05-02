@@ -4,7 +4,7 @@ counterparty2mysql is a php script which populates a mysql database with counter
 
 counterparty2mysql loads Counterparty data by requesting 'messages' data for a block from the Counterparty API, and then processing each message. The Counterparty 'messages' table holds a list of all of the insert and update actions performed on counterparty tables.
 
-By default counterparty2mysql starts at the first block with a Counterparty transaction (mainnet=278319, testnet=310546) and parses data for all blocks between the starting block and the current block.
+By default counterparty2mysql starts at the first block with a Counterparty transaction (mainnet=278270, testnet=310000) and parses data for all blocks between the starting block and the current block.
 
 If no starting block is given, counterparty2mysql will try to resume parsing at the last successfully parsed block, or use the first block with a counterparty transaction.
 
@@ -12,10 +12,10 @@ If no starting block is given, counterparty2mysql will try to resume parsing at 
 Database Customizations
 ---
 - Index all assets, addresses, transactions, and contracts
-- add row_index field to all counterparty tables
 - create blocks table and index transaction hashes
 - create assets table with up to date summary information
 - create balances table to track address/asset balance information
+- create index_tx to track tx_index/type information
 
 Setup
 ---
@@ -69,11 +69,13 @@ Database Information
 - [storage](sql/storage.sql)
 
 **Additional tables** (populated by counterparty2mysql):
-- [addresses](sql/addresses.sql)
 - [assets](sql/assets.sql)
 - [balances](sql/balances.sql)
 - [blocks](sql/blocks.sql)
-- [contract_ids](sql/contract_ids.sql)
-- [transactions](sql/transactions.sql)
+- [index_addresses](sql/index_addresses.sql)
+- [index_contracts](sql/index_contracts.sql)
+- [index_transactions](sql/index_transactions.sql)
+- [index_tx](sql/index_tx.sql)
+- [index_tx_types](sql/index_tx_types.sql)
 
 Helpful? Donate BTC, XCP or any Counterparty asset to 1JDogZS6tQcSxwfxhv6XKKjcyicYA4Feev

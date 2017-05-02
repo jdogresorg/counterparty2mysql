@@ -6,8 +6,8 @@ CREATE TABLE assets (
     asset_longname VARCHAR(255),         -- subasset name
     description    VARCHAR(250),
     divisible      TINYINT(1),
-    owner_id       INTEGER UNSIGNED,     -- id of record in addresses
-    issuer_id      INTEGER UNSIGNED,     -- id of record in addresses
+    owner_id       INTEGER UNSIGNED,     -- id of record in index_addresses
+    issuer_id      INTEGER UNSIGNED,     -- id of record in index_addresses
     locked         TINYINT(1),
     supply         BIGINT(20) UNSIGNED,
     type           TINYINT(1)            -- asset type (1=Named, 2=Numeric, 3=Subasset, 4=Failed issuance)

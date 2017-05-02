@@ -107,13 +107,12 @@ function createBlock( $block_index ){
     $data->ledger_hash_id         = createTransaction($data->ledger_hash);
     $data->txlist_hash_id         = createTransaction($data->txlist_hash);
     $data->messages_hash_id       = createTransaction($data->messages_hash);
-    $results = $mysqli->query("SELECT id FROM blocks WHERE block_index='{$data->block_index}' LIMIT 1");
+    $results = $mysqli->query("SELECT block_index FROM blocks WHERE block_index='{$data->block_index}' LIMIT 1");
     if($results){
         if($results->num_rows){
             $row = $results->fetch_assoc();
             $id  = $row['id'];
             $sql = "UPDATE blocks SET
-                       block_index            = '{$data->block_index}',
                        block_time             = '{$data->block_time}',
                        block_hash_id          = '{$data->block_hash_id}',
                        previous_block_hash_id = '{$data->previous_block_hash_id}',
@@ -122,7 +121,7 @@ function createBlock( $block_index ){
                        messages_hash_id       = '{$data->messages_hash_id}',
                        difficulty             = '{$data->difficulty}'
                     WHERE
-                        id='{$id}'";
+                        block_index='{$block_index}'";
             $results = $mysqli->query($sql);
             if($results){
                 return $id;
@@ -148,7 +147,7 @@ function createBlock( $block_index ){
             }
         }
     } else {
-        byeLog('Error while trying to lookup block record');
+        byeLog('Error while trying to lookup record in blocks table');
     }
 }
 
@@ -230,21 +229,21 @@ function createAddress( $address ){
     if(!isset($address) || $address=='')
         return;
     $address = $mysqli->real_escape_string($address);
-    $results = $mysqli->query("SELECT id FROM addresses WHERE address='{$address}' LIMIT 1");
+    $results = $mysqli->query("SELECT id FROM index_addresses WHERE address='{$address}' LIMIT 1");
     if($results){
         if($results->num_rows){
             $row = $results->fetch_assoc();
             return $row['id'];
         } else {
-            $results = $mysqli->query("INSERT INTO addresses (`address`) values ('{$address}')");
+            $results = $mysqli->query("INSERT INTO index_addresses (`address`) values ('{$address}')");
             if($results){
                 return $mysqli->insert_id;
             } else {
-                byeLog('Error while trying to create address record');
+                byeLog('Error while trying to create record in index_addresses');
             }
         }
     } else {
-        byeLog('Error while trying to lookup address record');
+        byeLog('Error while trying to lookup record in index_addresses');
     }
 }
 
@@ -255,21 +254,21 @@ function createTransaction( $hash ){
     if(!isset($hash) || $hash=='')
         return;
     $hash    = $mysqli->real_escape_string($hash);
-    $results = $mysqli->query("SELECT id FROM transactions WHERE `hash`='{$hash}' LIMIT 1");
+    $results = $mysqli->query("SELECT id FROM index_transactions WHERE `hash`='{$hash}' LIMIT 1");
     if($results){
         if($results->num_rows){
             $row = $results->fetch_assoc();
             return $row['id'];
         } else {
-            $results = $mysqli->query("INSERT INTO transactions (`hash`) values ('{$hash}')");
+            $results = $mysqli->query("INSERT INTO index_transactions (`hash`) values ('{$hash}')");
             if($results){
                 return $mysqli->insert_id;
             } else {
-                byeLog('Error while trying to create transaction record');
+                byeLog('Error while trying to create record in index_transactions');
             }
         }
     } else {
-        byeLog('Error while trying to lookup transaction record');
+        byeLog('Error while trying to lookup record in index_transactions');
     }
 }
 
@@ -280,13 +279,13 @@ function createContract( $contract ){
     if(!isset($contract) || $contract=='')
         return;
     $contract = $mysqli->real_escape_string($contract);
-    $results  = $mysqli->query("SELECT id FROM contract_ids WHERE contract_id='{$contract}' LIMIT 1");
+    $results  = $mysqli->query("SELECT id FROM index_contracts WHERE contract='{$contract}' LIMIT 1");
     if($results){
         if($results->num_rows){
             $row = $results->fetch_assoc();
             return $row['id'];
         } else {
-            $results = $mysqli->query("INSERT INTO contract_ids (contract_id) values ('{$contract}')");
+            $results = $mysqli->query("INSERT INTO index_contracts (contract) values ('{$contract}')");
             if($results){
                 return $mysqli->insert_id;
             } else {
@@ -295,6 +294,47 @@ function createContract( $contract ){
         }
     } else {
         byeLog('Error while trying to lookup contract_id record');
+    }
+}
+
+
+// Create records in the 'tx_index_types' table and return record id
+function createTxType( $type ){
+    global $mysqli;
+    $type    = $mysqli->real_escape_string($type);
+    $results = $mysqli->query("SELECT id FROM index_tx_types WHERE type='{$type}' LIMIT 1");
+    if($results){
+        if($results->num_rows){
+            $row = $results->fetch_assoc();
+            return $row['id'];
+        } else {
+            $results = $mysqli->query("INSERT INTO index_tx_types (type) values ('{$type}')");
+            if($results){
+                return $mysqli->insert_id;
+            } else {
+                byeLog('Error while trying to create record in index_tx_types table');
+            }
+        }
+    } else {
+        byeLog('Error while trying to lookup record in index_tx_types table');
+    }
+}
+
+
+// Create records in the 'tx_index' table
+function createTxIndex( $tx_index, $tx_type ){
+    global $mysqli;
+    $tx_index = $mysqli->real_escape_string($tx_index);
+    $type_id  = createTxType($tx_type);
+    $results  = $mysqli->query("SELECT type_id FROM index_tx WHERE tx_index='{$tx_index}' LIMIT 1");
+    if($results){
+        if($results->num_rows==0){
+            $results = $mysqli->query("INSERT INTO index_tx (tx_index, type_id) values ('{$tx_index}','{$type_id}')");
+            if(!$results)
+                byeLog('Error while trying to create record in index_tx table');
+        }
+    } else {
+        byeLog('Error while trying to lookup record in index_tx table');
     }
 }
 

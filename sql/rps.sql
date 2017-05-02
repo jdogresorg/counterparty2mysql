@@ -1,16 +1,15 @@
 DROP TABLE IF EXISTS rps;
 CREATE TABLE rps (
-    row_index   INTEGER UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
     tx_index            INTEGER UNIQUE,
-    -- tx_hash             TEXT,
-    tx_hash_id          INTEGER UNSIGNED, -- id of record in transactions
+    -- tx_hash          TEXT,
+    tx_hash_id          INTEGER UNSIGNED, -- id of record in index_transactions
     block_index         INTEGER UNSIGNED,
-    -- source              TEXT,
-    source_id           INTEGER UNSIGNED, -- id of record in addresses
+    -- source           TEXT,
+    source_id           INTEGER UNSIGNED, -- id of record in index_addresses
     possible_moves      INTEGER UNSIGNED,
     wager               INTEGER UNSIGNED,
-    -- move_random_hash    TEXT,
-    move_random_hash_id INTEGER UNSIGNED, -- id of record in transactions
+    -- move_random_hash TEXT,
+    move_random_hash_id INTEGER UNSIGNED, -- id of record in index_transactions
     expiration          INTEGER UNSIGNED,
     expire_index        INTEGER UNSIGNED,
     status              TEXT

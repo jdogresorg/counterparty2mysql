@@ -1,21 +1,20 @@
 DROP TABLE IF EXISTS rps_matches;
 CREATE TABLE rps_matches (
-    row_index   INTEGER UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
     id                      TEXT,
     tx0_index               INTEGER UNSIGNED,
-    -- tx0_hash                TEXT,
-    tx0_hash_id             INTEGER UNSIGNED, -- id of record in transactions
-    -- tx0_address             TEXT,
-    tx0_address_id          INTEGER UNSIGNED, -- id of record in addresses
+    -- tx0_hash             TEXT,
+    tx0_hash_id             INTEGER UNSIGNED, -- id of record in index_transactions
+    -- tx0_address          TEXT,
+    tx0_address_id          INTEGER UNSIGNED, -- id of record in index_addresses
     tx1_index               INTEGER UNSIGNED,
-    -- tx1_hash                TEXT,
-    tx1_hash_id             INTEGER UNSIGNED, -- id of record in transactions
-    -- tx1_address             TEXT,
-    tx1_address_id          INTEGER UNSIGNED, -- id of record in addresses
-    -- tx0_move_random_hash    TEXT,
-    tx0_move_random_hash_id INTEGER UNSIGNED, -- id of record in transactions
-    -- tx1_move_random_hash    TEXT,
-    tx1_move_random_hash_id INTEGER UNSIGNED, -- id of record in transactions
+    -- tx1_hash             TEXT,
+    tx1_hash_id             INTEGER UNSIGNED, -- id of record in index_transactions
+    -- tx1_address          TEXT,
+    tx1_address_id          INTEGER UNSIGNED, -- id of record in index_addresses
+    -- tx0_move_random_hash TEXT,
+    tx0_move_random_hash_id INTEGER UNSIGNED, -- id of record in index_transactions
+    -- tx1_move_random_hash TEXT,
+    tx1_move_random_hash_id INTEGER UNSIGNED, -- id of record in index_transactions
     wager                   INTEGER UNSIGNED,
     possible_moves          INTEGER UNSIGNED,
     tx0_block_index         INTEGER UNSIGNED,

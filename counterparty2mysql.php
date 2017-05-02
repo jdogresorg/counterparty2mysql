@@ -43,8 +43,8 @@ createLockFile();
 // If no block given, load last block from state file, or use first block with CP tx
 if(!$block){
     $last  = file_get_contents(LASTFILE);
-    $first = ($testnet) ? 310546 : 278319;
-    $block = (isset($last) && $last>=278319) ? (intval($last) + 1) : $first;
+    $first = ($testnet) ? 310000 : 278270;
+    $block = (isset($last) && $last>=$first) ? (intval($last) + 1) : $first;
 }
 
 // Get the current block index from status info
@@ -94,6 +94,9 @@ while($block <= $current){
             foreach($fields_contract as $name)
                 if($field==$name && !isset($contracts[$value]))
                     $contracts[$value] = createContract($value);
+            // Create record in tx_index (so we can map tx_index to table with data)
+            if($field=='tx_index')
+                createTxIndex($value, $msg->category);
         }
     }
 
@@ -163,7 +166,7 @@ while($block <= $current){
         // Handle 'insert' commands
         if($command=='insert'){
             // Check if this record already exists
-            $sql = "SELECT row_index FROM {$table} WHERE row_index IS NOT NULL ";
+            $sql = "SELECT block_index FROM {$table} WHERE block_index IS NOT NULL ";
             foreach($fields as $index => $field)
                 $sql .= " AND {$field}='{$values[$index]}'";
             // print $sql;
@@ -207,7 +210,7 @@ while($block <= $current){
             // Only proceed if we have a valid where criteria
             if($where!=""){
                 $sql = rtrim($sql,',');
-                $sql .= " WHERE row_index IS NOT NULL" . $where;
+                $sql .= " WHERE block_index IS NOT NULL" . $where;
             } else {
                 byeLog('Error - no WHERE criteria found');
             }

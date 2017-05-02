@@ -1,13 +1,12 @@
 DROP TABLE IF EXISTS contracts;
 CREATE TABLE contracts (
-    row_index   INTEGER UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
-    contract_id INTEGER UNSIGNED, -- id of record in contract_ids
+    contract_id INTEGER UNSIGNED, -- id of record in index_contracts
     tx_index    INTEGER UNSIGNED,
     -- tx_hash  TEXT,
-    tx_hash_id  INTEGER UNSIGNED, -- id of record in transactions
+    tx_hash_id  INTEGER UNSIGNED, -- id of record in index_transactions
     block_index INTEGER,
     -- source   TEXT,
-    source_id   INTEGER UNSIGNED, -- id of record in addresses
+    source_id   INTEGER UNSIGNED, -- id of record in index_addresses
     code        BLOB,
     nonce       INTEGER UNSIGNED
 ) ENGINE=MyISAM;

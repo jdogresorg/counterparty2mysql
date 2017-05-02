@@ -1,26 +1,25 @@
 DROP TABLE IF EXISTS issuances;
 CREATE TABLE issuances (
-    row_index   INTEGER UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
-    tx_index      INTEGER UNSIGNED,
-    -- tx_hash       TEXT,
-    tx_hash_id    INTEGER UNSIGNED, -- id of record in transactions
-    block_index   INTEGER UNSIGNED,
-    -- asset         TEXT,
-    asset_id      INTEGER UNSIGNED, -- id of record in assets table
-    quantity      INTEGER UNSIGNED,
-    divisible     BOOL,
-    -- source        TEXT,
-    source_id     INTEGER UNSIGNED, -- id of record in addresses
-    -- issuer        TEXT,
-    issuer_id     INTEGER UNSIGNED, -- id of record in addresses
-    transfer      BOOL,
-    callable      BOOL,
-    call_date     INTEGER UNSIGNED,
-    call_price    REAL,
-    description   TEXT,
-    fee_paid      INTEGER UNSIGNED,
-    locked        BOOL,
-    status        TEXT
+    tx_index    INTEGER UNSIGNED,
+    -- tx_hash  TEXT,
+    tx_hash_id  INTEGER UNSIGNED, -- id of record in index_transactions
+    block_index INTEGER UNSIGNED,
+    -- asset    TEXT,
+    asset_id    INTEGER UNSIGNED, -- id of record in assets table
+    quantity    INTEGER UNSIGNED,
+    divisible   BOOL,
+    -- source   TEXT,
+    source_id   INTEGER UNSIGNED, -- id of record in index_addresses
+    -- issuer   TEXT,
+    issuer_id   INTEGER UNSIGNED, -- id of record in index_addresses
+    transfer    BOOL,
+    callable    BOOL,
+    call_date   INTEGER UNSIGNED,
+    call_price  REAL,
+    description TEXT,
+    fee_paid    INTEGER UNSIGNED,
+    locked      BOOL,
+    status      TEXT
 ) ENGINE=MyISAM;
 
 CREATE INDEX block_index       ON issuances (block_index);

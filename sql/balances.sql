@@ -1,9 +1,9 @@
 DROP TABLE IF EXISTS balances;
 CREATE TABLE balances (
-    id              INTEGER UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
-    address_id      INTEGER UNSIGNED, -- id of record in addresses
-    asset_id        INTEGER UNSIGNED, -- id of record in assets
-    quantity        BIGINT  UNSIGNED   
+    id         INTEGER UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    address_id INTEGER UNSIGNED, -- id of record in index_addresses
+    asset_id   INTEGER UNSIGNED, -- id of record in assets
+    quantity   BIGINT  UNSIGNED   
 ) ENGINE=MyISAM;
 
 CREATE INDEX address_id ON balances (address_id);

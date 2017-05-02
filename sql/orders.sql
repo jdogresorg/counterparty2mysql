@@ -1,17 +1,16 @@
 DROP TABLE IF EXISTS orders;
 CREATE TABLE orders (
-    row_index              INTEGER UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
     tx_index               INTEGER UNSIGNED,
-    -- tx_hash                TEXT,
-    tx_hash_id             INTEGER UNSIGNED, -- id of record in transactions
+    -- tx_hash             TEXT,
+    tx_hash_id             INTEGER UNSIGNED, -- id of record in index_transactions
     block_index            INTEGER UNSIGNED,
-    -- source                 TEXT,
-    source_id              INTEGER UNSIGNED, -- id of record in addresses
-    -- give_asset             TEXT,
+    -- source              TEXT,
+    source_id              INTEGER UNSIGNED, -- id of record in index_addresses
+    -- give_asset          TEXT,
     give_asset_id          INTEGER UNSIGNED, -- id of record in assets table
     give_quantity          INTEGER UNSIGNED,
     give_remaining         INTEGER UNSIGNED,          
-    -- get_asset              TEXT,
+    -- get_asset           TEXT,
     get_asset_id           INTEGER UNSIGNED, -- id of record in assets table
     get_quantity           INTEGER,
     get_remaining          INTEGER,          -- handles negative integers

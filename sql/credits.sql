@@ -1,15 +1,14 @@
 DROP TABLE IF EXISTS credits;
 CREATE TABLE credits (
-    row_index   INTEGER UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
     block_index      INTEGER UNSIGNED,
-    -- address          TEXT,
-    address_id       INTEGER UNSIGNED, -- id of record in addresses
-    -- asset            TEXT,
+    -- address       TEXT,
+    address_id       INTEGER UNSIGNED, -- id of record in index_addresses
+    -- asset         TEXT,
     asset_id         INTEGER UNSIGNED, -- id of record in assets table
     quantity         INTEGER UNSIGNED,
     calling_function TEXT,
-    -- event            TEXT,
-    event_id         INTEGER UNSIGNED -- id of record in transactions
+    -- event         TEXT,
+    event_id         INTEGER UNSIGNED  -- id of record in index_transactions
 ) ENGINE=MyISAM;
 
 CREATE INDEX block_index   ON credits (block_index);

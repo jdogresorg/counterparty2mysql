@@ -1,13 +1,12 @@
 DROP TABLE IF EXISTS executions;
 CREATE TABLE executions (
-    row_index    INTEGER UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
     tx_index     INTEGER UNSIGNED,
     -- tx_hash   TEXT,
-    tx_hash_id   INTEGER UNSIGNED, -- id of record in transactions
+    tx_hash_id   INTEGER UNSIGNED, -- id of record in index_transactions
     block_index  INTEGER,
     -- source    TEXT,
-    source_id    INTEGER UNSIGNED, -- id of record in addresses
-    contract_id  INTEGER UNSIGNED, -- id of record in contract_ids
+    source_id    INTEGER UNSIGNED, -- id of record in index_addresses
+    contract_id  INTEGER UNSIGNED, -- id of record in index_contracts
     gas_price    INTEGER UNSIGNED,
     gas_start    INTEGER UNSIGNED,
     gas_cost     INTEGER UNSIGNED,
