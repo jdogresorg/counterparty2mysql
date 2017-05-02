@@ -12,9 +12,9 @@ If no starting block is given, counterparty2mysql will try to resume parsing at 
 Database Customizations
 ---
 - Index all assets, addresses, transactions, and contracts
-- create blocks table and index transaction hashes
 - create assets table with up to date summary information
 - create balances table to track address/asset balance information
+- create blocks table and index transaction hashes
 - create index_tx to track tx_index/type information
 
 Setup
