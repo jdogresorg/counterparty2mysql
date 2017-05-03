@@ -6,7 +6,7 @@ CREATE TABLE issuances (
     block_index INTEGER UNSIGNED,
     -- asset    TEXT,
     asset_id    INTEGER UNSIGNED, -- id of record in assets table
-    quantity    INTEGER UNSIGNED,
+    quantity    BIGINT UNSIGNED,
     divisible   BOOL,
     -- source   TEXT,
     source_id   INTEGER UNSIGNED, -- id of record in index_addresses
@@ -17,13 +17,13 @@ CREATE TABLE issuances (
     call_date   INTEGER UNSIGNED,
     call_price  REAL,
     description TEXT,
-    fee_paid    INTEGER UNSIGNED,
+    fee_paid    BIGINT,
     locked      BOOL,
     status      TEXT
 ) ENGINE=MyISAM;
 
-CREATE INDEX block_index       ON issuances (block_index);
-CREATE INDEX source_id         ON issuances (source_id);
-CREATE INDEX issuer_id         ON issuances (issuer_id);
-CREATE INDEX asset_id          ON issuances (asset_id);
-CREATE INDEX tx_hash_id        ON issuances (tx_hash_id);
+CREATE INDEX block_index ON issuances (block_index);
+CREATE INDEX source_id   ON issuances (source_id);
+CREATE INDEX issuer_id   ON issuances (issuer_id);
+CREATE INDEX asset_id    ON issuances (asset_id);
+CREATE INDEX tx_hash_id  ON issuances (tx_hash_id);

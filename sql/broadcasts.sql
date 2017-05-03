@@ -8,7 +8,7 @@ CREATE TABLE broadcasts (
     source_id        INTEGER UNSIGNED, -- id of record in index_addresses
     timestamp        INTEGER,
     value            REAL,
-    fee_fraction_int BIGINT UNSIGNED,
+    fee_fraction_int BIGINT,
     text             TEXT,
     locked           BOOL,
     status           TEXT

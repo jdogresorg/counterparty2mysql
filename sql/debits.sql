@@ -5,7 +5,7 @@ CREATE TABLE debits (
     address_id  INTEGER UNSIGNED, -- id of record in index_addresses
     -- asset    TEXT,
     asset_id    INTEGER UNSIGNED, -- id of record in assets table
-    quantity    BIGINT  UNSIGNED,
+    quantity    BIGINT,
     action      TEXT,
     -- event    TEXT,
     event_id    INTEGER UNSIGNED  -- id of record in index_transactions

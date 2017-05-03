@@ -8,8 +8,8 @@ CREATE TABLE orders (
     source_id              INTEGER UNSIGNED, -- id of record in index_addresses
     -- give_asset          TEXT,
     give_asset_id          INTEGER UNSIGNED, -- id of record in assets table
-    give_quantity          INTEGER UNSIGNED,
-    give_remaining         INTEGER UNSIGNED,          
+    give_quantity          BIGINT,
+    give_remaining         BIGINT,
     -- get_asset           TEXT,
     get_asset_id           INTEGER UNSIGNED, -- id of record in assets table
     get_quantity           BIGINT,

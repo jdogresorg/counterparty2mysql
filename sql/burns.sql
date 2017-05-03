@@ -6,8 +6,8 @@ CREATE TABLE burns (
     block_index INTEGER UNSIGNED,
     -- source   TEXT,
     source_id   INTEGER UNSIGNED, -- id of record in index_addresses
-    burned      BIGINT UNSIGNED,
-    earned      BIGINT UNSIGNED,
+    burned      BIGINT,
+    earned      BIGINT,
     status      TEXT
 ) ENGINE=MyISAM;
 

@@ -7,11 +7,11 @@ CREATE TABLE executions (
     -- source    TEXT,
     source_id    INTEGER UNSIGNED, -- id of record in index_addresses
     contract_id  INTEGER UNSIGNED, -- id of record in index_contracts
-    gas_price    INTEGER UNSIGNED,
-    gas_start    INTEGER UNSIGNED,
-    gas_cost     INTEGER UNSIGNED,
-    gas_remained INTEGER UNSIGNED,
-    value        INTEGER UNSIGNED,
+    gas_price    BIGINT,
+    gas_start    BIGINT,
+    gas_cost     BIGINT,
+    gas_remained BIGINT,
+    value        BIGINT,
     data         BLOB,
     output       BLOB,
     status       TEXT

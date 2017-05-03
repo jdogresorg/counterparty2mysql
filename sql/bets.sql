@@ -18,7 +18,7 @@ CREATE TABLE bets (
     leverage               INTEGER UNSIGNED,
     expiration             INTEGER UNSIGNED,
     expire_index           INTEGER UNSIGNED,
-    fee_fraction_int       BIGINT  UNSIGNED,
+    fee_fraction_int       BIGINT,
     status                 TEXT
 ) ENGINE=MyISAM;
 

@@ -5,7 +5,7 @@ CREATE TABLE credits (
     address_id       INTEGER UNSIGNED, -- id of record in index_addresses
     -- asset         TEXT,
     asset_id         INTEGER UNSIGNED, -- id of record in assets table
-    quantity         BIGINT  UNSIGNED,
+    quantity         BIGINT,
     calling_function TEXT,
     -- event         TEXT,
     event_id         INTEGER UNSIGNED  -- id of record in index_transactions

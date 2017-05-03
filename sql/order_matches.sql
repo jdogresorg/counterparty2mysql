@@ -13,17 +13,17 @@ CREATE TABLE order_matches (
     tx1_address_id     INTEGER UNSIGNED, -- id of record in index_addresses
     -- forward_asset   TEXT,
     forward_asset_id   INTEGER UNSIGNED, -- id of record in assets table
-    forward_quantity   INTEGER UNSIGNED,
+    forward_quantity   BIGINT,
     -- backward_asset  TEXT,
     backward_asset_id  INTEGER UNSIGNED, -- id of record in assets table
-    backward_quantity  INTEGER UNSIGNED,
+    backward_quantity  BIGINT,
     tx0_block_index    INTEGER UNSIGNED,
     tx1_block_index    INTEGER UNSIGNED,
     block_index        INTEGER UNSIGNED,
     tx0_expiration     INTEGER UNSIGNED,
     tx1_expiration     INTEGER UNSIGNED,
     match_expire_index INTEGER UNSIGNED,
-    fee_paid           INTEGER UNSIGNED,
+    fee_paid           BIGINT,
     status             TEXT
 ) ENGINE=MyISAM;
 
