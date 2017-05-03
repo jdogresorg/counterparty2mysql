@@ -10,7 +10,7 @@ CREATE TABLE sends (
     destination_id INTEGER UNSIGNED, -- id of record in index_addresses
     -- asset       TEXT,
     asset_id       INTEGER UNSIGNED, -- id of record in assets table
-    quantity       INTEGER UNSIGNED,
+    quantity       BIGINT  UNSIGNED,
     status         TEXT
 ) ENGINE=MyISAM;
 

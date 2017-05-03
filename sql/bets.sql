@@ -10,15 +10,15 @@ CREATE TABLE bets (
     feed_address_id        INTEGER UNSIGNED, -- id of record in index_addresses
     bet_type               INTEGER UNSIGNED,
     deadline               INTEGER UNSIGNED,
-    wager_quantity         INTEGER,
-    wager_remaining        INTEGER,
-    counterwager_quantity  INTEGER,
-    counterwager_remaining INTEGER,
+    wager_quantity         BIGINT,
+    wager_remaining        BIGINT,
+    counterwager_quantity  BIGINT,
+    counterwager_remaining BIGINT,
     target_value           REAL,
     leverage               INTEGER UNSIGNED,
     expiration             INTEGER UNSIGNED,
     expire_index           INTEGER UNSIGNED,
-    fee_fraction_int       INTEGER UNSIGNED,
+    fee_fraction_int       BIGINT  UNSIGNED,
     status                 TEXT
 ) ENGINE=MyISAM;
 

@@ -8,7 +8,7 @@ CREATE TABLE btcpays (
     source_id      INTEGER UNSIGNED, -- id of record in index_addresses
     -- destination TEXT,
     destination_id INTEGER UNSIGNED, -- id of record in index_addresses
-    btc_amount     INTEGER UNSIGNED,
+    btc_amount     BIGINT  UNSIGNED,
     order_match_id TEXT,
     status         TEXT
 ) ENGINE=MyISAM;

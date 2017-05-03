@@ -12,14 +12,14 @@ CREATE TABLE orders (
     give_remaining         INTEGER UNSIGNED,          
     -- get_asset           TEXT,
     get_asset_id           INTEGER UNSIGNED, -- id of record in assets table
-    get_quantity           INTEGER,
-    get_remaining          INTEGER,          -- handles negative integers
+    get_quantity           BIGINT,
+    get_remaining          BIGINT,          -- handles negative integers
     expiration             INTEGER UNSIGNED,
     expire_index           INTEGER UNSIGNED,
-    fee_required           INTEGER,
-    fee_required_remaining INTEGER,          -- handles negative integers
-    fee_provided           INTEGER,
-    fee_provided_remaining INTEGER,
+    fee_required           BIGINT,
+    fee_required_remaining BIGINT,
+    fee_provided           BIGINT,
+    fee_provided_remaining BIGINT,
     status                 TEXT
 ) ENGINE=MyISAM;
 

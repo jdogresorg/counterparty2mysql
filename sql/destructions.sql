@@ -8,7 +8,7 @@ CREATE TABLE destructions (
     source_id   INTEGER UNSIGNED, -- id of record in index_addresses
     -- asset    TEXT,
     asset_id    INTEGER UNSIGNED, -- id of record in assets table
-    quantity    INTEGER UNSIGNED,
+    quantity    BIGINT  UNSIGNED,
     tag         TEXT,
     status      TEXT
 ) ENGINE=MyISAM;

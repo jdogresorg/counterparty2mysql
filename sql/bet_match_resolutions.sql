@@ -5,10 +5,10 @@ CREATE TABLE bet_match_resolutions (
     block_index       INTEGER UNSIGNED,
     winner            TEXT,
     settled           BOOL,
-    bull_credit       INTEGER UNSIGNED,
-    bear_credit       INTEGER UNSIGNED,
-    escrow_less_fee   INTEGER UNSIGNED,
-    fee               INTEGER UNSIGNED
+    bull_credit       BIGINT UNSIGNED,
+    bear_credit       BIGINT UNSIGNED,
+    escrow_less_fee   BIGINT UNSIGNED,
+    fee               BIGINT UNSIGNED
 ) ENGINE=MyISAM;
 
 CREATE INDEX block_index    ON bet_match_resolutions (block_index);

@@ -27,7 +27,7 @@ CREATE TABLE bet_matches (
     tx0_expiration     INTEGER UNSIGNED,
     tx1_expiration     INTEGER UNSIGNED,
     match_expire_index INTEGER UNSIGNED,
-    fee_fraction_int   INTEGER UNSIGNED,
+    fee_fraction_int   BIGINT  UNSIGNED,
     status             TEXT
 ) ENGINE=MyISAM;
 

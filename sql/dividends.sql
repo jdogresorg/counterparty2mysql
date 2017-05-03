@@ -10,7 +10,7 @@ CREATE TABLE dividends (
     asset_id          INTEGER UNSIGNED, -- id of record in assets table
     -- dividend_asset TEXT,
     dividend_asset_id INTEGER UNSIGNED, -- id of record in assets table
-    quantity_per_unit INTEGER UNSIGNED,
+    quantity_per_unit BIGINT  UNSIGNED,
     fee_paid          INTEGER UNSIGNED,
     status            TEXT
 ) ENGINE=MyISAM;
