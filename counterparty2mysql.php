@@ -81,7 +81,7 @@ while($block <= $current){
             // assets
             foreach($fields_asset as $name)
                 if($field==$name && !isset($assets[$value]))
-                    $assets[$value] = createAsset($value);
+                    $assets[$value] = createAsset($value, $block);
             // addresses
             foreach($fields_address as $name)
                 if($field==$name && !isset($addresses[$value]))

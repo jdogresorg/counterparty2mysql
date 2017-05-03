@@ -153,7 +153,7 @@ function createBlock( $block_index ){
 
 
 // Create/Update records in the 'assets' table and return record id
-function createAsset( $asset ){
+function createAsset( $asset, $block_index ){
     global $mysqli, $counterparty;
     // Get current information on this asset
     $info = $counterparty->execute('get_asset_info', array('assets' => array($asset)));
@@ -199,10 +199,11 @@ function createAsset( $asset ){
             }
         } else {
             // Create asset information
-            $sql = "INSERT INTO assets (asset_id, asset, asset_longname, type, divisible, description, issuer_id, locked, owner_id, supply) values (
+            $sql = "INSERT INTO assets (asset_id, asset, asset_longname, block_index, type, divisible, description, issuer_id, locked, owner_id, supply) values (
                 '{$data->asset_id}',
                 '{$asset}',
                 '{$data->asset_longname}',
+                '{$block_index}',
                 '{$data->type}',
                 '{$data->divisible}',
                 '{$data->description}',
