@@ -11,6 +11,7 @@ CREATE TABLE burns (
     status      TEXT
 ) ENGINE=MyISAM;
 
-CREATE INDEX block_index   ON burns (block_index);
-CREATE INDEX source_id     ON burns (source_id);
-CREATE INDEX tx_hash_id    ON burns (tx_hash_id);
+CREATE UNIQUE INDEX tx_index      ON burns (tx_index);
+CREATE        INDEX block_index   ON burns (block_index);
+CREATE        INDEX source_id     ON burns (source_id);
+CREATE        INDEX tx_hash_id    ON burns (tx_hash_id);

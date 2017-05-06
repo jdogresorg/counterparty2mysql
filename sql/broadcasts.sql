@@ -14,6 +14,7 @@ CREATE TABLE broadcasts (
     status           TEXT
 ) ENGINE=MyISAM;
 
-CREATE INDEX block_index   ON broadcasts (block_index);
-CREATE INDEX source_id     ON broadcasts (source_id);
-CREATE INDEX tx_hash_id    ON broadcasts (tx_hash_id);
+CREATE UNIQUE INDEX tx_index    ON broadcasts (tx_index);
+CREATE        INDEX block_index ON broadcasts (block_index);
+CREATE        INDEX source_id   ON broadcasts (source_id);
+CREATE        INDEX tx_hash_id  ON broadcasts (tx_hash_id);

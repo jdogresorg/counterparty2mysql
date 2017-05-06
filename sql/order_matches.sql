@@ -34,3 +34,5 @@ CREATE INDEX tx0_address_id    ON order_matches (tx0_address_id);
 CREATE INDEX tx1_address_id    ON order_matches (tx1_address_id);
 CREATE INDEX forward_asset_id  ON order_matches (forward_asset_id);
 CREATE INDEX backward_asset_id ON order_matches (backward_asset_id);
+CREATE INDEX tx0_index         ON order_matches (tx0_index);
+CREATE INDEX tx1_index         ON order_matches (tx1_index);

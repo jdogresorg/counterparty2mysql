@@ -13,7 +13,8 @@ CREATE TABLE destructions (
     status      TEXT
 ) ENGINE=MyISAM;
 
-CREATE INDEX block_index   ON destructions (block_index);
-CREATE INDEX source_id     ON destructions (source_id);
-CREATE INDEX asset_id      ON destructions (asset_id);
-CREATE INDEX tx_hash_id    ON destructions (tx_hash_id);
+CREATE UNIQUE INDEX tx_index    ON destructions (tx_index);
+CREATE        INDEX block_index ON destructions (block_index);
+CREATE        INDEX source_id   ON destructions (source_id);
+CREATE        INDEX asset_id    ON destructions (asset_id);
+CREATE        INDEX tx_hash_id  ON destructions (tx_hash_id);

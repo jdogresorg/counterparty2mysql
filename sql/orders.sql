@@ -23,8 +23,9 @@ CREATE TABLE orders (
     status                 TEXT
 ) ENGINE=MyISAM;
 
-CREATE INDEX block_index   ON orders (block_index);
-CREATE INDEX tx_hash_id    ON orders (tx_hash_id);
-CREATE INDEX source_id     ON orders (source_id);
-CREATE INDEX give_asset_id ON orders (give_asset_id);
-CREATE INDEX get_asset_id  ON orders (get_asset_id);
+CREATE UNIQUE INDEX tx_index      ON orders (tx_index);
+CREATE        INDEX block_index   ON orders (block_index);
+CREATE        INDEX tx_hash_id    ON orders (tx_hash_id);
+CREATE        INDEX source_id     ON orders (source_id);
+CREATE        INDEX give_asset_id ON orders (give_asset_id);
+CREATE        INDEX get_asset_id  ON orders (get_asset_id);

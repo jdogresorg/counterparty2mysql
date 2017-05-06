@@ -15,7 +15,8 @@ CREATE TABLE rps (
     status              TEXT
 ) ENGINE=MyISAM;
 
-CREATE INDEX block_index         ON rps (block_index);
-CREATE INDEX tx_hash_id          ON rps (tx_hash_id);
-CREATE INDEX source_id           ON rps (source_id);
-CREATE INDEX move_random_hash_id ON rps (move_random_hash_id);
+CREATE UNIQUE INDEX tx_index            ON rps (tx_index);
+CREATE        INDEX block_index         ON rps (block_index);
+CREATE        INDEX tx_hash_id          ON rps (tx_hash_id);
+CREATE        INDEX source_id           ON rps (source_id);
+CREATE        INDEX move_random_hash_id ON rps (move_random_hash_id);

@@ -33,4 +33,6 @@ CREATE INDEX tx0_address_id          ON rps_matches (tx0_address_id);
 CREATE INDEX tx1_address_id          ON rps_matches (tx1_address_id);
 CREATE INDEX tx0_move_random_hash_id ON rps_matches (tx0_move_random_hash_id);
 CREATE INDEX tx1_move_random_hash_id ON rps_matches (tx1_move_random_hash_id);
+CREATE INDEX tx0_index               ON rps_matches (tx0_index);
+CREATE INDEX tx1_index               ON rps_matches (tx1_index);
 

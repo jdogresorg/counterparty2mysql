@@ -11,6 +11,7 @@ CREATE TABLE cancels (
     status        TEXT
 ) ENGINE=MyISAM;
 
-CREATE INDEX block_index   ON cancels (block_index);
-CREATE INDEX source_id     ON cancels (source_id);
-CREATE INDEX offer_hash_id ON cancels (offer_hash_id);
+CREATE UNIQUE INDEX tx_index      ON cancels (tx_index);
+CREATE        INDEX block_index   ON cancels (block_index);
+CREATE        INDEX source_id     ON cancels (source_id);
+CREATE        INDEX offer_hash_id ON cancels (offer_hash_id);

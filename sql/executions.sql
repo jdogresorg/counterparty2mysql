@@ -17,8 +17,9 @@ CREATE TABLE executions (
     status       TEXT
 ) ENGINE=MyISAM;
 
-CREATE INDEX block_index ON executions (block_index);
-CREATE INDEX source_id   ON executions (source_id);
-CREATE INDEX tx_hash_id  ON executions (tx_hash_id);
-CREATE INDEX contract_id ON executions (contract_id);
+CREATE UNIQUE INDEX tx_index    ON executions (tx_index);
+CREATE        INDEX block_index ON executions (block_index);
+CREATE        INDEX source_id   ON executions (source_id);
+CREATE        INDEX tx_hash_id  ON executions (tx_hash_id);
+CREATE        INDEX contract_id ON executions (contract_id);
 

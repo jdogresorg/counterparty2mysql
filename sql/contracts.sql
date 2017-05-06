@@ -11,7 +11,8 @@ CREATE TABLE contracts (
     nonce       INTEGER UNSIGNED
 ) ENGINE=MyISAM;
 
-CREATE INDEX block_index ON contracts (block_index);
-CREATE INDEX source_id   ON contracts (source_id);
-CREATE INDEX tx_hash_id  ON contracts (tx_hash_id);
-CREATE INDEX contract_id ON contracts (contract_id);
+CREATE UNIQUE INDEX tx_index    ON contracts (tx_index);
+CREATE        INDEX block_index ON contracts (block_index);
+CREATE        INDEX source_id   ON contracts (source_id);
+CREATE        INDEX tx_hash_id  ON contracts (tx_hash_id);
+CREATE        INDEX contract_id ON contracts (contract_id);

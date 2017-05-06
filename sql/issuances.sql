@@ -22,8 +22,9 @@ CREATE TABLE issuances (
     status      TEXT
 ) ENGINE=MyISAM;
 
-CREATE INDEX block_index ON issuances (block_index);
-CREATE INDEX source_id   ON issuances (source_id);
-CREATE INDEX issuer_id   ON issuances (issuer_id);
-CREATE INDEX asset_id    ON issuances (asset_id);
-CREATE INDEX tx_hash_id  ON issuances (tx_hash_id);
+CREATE UNIQUE INDEX tx_index    ON issuances (tx_index);
+CREATE        INDEX block_index ON issuances (block_index);
+CREATE        INDEX source_id   ON issuances (source_id);
+CREATE        INDEX issuer_id   ON issuances (issuer_id);
+CREATE        INDEX asset_id    ON issuances (asset_id);
+CREATE        INDEX tx_hash_id  ON issuances (tx_hash_id);
