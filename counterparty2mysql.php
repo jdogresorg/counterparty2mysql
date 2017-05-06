@@ -94,10 +94,11 @@ while($block <= $current){
             foreach($fields_contract as $name)
                 if($field==$name && !isset($contracts[$value]))
                     $contracts[$value] = createContract($value);
-            // Create record in tx_index (so we can map tx_index to table with data)
-            if($field=='tx_index')
-                createTxIndex($value, $msg->category);
         }
+        // Create record in tx_index (so we can map tx_index to tx_hash and table with data)
+        if(isset($obj->tx_index) && isset($transactions[$obj->tx_hash]))
+            createTxIndex($obj->tx_index, $msg->category, $transactions[$obj->tx_hash]);
+
     }
 
     // Loop through addresses and update any asset balances
@@ -177,9 +178,8 @@ while($block <= $current){
                 if($results->num_rows==0){
                     $sql = "INSERT INTO {$table} (" . implode(",", $fields)  . ") values ('" . implode("', '", $values) . "')";
                     $results = $mysqli->query($sql);
-                    // print $sql;
                     if(!$results)
-                        byeLog('Error while trying to create record in ' . $table);
+                        byeLog('Error while trying to create record in ' . $table . ' : ' . $sql);
                 }
             } else {
                 byeLog('Error while trying to check if record already exists in ' . $table . ' : ' . $sql);
