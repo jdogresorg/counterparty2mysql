@@ -158,7 +158,10 @@ while($block <= $current){
             if($field=='key')
                 $field = '`key`';            
             if($field=='value')
-                $field = '`value`';            
+                $field = '`value`';
+            // Handle ignoring certain items in the bindings that cause issues
+            if(in_array($field,array('asset_longname')))
+                continue;
             // Add final field and value values to arrays
             array_push($fields, $field);
             array_push($values, $value);
