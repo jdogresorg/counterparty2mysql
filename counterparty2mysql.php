@@ -10,7 +10,7 @@
  * --block=#  Load data for given block
  * --single   Load single block
  ********************************************************************/
-require_once('includes/config.php');
+require_once(__DIR__ . '/includes/config.php');
 
 // Parse in the command line args and set some flags based on them
 $args    = getopt("", array("testnet::","block::","single::","verbose::"));
