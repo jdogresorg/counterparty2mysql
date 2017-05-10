@@ -1,6 +1,6 @@
 DROP TABLE IF EXISTS blocks;
 CREATE TABLE blocks (
-    block_index            INTEGER UNSIGNED,
+    block_index            INTEGER UNSIGNED PRIMARY KEY,
     block_time             INTEGER UNSIGNED,
     -- block_hash          TEXT,
     block_hash_id          INTEGER UNSIGNED,     -- id of record in index_transactions table
@@ -15,6 +15,5 @@ CREATE TABLE blocks (
     difficulty             FLOAT
 ) ENGINE=MyISAM;
 
-CREATE UNIQUE INDEX block_index   ON blocks (block_index);
-CREATE        INDEX block_hash_id ON blocks (block_hash_id);
+CREATE INDEX block_hash_id ON blocks (block_hash_id);
 
