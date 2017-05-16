@@ -223,6 +223,11 @@ while($block <= $current){
         }
 
     }
+
+    // Loop through assets and update XCP price 
+    foreach($assets as $asset =>$id)
+        updateAssetPrice($asset);
+
     // Report time to process block
     $time = $timer->finish();
     print " Done [{$time}ms]\n";

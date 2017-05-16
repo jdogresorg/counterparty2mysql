@@ -376,4 +376,54 @@ function updateAddressBalance( $address, $asset_list ){
 }
 
 
+// Handle updating asset with latest XCP price from DEX
+function updateAssetPrice( $asset ){
+    global $mysqli;
+    // Lookup asset id 
+    $asset   = $mysqli->real_escape_string($asset);
+    $results = $mysqli->query("SELECT id, divisible FROM assets WHERE asset='{$asset}'");
+    if($results && $results->num_rows){
+        $row = $results->fetch_assoc();
+        $asset_id  = $row['id'];
+        $divisible = ($row['divisible']==1) ? true : false;
+    } else {
+        byeLog('Error looking up asset id');
+    }
+    // Bail out on BTC or XCP
+    if($asset_id<=2)
+        return;
+    // Lookup last order match for XCP
+    $sql = "SELECT
+                m.forward_asset_id,
+                m.forward_quantity,
+                m.backward_asset_id,
+                m.backward_quantity
+            FROM
+                order_matches m
+            WHERE
+                ((m.forward_asset_id=2 AND m.backward_asset_id='{$asset_id}') OR
+                ( m.forward_asset_id='{$asset_id}' AND m.backward_asset_id=2)) AND
+                m.status='completed'
+            ORDER BY 
+                m.tx1_index DESC 
+            LIMIT 1";
+    $results  = $mysqli->query($sql);
+    if($results){
+        if($results->num_rows){
+            $data      = $results->fetch_assoc();
+            $xcp_amt   = ($data['forward_asset_id']==2) ? $data['forward_quantity'] : $data['backward_quantity'];
+            $xxx_amt   = ($data['forward_asset_id']==2) ? $data['backward_quantity'] : $data['forward_quantity'];
+            $xcp_qty   = number_format($xcp_amt * 0.00000001,8,'.','');
+            $xxx_qty   = ($divisible) ? number_format($xxx_amt * 0.00000001,8,'.','') : number_format($xxx_amt,0,'.','');
+            $price     = number_format($xcp_qty / $xxx_qty,8,'.','');
+            $price_int = number_format($price * 100000000,0,'.','');
+            $results   = $mysqli->query("UPDATE assets SET xcp_price='{$price_int}' WHERE id='{$asset_id}'");
+            if(!$results)
+                byeLog('Error updating XCP price for asset ' . $asset);
+        }
+    } else {
+        byeLog('Error while trying to lookup asset price');
+    }
+}
+
 ?>
