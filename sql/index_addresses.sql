@@ -6,3 +6,6 @@ CREATE TABLE index_addresses (
 ) ENGINE=MyISAM;
 
 CREATE INDEX address on index_addresses (address(10));
+
+-- Create record for blank/empty address
+INSERT INTO index_addresses (id,address) values (0,'');
