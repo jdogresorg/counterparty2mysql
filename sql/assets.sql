@@ -16,7 +16,7 @@ CREATE TABLE assets (
 ) ENGINE=MyISAM;
 
 INSERT INTO assets (asset_id, asset, divisible, locked) values (0,'BTC', 1, 1);
-INSERT INTO assets (asset_id, asset, divisible, locked) values (1,'XCP', 1, 1);
+INSERT INTO assets (asset_id, asset, divisible, locked, xcp_price) values (1,'XCP', 1, 1, 100000000);
 
 CREATE UNIQUE INDEX asset     ON assets (asset);
 CREATE        INDEX issuer_id ON assets (issuer_id);
