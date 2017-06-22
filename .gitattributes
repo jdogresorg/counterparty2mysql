@@ -1,0 +1,2 @@
+bootstrap/Counterparty_Testnet.sql.gz filter=lfs diff=lfs merge=lfs -text
+bootstrap/Counterparty.sql.gz filter=lfs diff=lfs merge=lfs -text
