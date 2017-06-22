@@ -28,9 +28,10 @@ cat sql/*.sql | mysql Counterparty_Testnet
 
 Bootstrap Information
 ---
-```
-Mainnet Block :   472,442 [Counterparty.sql.gz](bootstrap/Counterparty.sql.gz)
-Testnet Block : 1,147,952 [Counterparty_Testnet.sql.gz](bootstrap/Counterparty_Testnet.sql.gz)
+[Counterparty.sql.gz](bootstrap/Counterparty.sql.gz) 
+[Counterparty_Testnet.sql.gz](bootstrap/Counterparty_Testnet.sql.gz)
+```Mainnet Block :   472,442 
+Testnet Block : 1,147,952 
 ```
 
 Command line arguments 
