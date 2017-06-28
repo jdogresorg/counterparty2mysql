@@ -1,6 +1,6 @@
 DROP TABLE IF EXISTS rps;
 CREATE TABLE rps (
-    tx_index            INTEGER UNIQUE,
+    tx_index            INTEGER UNSIGNED,
     -- tx_hash          TEXT,
     tx_hash_id          INTEGER UNSIGNED, -- id of record in index_transactions
     block_index         INTEGER UNSIGNED,
