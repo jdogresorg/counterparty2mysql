@@ -11,6 +11,7 @@ CREATE TABLE sends (
     -- asset       TEXT,
     asset_id       INTEGER UNSIGNED, -- id of record in assets table
     quantity       BIGINT,
+    memo           BLOB,
     status         TEXT
 ) ENGINE=MyISAM;
 
@@ -20,4 +21,3 @@ CREATE        INDEX tx_hash_id     ON sends (tx_hash_id);
 CREATE        INDEX source_id      ON sends (source_id);
 CREATE        INDEX destination_id ON sends (destination_id);
 CREATE        INDEX asset_id       ON sends (asset_id);
-
