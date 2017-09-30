@@ -42,6 +42,7 @@ Command line arguments
 Database Information
 ---
 **Counterparty tables** (populated via 'messages')
+- [addresses](sql/addresses.sql)
 - [bets](sql/bets.sql)
 - [bet_expirations](sql/bet_expirations.sql)
 - [bet_match_expirations](sql/bet_match_expirations.sql)
