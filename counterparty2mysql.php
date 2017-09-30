@@ -167,6 +167,33 @@ while($block <= $current){
             array_push($values, $value);
         }
 
+        // Change command to 'replace'
+        if($msg->category=='replace')
+            $command = 'replace';
+
+        // Handle creating/updating records in the 'addresses' table
+        if($command=='replace'){
+            // Extract data to usable variable name
+            foreach($fields as $ndx => $field)
+                $$field = $values[$ndx];
+            // Check if this record already exists
+            $sql = "SELECT * FROM addresses WHERE address_id='{$address_id}'";
+            $results = $mysqli->query($sql);
+            if($results){
+                // Only create the record if it does not already exist
+                if($results->num_rows==0){
+                    $sql2 = "INSERT INTO addresses (" . implode(",", $fields)  . ") values ('" . implode("', '", $values) . "')";
+                } else {
+                    $sql2 = "UPDATE addresses SET options='{$options}', block_index='{$block_index}' WHERE address_id='{$address_id}'";
+                }
+                $results2 = $mysqli->query($sql2);
+                if(!$results2)
+                    byeLog('Error while trying to create or record in addresses table : ' . $sql2);
+            } else {
+                byeLog('Error while trying to check if record already exists in addresses table : ' . $sql);
+            }
+        }
+
         // Handle 'insert' commands
         if($command=='insert'){
             // Check if this record already exists
