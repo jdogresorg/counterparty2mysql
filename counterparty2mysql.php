@@ -117,6 +117,7 @@ while($block <= $current){
         $fields = array();
         $values = array();
         foreach($bindings as $field => $value){
+            $ignore = false;
             // swap asset name for id
             foreach($fields_asset as $name)
                 if($field==$name){
@@ -147,6 +148,25 @@ while($block <= $current){
             // Translate some field names where bindings field names and table field names differ
             if($table=='credits' && $field=='action')
                 $field='calling_function';
+            // Unset certain fields with no value set (fixes mysql complaints)
+            if($table=='issuances'){
+                if(in_array($field, array('locked','transfer','divisible','callable')) && $value=='')
+                    $ignore = true;
+            }
+            // Force locked to numeric value
+            if($table=='broadcasts'){
+                if($field=='locked')
+                    $value = intval($value);
+            }
+            // Rock / Paper / Sciscors
+            if($table=='rps'){
+                // Force move_random_hash_id to numeric value
+                if($field=='move_random_hash_id' && !isset($value))
+                    $value = intval($value);
+                // Ignore the 'calling_function'
+                if($field=='calling_function')
+                    $ignore = true;
+            }
             // EVM fields
             if($field=='gasprice')
                 $field = 'gas_price';
@@ -160,7 +180,7 @@ while($block <= $current){
             if($field=='value')
                 $field = '`value`';
             // Handle ignoring certain items in the bindings that cause issues
-            if(in_array($field,array('asset_longname')))
+            if(in_array($field,array('asset_longname')) || $ignore)
                 continue;
             // Add final field and value values to arrays
             array_push($fields, $field);

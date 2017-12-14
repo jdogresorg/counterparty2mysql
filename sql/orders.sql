@@ -13,7 +13,7 @@ CREATE TABLE orders (
     -- get_asset           TEXT,
     get_asset_id           INTEGER UNSIGNED, -- id of record in assets table
     get_quantity           BIGINT,
-    get_remaining          BIGINT,          -- handles negative integers
+    get_remaining          BIGINT,           -- handles negative integers
     expiration             INTEGER UNSIGNED,
     expire_index           INTEGER UNSIGNED,
     fee_required           BIGINT,

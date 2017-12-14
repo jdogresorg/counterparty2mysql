@@ -159,12 +159,14 @@ function createAsset( $asset, $block_index ){
     $info = $counterparty->execute('get_asset_info', array('assets' => array($asset)));
     // Create data object using asset info (if any)
     $data                 = (count($info)) ? (object) $info[0] : (object) [];
+    $description          = substr($data->description,0,250); // Truncate to 250 chars
     $data->asset_id       = getAssetId($asset);
     $data->issuer_id      = createAddress($data->issuer);
     $data->owner_id       = createAddress($data->owner);
     $data->divisible      = ($data->divisible) ? 1 : 0;  // convert to boolean
     $data->locked         = ($data->locked) ? 1 : 0 ;    // convert to boolean
-    $data->description    = $mysqli->real_escape_string($data->description);
+    $data->supply         = intval($data->supply);
+    $data->description    = $mysqli->real_escape_string($description);
     $data->asset_longname = $mysqli->real_escape_string($data->asset_longname);
     // Set asset type (1=Named, 2=Numeric, 3=Subasset, 4=Failed issuance)
     $data->type           = (substr($asset,0,1)=='A') ? 2 : 1;
@@ -172,6 +174,11 @@ function createAsset( $asset, $block_index ){
         $data->type = 3;
     if(count($info)==0)
         $data->type = 4;
+    // Force numeric values for special assets
+    if(in_array($data->asset, array('XCP','BTC'))){
+        $data->issuer_id = 0;
+        $data->owner_id  = 0;
+    }
     // Check if this asset already exists
     $results = $mysqli->query("SELECT id FROM assets WHERE asset='{$asset}' LIMIT 1");
     if($results){
@@ -195,7 +202,7 @@ function createAsset( $asset, $block_index ){
             if($results){
                 return $id;
             } else {
-                byeLog('Error while trying to update asset record for ' . $asset);
+                byeLog('Error while trying to update asset record for ' . $asset . ' : ' . $sql);
             }
         } else {
             // Create asset information
@@ -228,7 +235,7 @@ function createAsset( $asset, $block_index ){
 function createAddress( $address ){
     global $mysqli;
     if(!isset($address) || $address=='')
-        return;
+        return 0;
     $address = $mysqli->real_escape_string($address);
     $results = $mysqli->query("SELECT id FROM index_addresses WHERE address='{$address}' LIMIT 1");
     if($results){
