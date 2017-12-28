@@ -4,7 +4,7 @@
  ********************************************************************/
 
 // Handle creating a lockfile and bailing out if lock file already exists (ie, an instance is already running)
-function createLockFile($file){
+function createLockFile($file=null){
     $lockFile = ($file!='') ? $file : LOCKFILE;
     if(file_exists($lockFile)){
         print "detected lockfile at {$lockFile} ... exiting\n";
@@ -17,7 +17,7 @@ function createLockFile($file){
 
 
 // Handle removing a lockfile
-function removeLockFile($file){
+function removeLockFile($file=null){
     $lockFile = ($file!='') ? $file : LOCKFILE;
     if(file_exists($lockFile))
         unlink($lockFile);
@@ -25,7 +25,7 @@ function removeLockFile($file){
 
 
 // Log/Print an error and exit
-function byeLog($error, $log){
+function byeLog($error=null, $log=null){
     $logFile   = (strlen($log)) ? $log : ERRORLOG;
     $errorLine = '[' . gmdate("Y-m-d H:i:s") . ' UTC] - '. $error . "\n";
     if(strlen($logFile))
@@ -38,7 +38,7 @@ function byeLog($error, $log){
 
 
 // Setup database connection
-function initDB($hostname, $username, $password, $database, $log){
+function initDB($hostname=null, $username=null, $password=null, $database=null, $log=false){
     global $mysqli;
     // Try to establish database connection and exit if we are not able to
     $mysqli = new mysqli($hostname, $username, $password, $database);
@@ -55,7 +55,7 @@ function initDB($hostname, $username, $password, $database, $log){
 
 
 // Setup Counterparty API connection
-function initCP($hostname, $username, $password, $log){
+function initCP($hostname=null, $username=null, $password=null, $log=false){
     global $counterparty;
     $counterparty = new Client($hostname);
     $counterparty->authentication($username, $password);
@@ -78,7 +78,7 @@ function initCP($hostname, $username, $password, $log){
 
 // Convert asset name into a numeric asset_id
 // Big thanks to Joe looney <hello@joelooney.org> for pointing me towards his similar javascript function
-function getAssetId($asset){
+function getAssetId($asset=null){
     $id = false;
     if($asset == 'XCP'){
         $id =  1;
@@ -99,7 +99,7 @@ function getAssetId($asset){
 
 
 // Create/Update records in the 'blocks' table and return record id
-function createBlock( $block_index ){
+function createBlock( $block_index=null ){
     global $mysqli, $counterparty;
     $data = (object) $counterparty->execute('get_block_info', array('block_index' => $block_index));
     $data->block_hash_id          = createTransaction($data->block_hash);
@@ -153,7 +153,7 @@ function createBlock( $block_index ){
 
 
 // Create/Update records in the 'assets' table and return record id
-function createAsset( $asset, $block_index ){
+function createAsset( $asset=null, $block_index=null ){
     global $mysqli, $counterparty;
     // Get current information on this asset
     $info = $counterparty->execute('get_asset_info', array('assets' => array($asset)));
@@ -232,7 +232,7 @@ function createAsset( $asset, $block_index ){
 
 
 // Create records in the 'addresses' table and return record id
-function createAddress( $address ){
+function createAddress( $address=null ){
     global $mysqli;
     if(!isset($address) || $address=='')
         return 0;
@@ -257,7 +257,7 @@ function createAddress( $address ){
 
 
 // Create records in the 'transactions' table and return record id
-function createTransaction( $hash ){
+function createTransaction( $hash=null ){
     global $mysqli;
     if(!isset($hash) || $hash=='')
         return;
@@ -282,7 +282,7 @@ function createTransaction( $hash ){
 
 
 // Create records in the 'contract_ids' table and return record id
-function createContract( $contract ){
+function createContract( $contract=null ){
     global $mysqli;
     if(!isset($contract) || $contract=='')
         return;
@@ -307,7 +307,7 @@ function createContract( $contract ){
 
 
 // Create records in the 'tx_index_types' table and return record id
-function createTxType( $type ){
+function createTxType( $type=null ){
     global $mysqli;
     $type    = $mysqli->real_escape_string($type);
     $results = $mysqli->query("SELECT id FROM index_tx_types WHERE type='{$type}' LIMIT 1");
@@ -330,7 +330,7 @@ function createTxType( $type ){
 
 
 // Create records in the 'tx_index' table
-function createTxIndex( $tx_index, $tx_type, $tx_hash_id ){
+function createTxIndex( $tx_index=null, $tx_type=null, $tx_hash_id=null ){
     global $mysqli;
     $tx_index = $mysqli->real_escape_string($tx_index);
     $type_id  = createTxType($tx_type);
@@ -348,7 +348,7 @@ function createTxIndex( $tx_index, $tx_type, $tx_hash_id ){
 
 
 // Create/Update records in the 'balances' table
-function updateAddressBalance( $address, $asset_list ){
+function updateAddressBalance( $address=null, $asset_list=null ){
     global $mysqli, $counterparty, $addresses, $assets;
     // Lookup any balance for this address and asset
     $filters  = array(array('field' => 'address', 'op' => '==', 'value' => $address),
@@ -384,7 +384,7 @@ function updateAddressBalance( $address, $asset_list ){
 
 
 // Handle updating asset with latest XCP price from DEX
-function updateAssetPrice( $asset ){
+function updateAssetPrice( $asset=null ){
     global $mysqli;
     // Lookup asset id 
     $asset   = $mysqli->real_escape_string($asset);
