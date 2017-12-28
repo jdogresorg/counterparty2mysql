@@ -6,36 +6,31 @@
  * Script to handle parsing counterparty data into mysql database
  * 
  * Command line arguments :
- * --testnet  Load testnet data
+ * --testnet  Load data from testnet
+ * --regtest  Load data from regtest
  * --block=#  Load data for given block
  * --single   Load single block
  ********************************************************************/
-require_once(__DIR__ . '/includes/config.php');
 
 // Parse in the command line args and set some flags based on them
-$args    = getopt("", array("testnet::","block::","single::","verbose::"));
+$args    = getopt("", array("testnet::", "regtest::", "block::", "single::", "verbose::"));
 $testnet = (isset($args['testnet'])) ? true : false;
-$single  = (isset($args['single'])) ? true : false;
-$network = ($testnet) ? 'testnet' : 'mainnet';
+$regtest = (isset($args['regtest'])) ? true : false;
+$single  = (isset($args['single'])) ? true : false;  
+$runtype = ($regtest) ? 'regtest' : (($testnet) ? 'testnet' : 'mainnet');
 $block   = (is_numeric($args['block'])) ? intval($args['block']) : false;
 
-// Define some constants used for locking processes and logging errors
-define("LOCKFILE", '/var/tmp/counterparty2mysql-' . $network . '.lock');
-define("LASTFILE", '/var/tmp/counterparty2mysql-' . $network . '.last-block');
-define("ERRORLOG", '/var/tmp/counterparty2mysql-' . $network . '.errors');
+// Load config (only after runtype is defined)
+require_once(__DIR__ . '/includes/config.php');
 
-// Setup database and counterparty connection info
-$db_host = ($testnet) ? TEST_DB_HOST : MAIN_DB_HOST;
-$db_user = ($testnet) ? TEST_DB_USER : MAIN_DB_USER;
-$db_pass = ($testnet) ? TEST_DB_PASS : MAIN_DB_PASS;
-$db_data = ($testnet) ? TEST_DB_DATA : MAIN_DB_DATA;
-$cp_host = ($testnet) ? TEST_CP_HOST : MAIN_CP_HOST;
-$cp_user = ($testnet) ? TEST_CP_USER : MAIN_CP_USER;
-$cp_pass = ($testnet) ? TEST_CP_PASS : MAIN_CP_PASS;
+// Define some constants used for locking processes and logging errors
+define("LOCKFILE", '/var/tmp/counterparty2mysql-' . $runtype . '.lock');
+define("LASTFILE", '/var/tmp/counterparty2mysql-' . $runtype . '.last-block');
+define("ERRORLOG", '/var/tmp/counterparty2mysql-' . $runtype . '.errors');
 
 // Initialize the database and counterparty API connections
-initDB($db_host, $db_user, $db_pass, $db_data, true);
-initCP($cp_host, $cp_user, $cp_pass, true);
+initDB(DB_HOST, DB_USER, DB_PASS, DB_DATA, true);
+initCP(CP_HOST, CP_USER, CP_PASS, true);
 
 // Create a lock file, and bail if we detect an instance is already running
 createLockFile();
@@ -43,7 +38,7 @@ createLockFile();
 // If no block given, load last block from state file, or use first block with CP tx
 if(!$block){
     $last  = file_get_contents(LASTFILE);
-    $first = ($testnet) ? 310000 : 278270;
+    $first = ($regtest) ? 1 : (($testnet) ? 310000 : 278270);
     $block = (isset($last) && $last>=$first) ? (intval($last) + 1) : $first;
 }
 
@@ -166,6 +161,10 @@ while($block <= $current){
                 // Ignore the 'calling_function'
                 if($field=='calling_function')
                     $ignore = true;
+            }
+            if($table=='sends'){
+                if($field=='quantity')
+                    $value = intval($value);
             }
             // EVM fields
             if($field=='gasprice')
