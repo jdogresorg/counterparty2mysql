@@ -12,6 +12,9 @@
  * --single   Load single block
  ********************************************************************/
 
+// Hide all but errors
+error_reporting(E_ERROR);
+
 // Parse in the command line args and set some flags based on them
 $args    = getopt("", array("testnet::", "regtest::", "block::", "single::", "verbose::"));
 $testnet = (isset($args['testnet'])) ? true : false;
