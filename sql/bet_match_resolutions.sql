@@ -9,7 +9,7 @@ CREATE TABLE bet_match_resolutions (
     bear_credit       BIGINT UNSIGNED,
     escrow_less_fee   BIGINT UNSIGNED,
     fee               BIGINT UNSIGNED
-) ENGINE=MyISAM;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
 CREATE INDEX block_index    ON bet_match_resolutions (block_index);
 CREATE INDEX bet_match_id   ON bet_match_resolutions (bet_match_id);

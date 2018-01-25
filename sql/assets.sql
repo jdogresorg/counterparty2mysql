@@ -13,7 +13,7 @@ CREATE TABLE assets (
     supply         BIGINT  UNSIGNED,
     type           TINYINT(1),           -- asset type (1=Named, 2=Numeric, 3=Subasset, 4=Failed issuance)
     xcp_price      BIGINT  UNSIGNED      -- last price of XCP matched order on DEX
-) ENGINE=MyISAM;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
 INSERT INTO assets (asset_id, asset, divisible, locked) values (0,'BTC', 1, 1);
 INSERT INTO assets (asset_id, asset, divisible, locked, xcp_price) values (1,'XCP', 1, 1, 100000000);

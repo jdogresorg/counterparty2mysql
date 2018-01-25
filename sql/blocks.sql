@@ -13,7 +13,7 @@ CREATE TABLE blocks (
     -- messages_hash       TEXT,
     messages_hash_id       INTEGER UNSIGNED,     -- id of record in index_transactions table
     difficulty             FLOAT
-) ENGINE=MyISAM;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
 CREATE INDEX block_hash_id ON blocks (block_hash_id);
 

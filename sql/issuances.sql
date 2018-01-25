@@ -20,7 +20,7 @@ CREATE TABLE issuances (
     fee_paid    BIGINT,
     locked      BOOL,
     status      TEXT
-) ENGINE=MyISAM;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
 CREATE UNIQUE INDEX tx_index    ON issuances (tx_index);
 CREATE        INDEX block_index ON issuances (block_index);

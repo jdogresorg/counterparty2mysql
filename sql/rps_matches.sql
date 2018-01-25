@@ -24,7 +24,7 @@ CREATE TABLE rps_matches (
     tx1_expiration          INTEGER UNSIGNED,
     match_expire_index      INTEGER UNSIGNED,
     status                  TEXT
-) ENGINE=MyISAM;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
 CREATE INDEX block_index             ON rps_matches (block_index);
 CREATE INDEX tx0_hash_id             ON rps_matches (tx0_hash_id);

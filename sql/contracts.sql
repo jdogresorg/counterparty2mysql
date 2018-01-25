@@ -9,7 +9,7 @@ CREATE TABLE contracts (
     source_id   INTEGER UNSIGNED, -- id of record in index_addresses
     code        BLOB,
     nonce       INTEGER UNSIGNED
-) ENGINE=MyISAM;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
 CREATE UNIQUE INDEX tx_index    ON contracts (tx_index);
 CREATE        INDEX block_index ON contracts (block_index);

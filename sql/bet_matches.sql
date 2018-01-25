@@ -29,7 +29,7 @@ CREATE TABLE bet_matches (
     match_expire_index INTEGER UNSIGNED,
     fee_fraction_int   BIGINT  UNSIGNED,
     status             TEXT
-) ENGINE=MyISAM;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
 CREATE INDEX block_index     ON bet_matches (block_index);
 CREATE INDEX tx0_hash_id     ON bet_matches (tx0_hash_id);

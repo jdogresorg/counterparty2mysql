@@ -6,7 +6,7 @@ CREATE TABLE order_expirations (
     -- source     TEXT,
     source_id     INTEGER UNSIGNED, -- id of record in index_addresses
     block_index   INTEGER UNSIGNED
-) ENGINE=MyISAM;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
 CREATE INDEX block_index   ON order_expirations (block_index);
 CREATE INDEX source_id     ON order_expirations (source_id);

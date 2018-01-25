@@ -11,7 +11,7 @@ CREATE TABLE destructions (
     quantity    BIGINT,
     tag         TEXT,
     status      TEXT
-) ENGINE=MyISAM;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
 CREATE UNIQUE INDEX tx_index    ON destructions (tx_index);
 CREATE        INDEX block_index ON destructions (block_index);

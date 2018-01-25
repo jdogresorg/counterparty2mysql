@@ -6,7 +6,7 @@ CREATE TABLE bet_match_expirations (
     -- tx1_address TEXT,
     tx1_address_id INTEGER UNSIGNED, -- id of record in index_addresses
     block_index    INTEGER UNSIGNED
-) ENGINE=MyISAM;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
 CREATE INDEX block_index    ON bet_match_expirations (block_index);
 CREATE INDEX bet_match_id   ON bet_match_expirations (bet_match_id);

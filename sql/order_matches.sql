@@ -25,7 +25,7 @@ CREATE TABLE order_matches (
     match_expire_index INTEGER UNSIGNED,
     fee_paid           BIGINT,
     status             TEXT
-) ENGINE=MyISAM;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
 CREATE INDEX block_index       ON order_matches (block_index);
 CREATE INDEX tx0_hash_id       ON order_matches (tx0_hash_id);

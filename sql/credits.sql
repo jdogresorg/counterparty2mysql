@@ -9,7 +9,7 @@ CREATE TABLE credits (
     calling_function TEXT,
     -- event         TEXT,
     event_id         INTEGER UNSIGNED  -- id of record in index_transactions
-) ENGINE=MyISAM;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
 CREATE INDEX block_index   ON credits (block_index);
 CREATE INDEX address_id    ON credits (address_id);

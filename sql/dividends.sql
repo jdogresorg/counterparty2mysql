@@ -13,7 +13,7 @@ CREATE TABLE dividends (
     quantity_per_unit BIGINT,
     fee_paid          BIGINT,
     status            TEXT
-) ENGINE=MyISAM;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
 CREATE UNIQUE INDEX tx_index          ON dividends (tx_index);
 CREATE        INDEX block_index       ON dividends (block_index);

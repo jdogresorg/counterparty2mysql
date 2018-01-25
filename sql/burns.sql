@@ -9,7 +9,7 @@ CREATE TABLE burns (
     burned      BIGINT,
     earned      BIGINT,
     status      TEXT
-) ENGINE=MyISAM;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
 CREATE UNIQUE INDEX tx_index      ON burns (tx_index);
 CREATE        INDEX block_index   ON burns (block_index);

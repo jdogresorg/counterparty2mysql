@@ -21,7 +21,7 @@ CREATE TABLE orders (
     fee_provided           BIGINT,
     fee_provided_remaining BIGINT,
     status                 TEXT
-) ENGINE=MyISAM;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
 CREATE UNIQUE INDEX tx_index      ON orders (tx_index);
 CREATE        INDEX block_index   ON orders (block_index);
