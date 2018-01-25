@@ -22,7 +22,7 @@ if($runtype=='testnet'){
     define("DB_HOST", "localhost");
     define("DB_USER", "mysql_username");
     define("DB_PASS", "mysql_password");
-    define("DB_DATA", "Counterparty");
+    define("DB_DATA", "Counterparty_Testnet");
     define("CP_HOST", "http://127.0.0.1:14000/api/");
     define("CP_USER", "counterparty_username");
     define("CP_PASS", "counterparty_password");
@@ -33,7 +33,7 @@ if($runtype=='regtest'){
     define("DB_HOST", "localhost");
     define("DB_USER", "mysql_username");
     define("DB_PASS", "mysql_password");
-    define("DB_DATA", "Counterparty");
+    define("DB_DATA", "Counterparty_Regtest");
     define("CP_HOST", "http://127.0.0.1:44000/api/");
     define("CP_USER", "counterparty_username");
     define("CP_PASS", "counterparty_password");
