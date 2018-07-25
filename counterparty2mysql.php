@@ -218,6 +218,8 @@ while($block <= $current){
 
         // Handle 'insert' commands
         if($command=='insert'){
+            // Special flag used to manually get past issues with occasional duplicate messages in messages table
+            $skip = false;
             // Check if this record already exists
             $sql = "SELECT * FROM {$table} WHERE";
             foreach($fields as $index => $field)
@@ -230,7 +232,7 @@ while($block <= $current){
                 if($results->num_rows==0){
                     $sql = "INSERT INTO {$table} (" . implode(",", $fields)  . ") values ('" . implode("', '", $values) . "')";
                     $results = $mysqli->query($sql);
-                    if(!$results)
+                    if(!$results && !$skip)
                         byeLog('Error while trying to create record in ' . $table . ' : ' . $sql);
                 }
             } else {
