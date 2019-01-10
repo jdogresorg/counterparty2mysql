@@ -151,10 +151,12 @@ while($block <= $current){
                 if(in_array($field, array('locked','transfer','divisible','callable')) && $value=='')
                     $ignore = true;
             }
-            // Force locked to numeric value
+            // Force numeric values on some broadcast values
             if($table=='broadcasts'){
-                if($field=='locked')
+                if(in_array($field,array('locked','fee_fraction_int')))
                     $value = intval($value);
+                if($field=='value' && $value=='')
+                    $value = 0;
             }
             // Rock / Paper / Sciscors
             if($table=='rps'){
