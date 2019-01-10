@@ -15,7 +15,7 @@ CREATE TABLE bet_matches (
     tx1_bet_type       INTEGER UNSIGNED,
     -- feed_address    TEXT,
     feed_address_id    INTEGER UNSIGNED, -- id of record in index_addresses
-    initial_value      INTEGER UNSIGNED,
+    initial_value      INTEGER,
     deadline           INTEGER UNSIGNED,
     target_value       REAL,
     leverage           INTEGER UNSIGNED,
@@ -38,6 +38,4 @@ CREATE INDEX tx1_address_id  ON bet_matches (tx1_address_id);
 CREATE INDEX tx0_address_id  ON bet_matches (tx0_address_id);
 CREATE INDEX feed_address_id ON bet_matches (feed_address_id);
 
-
-
-
+-- ALTER TABLE bet_matches MODIFY initial_value INTEGER;
