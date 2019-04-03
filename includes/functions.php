@@ -83,7 +83,7 @@ function getAssetId($asset=null){
     if($asset == 'XCP'){
         $id =  1;
     } else if(substr($asset,0,1)=='A'){
-        $id = intval(substr($asset,1));
+        $id = substr($asset,1);
     } else {
         $chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
         $array = str_split($asset);
