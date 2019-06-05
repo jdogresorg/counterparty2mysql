@@ -224,15 +224,27 @@ while($block <= $current){
             $skip = false;
             // Check if this record already exists
             $sql = "SELECT * FROM {$table} WHERE";
-            foreach($fields as $index => $field)
+
+            $sqlUpdate = '';
+            foreach($fields as $index => $field){
                 $sql .= " {$field}='{$values[$index]}' AND";
+
+                //building potential update statement
+                $sqlUpdate .= " {$field}='{$values[$index]}' AND";
+            }
+
             $sql = rtrim($sql, " AND");
+            $sqlUpdate = rtrim($sqlUpdate, " AND");
+
             // print $sql;
             $results = $mysqli->query($sql);
             if($results){
                 // Only create the record if it does not already exist
+
+                //on duplicate key statement
+
                 if($results->num_rows==0){
-                    $sql = "INSERT INTO {$table} (" . implode(",", $fields)  . ") values ('" . implode("', '", $values) . "')";
+                    $sql = "INSERT INTO {$table} (" . implode(",", $fields)  . ") values ('" . implode("', '", $values) . "') ON DUPLICATE KEY UPDATE $sqlUpdate";
                     $results = $mysqli->query($sql);
                     if(!$results && !$skip)
                         byeLog('Error while trying to create record in ' . $table . ' : ' . $sql);
