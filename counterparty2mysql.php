@@ -239,10 +239,7 @@ while($block <= $current){
             // print $sql;
             $results = $mysqli->query($sql);
             if($results){
-                // Only create the record if it does not already exist
-
-                //on duplicate key statement
-
+                //on duplicate key statement will update the row if exists already
                 if($results->num_rows==0){
                     $sql = "INSERT INTO {$table} (" . implode(",", $fields)  . ") values ('" . implode("', '", $values) . "') ON DUPLICATE KEY UPDATE $sqlUpdate";
                     $results = $mysqli->query($sql);
