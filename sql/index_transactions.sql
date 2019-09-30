@@ -4,4 +4,4 @@ CREATE TABLE index_transactions (
   hash VARCHAR(129) NOT NULL
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
-CREATE INDEX hash on index_transactions (hash(10));
+CREATE INDEX hash on index_transactions (hash(20));
