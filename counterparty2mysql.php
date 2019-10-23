@@ -248,7 +248,7 @@ while($block <= $current){
             $where = "";
             foreach($fields as $index => $field){
                 // Update bets and orders records using tx_hash
-                if(in_array($table,array('orders','bets')) && $field=='tx_hash_id'){
+                if(in_array($table,array('orders','bets','dispensers')) && $field=='tx_hash_id'){
                     $where .= " tx_hash_id='{$values[$index]}'";
                 // Update *_matches tables using id field
                 } else if(in_array($table,array('order_matches','bet_matches','rps_matches')) && 
