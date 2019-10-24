@@ -260,6 +260,9 @@ while($block <= $current){
                 // Update nonces table using address_id
                 } else if($table=='nonces' && $field=='address_id'){
                     $where .= " {$field}='{$values[$index]}'";
+                // Skip updating the block_index on dispenser (so we keep the original block_index where the dispenser was created/updated)
+                } else if($table=='dispensers' && $field=='block_index'){
+                    continue;
                 } else {
                     $sql .= " {$field}='{$values[$index]}',";
                 }
