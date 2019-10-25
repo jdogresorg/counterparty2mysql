@@ -261,8 +261,13 @@ while($block <= $current){
                 } else if($table=='nonces' && $field=='address_id'){
                     $where .= " {$field}='{$values[$index]}'";
                 // Skip updating the block_index on dispenser (so we keep the original block_index where the dispenser was created/updated)
-                } else if($table=='dispensers' && $field=='block_index'){
-                    continue;
+                } else if($table=='dispensers' && in_array($field, array('block_index','status'))){
+                    if($field=='block_index')
+                        continue;
+                    if($field=='status' && $values[$index]==10){
+                        $sql   .= " status='10',";
+                        $where .= " source_id='{$values[2]}' AND asset_id='{$values[0]}' AND status=0";
+                    }
                 } else {
                     $sql .= " {$field}='{$values[$index]}',";
                 }
