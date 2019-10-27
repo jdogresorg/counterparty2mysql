@@ -280,7 +280,6 @@ while($block <= $current){
             } else {
                 byeLog('Error - no WHERE criteria found');
             }
-            print $sql . "\n";
             $results = $mysqli->query($sql);
             if(!$results)
                 byeLog('Error while trying to update record in ' . $table . ' : ' . $sql);
