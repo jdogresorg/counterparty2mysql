@@ -56,6 +56,7 @@ Database Information
 - [credits](sql/credits.sql)
 - [debits](sql/debits.sql)
 - [destructions](sql/destructions.sql)
+- [dispensers](sql/dispensers.sql)
 - [dividends](sql/dividends.sql)
 - [issuances](sql/issuances.sql)
 - [order_expirations](sql/order_expirations.sql)
