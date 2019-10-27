@@ -114,6 +114,7 @@ while($block <= $current){
         // Build out array of fields and values
         $fields = array();
         $values = array();
+        $fldmap = array();
         foreach($bindings as $field => $value){
             $ignore = false;
             // swap asset name for id
@@ -189,6 +190,7 @@ while($block <= $current){
             // Add final field and value values to arrays
             array_push($fields, $field);
             array_push($values, $value);
+            $fldmap[$field] = $value;
         }
 
         // Change command to 'replace'
@@ -266,7 +268,7 @@ while($block <= $current){
                         continue;
                     if($field=='status' && $values[$index]==10){
                         $sql   .= " status='10',";
-                        $where .= " source_id='{$values[2]}' AND asset_id='{$values[0]}' AND status=0";
+                        $where = " source_id='{$fldmap['source_id']}' AND asset_id='{$fldmap['asset_id']}'";
                     }
                 } else {
                     $sql .= " {$field}='{$values[$index]}',";
@@ -278,6 +280,7 @@ while($block <= $current){
             } else {
                 byeLog('Error - no WHERE criteria found');
             }
+            print $sql . "\n";
             $results = $mysqli->query($sql);
             if(!$results)
                 byeLog('Error while trying to update record in ' . $table . ' : ' . $sql);
