@@ -16,10 +16,11 @@
 error_reporting(E_ERROR);
 
 // Parse in the command line args and set some flags based on them
-$args    = getopt("", array("testnet::", "regtest::", "block::", "single::", "verbose::"));
+$args    = getopt("", array("testnet::", "regtest::", "block::", "single::","silent::", "verbose::"));
 $testnet = (isset($args['testnet'])) ? true : false;
 $regtest = (isset($args['regtest'])) ? true : false;
 $single  = (isset($args['single'])) ? true : false;  
+$silent  = (isset($args['silent'])) ? true : false;   // Flag to indicate if we should silently fail on insert errors
 $runtype = ($regtest) ? 'regtest' : (($testnet) ? 'testnet' : 'mainnet');
 $block   = (is_numeric($args['block'])) ? intval($args['block']) : false;
 
@@ -172,6 +173,10 @@ while($block <= $current){
                 if($field=='quantity')
                     $value = intval($value);
             }
+            if($table=='dispensers'){
+                if($field=='prev_status')
+                    $ignore = true;
+            }
             // EVM fields
             if($field=='gasprice')
                 $field = 'gas_price';
@@ -223,7 +228,7 @@ while($block <= $current){
         // Handle 'insert' commands
         if($command=='insert'){
             // Special flag used to manually get past issues with occasional duplicate messages in messages table
-            $skip = false;
+            $skip = $silent;
             // Check if this record already exists
             $sql = "SELECT * FROM {$table} WHERE";
             foreach($fields as $index => $field)
