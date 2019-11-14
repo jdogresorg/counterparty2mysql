@@ -280,6 +280,29 @@ function createTransaction( $hash=null ){
     }
 }
 
+// Create records in the 'messages' table
+function createMessage( $message=null ){
+    global $mysqli;
+    $msg = (object) $message;
+    $command       = $mysqli->real_escape_string($msg->command);
+    $category      = $mysqli->real_escape_string($msg->category);
+    $bindings      = $mysqli->real_escape_string($msg->bindings);
+    $block_index   = $mysqli->real_escape_string($msg->block_index);
+    $message_index = $mysqli->real_escape_string($msg->message_index);
+    $timestamp     = $mysqli->real_escape_string($msg->timestamp);
+    $results       = $mysqli->query("SELECT message_index FROM messages WHERE `message_index`='{$message_index}' LIMIT 1");
+    if($results){
+        if($results->num_rows==0){
+            $results = $mysqli->query("INSERT INTO messages (message_index, block_index, command, category, bindings, timestamp) values ('{$message_index}','{$block_index}','{$command}','{$category}','{$bindings}','{$timestamp}')");
+            if(!$results){
+                byeLog('Error while trying to create record in messages table');
+            }
+        }
+    } else {
+        byeLog('Error while trying to lookup record in messages table');
+    }
+}
+
 
 // Create records in the 'contract_ids' table and return record id
 function createContract( $contract=null ){

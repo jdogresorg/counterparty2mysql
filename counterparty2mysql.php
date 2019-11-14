@@ -97,7 +97,8 @@ while($block <= $current){
         // Create record in tx_index (so we can map tx_index to tx_hash and table with data)
         if(isset($obj->tx_index) && isset($transactions[$obj->tx_hash]))
             createTxIndex($obj->tx_index, $msg->category, $transactions[$obj->tx_hash]);
-
+        // Create record in the messages table (so we can review the CP messages as needed)
+        createMessage($message);
     }
 
     // Loop through addresses and update any asset balances
