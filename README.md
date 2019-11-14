@@ -80,6 +80,7 @@ Database Information
 - [assets](sql/assets.sql)
 - [balances](sql/balances.sql)
 - [blocks](sql/blocks.sql)
+- [dispenses](sql/dispenses.sql)
 - [index_addresses](sql/index_addresses.sql)
 - [index_contracts](sql/index_contracts.sql)
 - [index_transactions](sql/index_transactions.sql)
