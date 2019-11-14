@@ -248,6 +248,9 @@ while($block <= $current){
             } else {
                 byeLog('Error while trying to check if record already exists in ' . $table . ' : ' . $sql);
             }
+            // Handle creating a record in the dispenses table to link a dispense directly to a dispenser
+            if($table=='credits' && $values[array_search('calling_function', $fields)]=='dispense')
+                createDispense($bindings->block_index, $bindings->asset, $bindings->event);
         }
 
         // Handle 'update' commands
@@ -257,6 +260,8 @@ while($block <= $current){
             foreach($fields as $index => $field){
                 // Update bets and orders records using tx_hash
                 if(in_array($table,array('orders','bets','dispensers')) && $field=='tx_hash_id'){
+                    if($where!="")
+                        $where .= " AND ";
                     $where .= " tx_hash_id='{$values[$index]}'";
                 // Update *_matches tables using id field
                 } else if(in_array($table,array('order_matches','bet_matches','rps_matches')) && 

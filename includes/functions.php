@@ -303,6 +303,41 @@ function createMessage( $message=null ){
     }
 }
 
+// Create records in the 'dispenses' table
+function createDispense( $block_index=null, $asset=null, $hash=null ){
+    global $mysqli;
+    // get message_index from messages table for this dispense
+    $dispense_hash = $mysqli->real_escape_string($hash);
+    $results       = $mysqli->query("SELECT message_index FROM messages WHERE command='insert' AND category='credits' AND block_index='{$block_index}' AND bindings LIKE '%{$dispense_hash}%' AND bindings LIKE '%\"asset\": \"{$asset}\"%' LIMIT 1");
+    if($results){
+        $row     = $results->fetch_assoc();
+        $index   = $row['message_index'] + 1;
+        // Get the next message after dispense, which will be the dispenser update message, and extract the dispenser transaction hash
+        $results = $mysqli->query("SELECT bindings FROM messages WHERE message_index='{$index}'");
+        if($results){
+            $row = $results->fetch_assoc();
+            $obj = json_decode($row['bindings']);
+            $dispense_tx_id  = createTransaction($dispense_hash);
+            $dispenser_tx_id = createTransaction($obj->tx_hash);
+            // Check to see if a record already exists
+            $results = $mysqli->query("SELECT id FROM dispenses WHERE block_index='{$block_index}' AND dispenser_tx_id='{$dispenser_tx_id}' AND dispense_tx_id='{$dispense_tx_id}'");
+            if($results){
+                if($results->num_rows==0){
+                    $results = $mysqli->query("INSERT INTO dispenses (block_index, dispenser_tx_id, dispense_tx_id) values ('{$block_index}','{$dispenser_tx_id}','{$dispense_tx_id}')");
+                    if(!$results)
+                        byeLog('Error while trying to create record in dispenses table');
+                }
+            } else {
+                byeLog('Error while trying to lookup record in dispenses table');
+            }
+        } else {
+            byeLog('Error while trying to locate dispenser update record in messages table');
+        }
+    } else {
+        byeLog('Error while trying to locate dispense record in messages table');
+    }
+}
+
 
 // Create records in the 'contract_ids' table and return record id
 function createContract( $contract=null ){
