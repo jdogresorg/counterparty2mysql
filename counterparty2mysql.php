@@ -174,6 +174,8 @@ while($block <= $current){
             if($table=='sends'){
                 if($field=='quantity')
                     $value = intval($value);
+                if($field=='msg_index')
+                    $ignore = true;
             }
             if($table=='dispensers'){
                 if($field=='prev_status')
