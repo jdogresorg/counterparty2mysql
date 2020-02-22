@@ -293,10 +293,13 @@ function createMessage( $message=null ){
     $results       = $mysqli->query("SELECT message_index FROM messages WHERE `message_index`='{$message_index}' LIMIT 1");
     if($results){
         if($results->num_rows==0){
-            $results = $mysqli->query("INSERT INTO messages (message_index, block_index, command, category, bindings, timestamp) values ('{$message_index}','{$block_index}','{$command}','{$category}','{$bindings}','{$timestamp}')");
-            if(!$results){
-                byeLog('Error while trying to create record in messages table');
-            }
+            $sql = "INSERT INTO messages (message_index, block_index, command, category, bindings, timestamp) values ('{$message_index}','{$block_index}','{$command}','{$category}','{$bindings}','{$timestamp}')";
+        } else {
+            $sql = "UPDATE messages SET block_index='{$block_index}', command='{$command}', category='{$category}', bindings='{$bindings}', timestamp='{$timestamp}' WHERE message_index='{$message_index}'";
+        }
+        $results = $mysqli->query($sql);
+        if(!$results){
+            byeLog('Error while trying to create or update record in messages table');
         }
     } else {
         byeLog('Error while trying to lookup record in messages table');
