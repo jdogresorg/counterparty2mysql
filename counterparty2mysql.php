@@ -6,24 +6,26 @@
  * Script to handle parsing counterparty data into mysql database
  * 
  * Command line arguments :
- * --testnet  Load data from testnet
- * --regtest  Load data from regtest
- * --block=#  Load data for given block
- * --single   Load single block
- * --silent   Fail silently on insert errors
+ * --testnet    Load data from testnet
+ * --regtest    Load data from regtest
+ * --block=#    Load data for given block
+ * --rollback=# Rollback data to a given block
+ * --single     Load single block
+ * --silent     Fail silently on insert errors
  ********************************************************************/
 
 // Hide all but errors
 error_reporting(E_ERROR);
 
 // Parse in the command line args and set some flags based on them
-$args    = getopt("", array("testnet::", "regtest::", "block::", "single::","silent::", "verbose::"));
-$testnet = (isset($args['testnet'])) ? true : false;
-$regtest = (isset($args['regtest'])) ? true : false;
-$single  = (isset($args['single'])) ? true : false;  
-$silent  = (isset($args['silent'])) ? true : false;   // Flag to indicate if we should silently fail on insert errors
-$runtype = ($regtest) ? 'regtest' : (($testnet) ? 'testnet' : 'mainnet');
-$block   = (is_numeric($args['block'])) ? intval($args['block']) : false;
+$args     = getopt("", array("testnet::", "regtest::", "block::", "rollback::", "single::","silent::", "verbose::"));
+$testnet  = (isset($args['testnet'])) ? true : false;
+$regtest  = (isset($args['regtest'])) ? true : false;
+$single   = (isset($args['single'])) ? true : false;  
+$silent   = (isset($args['silent'])) ? true : false; // Flag to indicate if we should silently fail on insert errors
+$runtype  = ($regtest) ? 'regtest' : (($testnet) ? 'testnet' : 'mainnet');
+$rollback = (is_numeric($args['rollback'])) ? intval($args['rollback']) : false;
+$block    = (is_numeric($args['block'])) ? intval($args['block']) : false;
 
 // Load config (only after runtype is defined)
 require_once(__DIR__ . '/includes/config.php');
@@ -39,6 +41,50 @@ initCP(CP_HOST, CP_USER, CP_PASS, true);
 
 // Create a lock file, and bail if we detect an instance is already running
 createLockFile();
+
+// Handle rollbacks
+if($rollback){
+    $block_index = $mysqli->real_escape_string($rollback);
+    $tables = [
+        'bets',
+        'bet_expirations', 
+        'bet_match_expirations',
+        'bet_match_resolutions',
+        'bet_matches',
+        'blocks',
+        'broadcasts',
+        'btcpays',
+        'burns',
+        'cancels',
+        'contracts',
+        'credits',
+        'debits',
+        'destructions',
+        'dispensers',
+        'dispenses',
+        'dividends',
+        'executions',
+        'issuances',
+        'messages',
+        'orders',
+        'order_expirations',
+        'order_match_expirations',
+        'order_matches',
+        'rps',
+        'rps_expirations',
+        'rps_match_expirations',
+        'rps_matches',
+        'rpsresolves',
+        'sends',
+        'sweeps'
+    ];
+    foreach($tables as $table){
+        $results = $mysqli->query("DELETE FROM {$table} WHERE block_index>{$block_index}");
+        if(!$results)
+            byeLog("Error while trying to rollback {$table} table to block {$block_index}");
+    }
+    byeLog("Rollback to block {$block_index} complete.");
+}
 
 // If no block given, load last block from state file, or use first block with CP tx
 if(!$block){
