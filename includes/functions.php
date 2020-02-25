@@ -314,9 +314,9 @@ function createDispense( $block_index=null, $asset=null, $hash=null ){
     $results       = $mysqli->query("SELECT message_index FROM messages WHERE command='insert' AND category='credits' AND block_index='{$block_index}' AND bindings LIKE '%{$dispense_hash}%' AND bindings LIKE '%\"asset\": \"{$asset}\"%' LIMIT 1");
     if($results){
         $row     = $results->fetch_assoc();
-        $index   = $row['message_index'] + 1;
+        $index   = $row['message_index'];
         // Get the next message after dispense, which will be the dispenser update message, and extract the dispenser transaction hash
-        $results = $mysqli->query("SELECT bindings FROM messages WHERE message_index='{$index}'");
+        $results = $mysqli->query("SELECT bindings FROM messages WHERE message_index>'{$index}' AND category='dispensers' ORDER BY message_index ASC LIMIT 1");
         if($results){
             $row = $results->fetch_assoc();
             $obj = json_decode($row['bindings']);
