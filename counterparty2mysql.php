@@ -333,10 +333,9 @@ while($block <= $current){
                 } else if($table=='dispensers' && in_array($field, array('block_index','status'))){
                     if($field=='block_index')
                         continue;
-                    if($field=='status' && $values[$index]==10){
+                    if($field=='status' && $values[$index]==10)
                         $sql   .= " status='10',";
-                        $where = " source_id='{$fldmap['source_id']}' AND asset_id='{$fldmap['asset_id']}'";
-                    }
+                    $where = " source_id='{$fldmap['source_id']}' AND asset_id='{$fldmap['asset_id']}'";
                 } else {
                     $sql .= " {$field}='{$values[$index]}',";
                 }
