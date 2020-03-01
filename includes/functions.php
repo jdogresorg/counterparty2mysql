@@ -24,6 +24,12 @@ function removeLockFile($file=null){
 }
 
 
+// Simple function to print message and exit
+function bye($msg=null){
+    print $msg . "\n";
+    exit;
+}
+
 // Log/Print an error and exit
 function byeLog($error=null, $log=null){
     $logFile   = (strlen($log)) ? $log : ERRORLOG;
@@ -73,6 +79,18 @@ function initCP($hostname=null, $username=null, $password=null, $log=false){
             exit;
         }
     }
+}
+
+// Handle getting database id for a given asset
+function getAssetDatabaseId($asset=null){
+    global $mysqli;
+    $id = false;
+    $results = $mysqli->query("SELECT id FROM assets WHERE asset='{$asset}' OR asset_longname='{$asset}' LIMIT 1");
+    if($results){
+        $row = $results->fetch_assoc();
+        $id  = $row['id'];
+    }
+    return $id;
 }
 
 
