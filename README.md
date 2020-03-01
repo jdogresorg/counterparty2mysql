@@ -34,10 +34,12 @@ Bootstrap Information
 Command line arguments 
 ---
 ```
---testnet  Load testnet data
---regtest  Load regtest data
---block=#  Load data for given block
---single   Load single block
+--testnet    Load testnet data
+--regtest    Load regtest data
+--block=#    Load data for given block
+--single     Load single block
+--rollback=# Rollback data to a given block
+--silent     Fail silently on insert errors
 ```
 
 Database Information
