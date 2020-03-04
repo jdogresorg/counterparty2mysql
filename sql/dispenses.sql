@@ -4,7 +4,7 @@ CREATE TABLE dispenses (
     block_index        INTEGER UNSIGNED,           -- Block which the dispense took place
     dispense_tx_id     INT(25) UNSIGNED NOT NULL,  -- id of record in index_transactions
     dispenser_tx_id    INT(25) UNSIGNED NOT NULL   -- id of record in index_transactions
-) ENGINE=MyISAM;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
 CREATE        INDEX block_index       ON dispenses (block_index);
 CREATE        INDEX dispense_tx_id    ON dispenses (dispense_tx_id);
