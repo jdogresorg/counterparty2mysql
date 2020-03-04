@@ -4,7 +4,14 @@
  * find_missing_messages.php 
  * 
  * Handles finding any missing messages from the messages table
+ *
+ * Command line arguments :
+ * --testnet    Load data from testnet
  ********************************************************************/
+
+// Hide all but errors
+error_reporting(E_ERROR);
+
 $args    = getopt("", array("testnet::"));
 $testnet = (isset($args['testnet'])) ? true : false;
 $runtype = ($testnet) ? 'testnet' : 'mainnet';
