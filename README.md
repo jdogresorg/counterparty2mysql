@@ -30,8 +30,8 @@ cat sql/*.sql | mysql Counterparty_Testnet
 
 Bootstrap Information
 ---
-- [Counterparty.sql.gz](bootstrap/Counterparty.sql.gz) (Mainnet Block # 619,600)
-- [Counterparty_Testnet.sql.gz](bootstrap/Counterparty_Testnet.sql.gz) (Testnet Block # 1,667,089)
+- [Counterparty.sql.gz](bootstrap/Counterparty.sql.gz) (Mainnet Block # 620,215)
+- [Counterparty_Testnet.sql.gz](bootstrap/Counterparty_Testnet.sql.gz) (Testnet Block # 1,667,702)
 
 Command line arguments 
 ---
