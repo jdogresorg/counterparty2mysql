@@ -15,7 +15,9 @@ Database Customizations
 - create assets table with up to date summary information
 - create balances table to track address/asset balance information
 - create blocks table and index transaction hashes
-- create index_tx to track tx_index/type information
+- create index_tx table to track tx_index/type information
+- create dispenses table to track dispenser dispenses
+- create markets table to track decentralized exchange (DEX) market info
 
 Setup
 ---
@@ -83,6 +85,7 @@ Database Information
 - [balances](sql/balances.sql)
 - [blocks](sql/blocks.sql)
 - [dispenses](sql/dispenses.sql)
+- [markets](sql/markets.sql)
 - [index_addresses](sql/index_addresses.sql)
 - [index_contracts](sql/index_contracts.sql)
 - [index_transactions](sql/index_transactions.sql)

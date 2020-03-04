@@ -115,7 +115,7 @@ while($block <= $current){
     $assets       = array(); // array of asset id mappings
     $addresses    = array(); // array of address id mappings
     $transactions = array(); // array of transaction id mappings
-    $contracts    = array(); // arrray of contract id mappings
+    $contracts    = array(); // array of contract id mappings
 
     // Get list of messages (updates to counterparty tables)
     $messages = $counterparty->execute('get_messages', array('block_index' => $block));
@@ -356,6 +356,44 @@ while($block <= $current){
     // Loop through assets and update XCP price 
     foreach($assets as $asset =>$id)
         updateAssetPrice($asset);
+
+    // array of markets
+    $markets = array(); 
+
+    // Loop through messages and detect any DEX market changes
+    foreach($messages as $message){
+        $msg = (object) $message;
+        $obj = json_decode($msg->bindings);
+        $market = false;
+        if($msg->category='orders'){
+            $sql = "SELECT
+                        a1.asset as asset1,
+                        a2.asset as asset2
+                    FROM
+                        orders o,
+                        assets a1,
+                        assets a2,
+                        index_transactions t
+                    WHERE
+                        t.id=o.tx_hash_id AND
+                        a1.id=o.give_asset_id AND
+                        a2.id=o.get_asset_id AND
+                        t.hash='{$obj->tx_hash}'";
+            $results = $mysqli->query($sql);
+            if($results){
+                if($results->num_rows){
+                    $row = (object) $results->fetch_assoc();
+                    if(!$markets[$row->asset2 . '|' . $row->asset1])
+                        $markets[$row->asset1 . '|' . $row->asset2] = 1;
+                }
+            }
+        }
+    }
+    // If we have any market changes, update the markets
+    if(count($markets)){
+        $block_24hr = get24HourBlockIndex();
+        createUpdateMarkets($markets);
+    }
 
     // Report time to process block
     $time = $timer->finish();

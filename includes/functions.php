@@ -512,4 +512,422 @@ function updateAssetPrice( $asset=null ){
     }
 }
 
+
+// Handle looping through a list of DEX markets and creating/updating the market information
+function createUpdateMarkets($markets){
+    foreach($markets as $market => $value){
+        list($asset1, $asset2) = explode('|',$market);
+        $market_id = createMarket($asset1, $asset2);
+        updateMarketInfo($market_id);
+    }
+}
+
+// Handle creating a Decentralized Exchange (DEX) markets record
+function createMarket($asset1, $asset2){
+    global $mysqli;
+    // Check if the market already exists... if not, create it
+    $sql = "SELECT 
+                m.id
+            FROM 
+                markets m,
+                assets a1,
+                assets a2
+            WHERE 
+                a1.id=m.asset1_id AND
+                a2.id=m.asset2_id AND
+                ((a1.asset='{$asset1}' AND a2.asset='{$asset2}') OR
+                 (a1.asset='{$asset2}' AND a2.asset='{$asset1}'))";
+    $results = $mysqli->query($sql);
+    if($results){
+        if($results->num_rows){
+            $row = $results->fetch_assoc();
+            return $row['id'];
+        } else {
+            $asset1_id = getAssetDatabaseId($asset1);
+            $asset2_id = getAssetDatabaseId($asset2); 
+            $results   = $mysqli->query("INSERT INTO markets (asset1_id, asset2_id) values ('{$asset1_id}', '{$asset2_id}')");
+            if($results && $mysqli->insert_id){
+                return $mysqli->insert_id;
+            } else {
+                byeLog("Error while trying to create market {$asset1} / {$asset2}");
+            }
+        }
+    } else {
+        byeLog("Error while trying to check for market {$asset1} / {$asset2}");
+    }
+}
+
+
+// Handle looking up the block_index from exactly 24 hours ago
+function get24HourBlockIndex(){
+    global $mysqli;
+    $one_day    = (60 * 60 * 24 * 1); // 60 seconds x 60 minutes x 24 hours x 1 day
+    $block_time = time() - $one_day;  // Block time 24 hours ago
+    $results = $mysqli->query("SELECT block_index FROM blocks WHERE block_time >= {$block_time} ORDER BY block_index ASC LIMIT 1");
+    if($results && $results->num_rows){
+        $row = $results->fetch_assoc();
+        return $row['block_index'];
+    }
+    return 0;
+}
+
+// Handle looking up block_index for first message
+function getFirstMessageBlock(){
+    global $mysqli;
+    $results = $mysqli->query("SELECT block_index FROM messages ORDER BY message_index ASC LIMIT 1");
+    if($results){
+        $row = $results->fetch_assoc();
+        return $row['block_index'];
+    }
+}
+
+// Handle looking up block_index for first message
+function getLastMessageBlock(){
+    global $mysqli;
+    $results = $mysqli->query("SELECT block_index FROM messages ORDER BY message_index DESC LIMIT 1");
+    if($results){
+        $row = $results->fetch_assoc();
+        return $row['block_index'];
+    }
+}
+
+
+// Handle updating market information
+function updateMarketInfo( $market_id ){
+    global $mysqli, $block_24hr;
+    $debug = false;
+
+    // Timer to track each market update
+    $profile = new Profiler();
+
+    // Define some default values
+    $price1_last   = 0; // Asset1 - Last traded price
+    $price1_ask    = 0; // Asset1 - Price Sellers are asking
+    $price1_bid    = 0; // Asset1 - Price Buyers are paying
+    $price1_high   = 0; // Asset1 - 24-hour price high
+    $price1_low    = 0; // Asset1 - 24-hour price low
+    $price1_24hr   = 0; // Asset1 - Price 24-hours ago
+    $price2_last   = 0; // Asset2 - Last traded price
+    $price2_ask    = 0; // Asset2 - Price Sellers are asking
+    $price2_bid    = 0; // Asset2 - Price Buyers are paying
+    $price2_high   = 0; // Asset2 - 24-hour price high
+    $price2_low    = 0; // Asset2 - 24-hour price low
+    $price2_24hr   = 0; // Asset2 - Price 24-hours ago
+    $price_change  = 0; // 24-hour price change (%)
+    $asset1_volume = 0; // 24-hour volume (asset1)
+    $asset2_volume = 0; // 24-hour volume (asset2)
+
+    // Lookup basic information on this market/assets
+    $sql = "SELECT
+                a1.asset as asset1,
+                a2.asset as asset2,
+                a1.divisible as asset1_divisible,
+                a2.divisible as asset2_divisible,
+                m.asset1_id,
+                m.asset2_id
+            FROM
+                markets m,
+                assets a1,
+                assets a2
+            WHERE 
+                a1.id=m.asset1_id AND
+                a2.id=m.asset2_id AND
+                m.id='{$market_id}'";
+    // print $sql;
+    $results = $mysqli->query($sql);
+    if($results && $results->num_rows){
+        $row = $results->fetch_assoc();
+        $asset1           = $row['asset1'];
+        $asset2           = $row['asset2'];
+        $asset1_id        = intval($row['asset1_id']);
+        $asset2_id        = intval($row['asset2_id']);
+        $asset1_divisible = intval($row['asset1_divisible']);
+        $asset2_divisible = intval($row['asset2_divisible']);
+    } else {
+        byeLog("Error while trying to lookup market info");
+    }
+
+    if($debug)
+        print "\nUpdating market information for {$asset1} / {$asset2}...";
+
+    // Lookup last trade price
+    $sql = "SELECT
+            m.tx0_index,
+            m.tx1_index,
+            m.forward_asset_id,
+            m.forward_quantity,
+            m.backward_asset_id,
+            m.backward_quantity
+        FROM 
+            order_matches m
+        WHERE
+            ((m.forward_asset_id='{$asset1_id}' AND m.backward_asset_id='{$asset2_id}') OR
+             (m.forward_asset_id='{$asset2_id}' AND m.backward_asset_id='{$asset1_id}')) AND
+            m.status='completed'
+        ORDER BY tx1_index DESC 
+        LIMIT 1";
+    // print $sql;
+    $results = $mysqli->query($sql);
+    if($results){
+        if($results->num_rows){
+            $row = $results->fetch_assoc();
+            $forward      = ($row['forward_asset_id']==$asset1_id) ? $row['forward_quantity'] : $row['backward_quantity'];
+            $backward     = ($row['forward_asset_id']==$asset1_id) ? $row['backward_quantity'] : $row['forward_quantity'];
+            $forward_qty  = ($asset1_divisible) ? bcmul($forward, '0.00000001',8) : intval($forward);
+            $backward_qty = ($asset2_divisible) ? bcmul($backward, '0.00000001',8) : intval($backward);
+            $price1_last  = bcdiv($backward_qty, $forward_qty,8);
+            $price2_last  = bcdiv($forward_qty, $backward_qty,8);
+        }
+    } else {
+        byeLog("Error while trying to lookup last trade price for {$asset1} / {$asset2}");
+    }
+
+    // Lookup trade price exactly 24-hours ago
+    $sql = "SELECT
+            m.tx0_index,
+            m.tx1_index,
+            m.forward_asset_id,
+            m.forward_quantity,
+            m.backward_asset_id,
+            m.backward_quantity
+        FROM 
+            order_matches m
+        WHERE
+            ((m.forward_asset_id='{$asset1_id}' AND m.backward_asset_id='{$asset2_id}') OR
+             (m.forward_asset_id='{$asset2_id}' AND m.backward_asset_id='{$asset1_id}')) AND
+            m.status='completed' AND
+            m.block_index<='{$block_24hr}'
+        ORDER BY tx1_index DESC 
+        LIMIT 1";
+    // print $sql;
+    $results = $mysqli->query($sql);
+    if($results){
+        if($results->num_rows){
+            $row = $results->fetch_assoc();
+            $forward      = ($row['forward_asset_id']==$asset1_id) ? $row['forward_quantity'] : $row['backward_quantity'];
+            $backward     = ($row['forward_asset_id']==$asset1_id) ? $row['backward_quantity'] : $row['forward_quantity'];
+            $forward_qty  = ($asset1_divisible) ? bcmul($forward, '0.00000001',8) : intval($forward);
+            $backward_qty = ($asset2_divisible) ? bcmul($backward, '0.00000001',8) : intval($backward);
+            $price1_24hr  = bcdiv($backward_qty, $forward_qty,8);
+            $price2_24hr  = bcdiv($forward_qty, $backward_qty,8);
+        }
+    } else {
+        byeLog("Error while trying to lookup last trade price for {$asset1} / {$asset2}");
+    }
+
+    // Lookup 'bid' price
+    $sql = "SELECT 
+                o.get_quantity,
+                o.give_quantity,
+                o.tx_index
+            FROM 
+                orders o
+            WHERE
+                o.get_asset_id='{$asset1_id}' AND
+                o.give_asset_id='{$asset2_id}' AND
+                o.status='open'
+            ORDER BY o.tx_index";
+    // print $sql;
+    $results = $mysqli->query($sql);
+    if($results){
+        if($results->num_rows){
+            while($row = $results->fetch_assoc()){
+                $give_quantity = ($asset2_divisible) ? bcmul($row['give_quantity'], '0.00000001',8) : intval($row['give_quantity']);
+                $get_quantity  = ($asset1_divisible) ? bcmul($row['get_quantity'],  '0.00000001',8) : intval($row['get_quantity']);
+                $price1         = bcdiv($give_quantity, $get_quantity,8);
+                $price2         = bcdiv($get_quantity, $give_quantity,8);
+                // print "price1={$price1} price2={$price2} tx={$row['tx_index']}\n";
+                if($price1==0||$price2==0)
+                    continue;
+                if($price1_bid==0) $price1_bid = $price1;
+                if($price2_bid==0) $price2_bid = $price2;
+                if($price1>$price1_bid) $price1_bid = $price1;
+                if($price2>$price2_bid) $price2_bid = $price2;
+            }
+        }
+    } else {
+        byeLog("Error while trying to lookup ask price");
+    }
+
+    // Lookup 'ask' price
+    $sql = "SELECT 
+                o.get_quantity,
+                o.give_quantity,
+                o.tx_index
+            FROM 
+                {$dbase}.orders o
+            WHERE
+                o.get_asset_id='{$asset2_id}' AND
+                o.give_asset_id='{$asset1_id}' AND
+                o.status='open'
+            ORDER BY o.tx_index";
+    // print $sql;
+    $results = $mysqli->query($sql);
+    if($results){
+        if($results->num_rows){
+            while($row = $results->fetch_assoc()){
+                $give_quantity = ($asset1_divisible) ? bcmul($row['give_quantity'], '0.00000001',8) : intval($row['give_quantity']);
+                $get_quantity  = ($asset2_divisible) ? bcmul($row['get_quantity'],  '0.00000001',8) : intval($row['get_quantity']);
+                $price1        = bcdiv($get_quantity, $give_quantity,8);
+                $price2        = bcdiv($give_quantity, $get_quantity,8);
+                // print "price1={$price1} price2={$price2} tx={$row['tx_index']}\n";
+                if($price1==0||$price2==0)
+                    continue;
+                if($price1_ask==0) $price1_ask = $price1;
+                if($price2_ask==0) $price2_ask = $price2;
+                if($price1<$price1_ask) $price1_ask = $price1;
+                if($price2<$price2_ask) $price2_ask = $price2;
+            }
+        }
+    } else {
+        byeLog("Error while trying to lookup ask price");
+    }
+
+    // Lookup all order matches in the last 24-hours
+    $sql = "SELECT
+            m.tx0_index,
+            m.tx1_index,
+            m.forward_asset_id,
+            m.forward_quantity,
+            m.backward_asset_id,
+            m.backward_quantity
+        FROM 
+            order_matches m
+        WHERE
+            ((m.forward_asset_id='{$asset1_id}' AND m.backward_asset_id='{$asset2_id}') OR
+             (m.forward_asset_id='{$asset2_id}' AND m.backward_asset_id='{$asset1_id}')) AND
+            m.status='completed' AND
+            m.block_index>='{$block_24hr}'
+        ORDER BY tx1_index DESC";    
+        // print $sql;
+    $results = $mysqli->query($sql);
+    if($results){
+        if($results->num_rows){
+            while($row = $results->fetch_assoc()){
+                $forward      = ($row['forward_asset_id']==$asset1_id) ? $row['forward_quantity'] : $row['backward_quantity'];
+                $backward     = ($row['forward_asset_id']==$asset1_id) ? $row['backward_quantity'] : $row['forward_quantity'];
+                $forward_qty  = ($asset1_divisible) ? bcmul($forward, '0.00000001',8) : intval($forward);
+                $backward_qty = ($asset2_divisible) ? bcmul($backward, '0.00000001',8) : intval($backward);
+                $price1       = bcdiv($backward_qty, $forward_qty,8);
+                $price2       = bcdiv($forward_qty, $backward_qty,8);
+                if($price1_high==0 && $price1_low==0){
+                    $price1_high = $price1_24hr;
+                    $price1_low  = $price1_24hr;
+                }
+                if($price2_high==0 && $price2_low==0){
+                    $price2_high = $price2_24hr;
+                    $price2_low  = $price2_24hr;
+                }
+                // 24-hour high
+                if($price1 > $price1_high) $price1_high = $price1;
+                if($price2 > $price2_high) $price2_high = $price2;
+                // 24-hour low
+                if($price1 < $price1_low) $price1_low = $price1;
+                if($price2 < $price2_low) $price2_low = $price2;
+                // 24-hour volumes
+                $asset1_volume += $forward_qty;
+                $asset2_volume += $backward_qty;
+            }
+        }
+    } else {
+        byeLog("Error while trying to lookup 24-hour stats");
+    }    
+
+
+    // Calculate price change percentage
+    // $price_change = number_format(((($price1_last - $price1_24hr) / $price1_24hr) * 100), 2, '.','');
+    $price1_change = bcmul(bcdiv(bcsub($price1_last, $price1_24hr,8), $price1_24hr, 8), '100', 2);
+    $price2_change = bcmul(bcdiv(bcsub($price2_last, $price2_24hr,8), $price2_24hr, 8), '100', 2);
+
+    // Pass last trade price forward
+    if($price1_high==0) $price1_high = $price1_last;
+    if($price2_high==0) $price2_high = $price2_last;
+    if($price1_low==0)  $price1_low  = $price1_last;
+    if($price2_low==0)  $price2_low  = $price2_last;
+
+    // Convert the amounts from floating point to integers
+    $price1_ask_int    = bcmul($price1_ask,    '100000000',0);
+    $price1_bid_int    = bcmul($price1_bid,    '100000000',0);
+    $price1_high_int   = bcmul($price1_high,   '100000000',0);
+    $price1_low_int    = bcmul($price1_low,    '100000000',0);
+    $price1_24hr_int   = bcmul($price1_24hr,   '100000000',0);
+    $price1_last_int   = bcmul($price1_last,   '100000000',0);
+    $price2_ask_int    = bcmul($price2_bid,    '100000000',0); // flip bid = ask
+    $price2_bid_int    = bcmul($price2_ask,    '100000000',0); // flip ask = bid
+    $price2_high_int   = bcmul($price2_high,   '100000000',0);
+    $price2_low_int    = bcmul($price2_low,    '100000000',0);
+    $price2_last_int   = bcmul($price2_last,   '100000000',0);
+    $price2_24hr_int   = bcmul($price2_24hr,   '100000000',0);
+    $price1_change_int = bcmul($price1_change,  '100',0);
+    $price2_change_int = bcmul($price2_change,  '100',0);
+    $asset1_volume_int = bcmul($asset1_volume, '100000000',0);
+    $asset2_volume_int = bcmul($asset2_volume, '100000000',0);
+
+    // Update the market info
+    $sql = "UPDATE 
+                markets 
+            SET 
+                price1_ask='{$price1_ask_int}',
+                price1_bid='{$price1_bid_int}',
+                price1_high='{$price1_high_int}',
+                price1_low='{$price1_low_int}',
+                price1_last='{$price1_last_int}',
+                price1_24hr='{$price1_24hr_int}',
+                price2_ask='{$price2_ask_int}',
+                price2_bid='{$price2_bid_int}',
+                price2_high='{$price2_high_int}',
+                price2_low='{$price2_low_int}',
+                price2_last='{$price2_last_int}',
+                price2_24hr='{$price2_24hr_int}',
+                price1_change='{$price1_change_int}',
+                price2_change='{$price2_change_int}',
+                asset1_volume='{$asset1_volume_int}',
+                asset2_volume='{$asset2_volume_int}',
+                last_updated=now()
+            WHERE 
+                id='{$market_id}'";
+    // if($debug)
+    //     print "{$sql}\n";
+    $results = $mysqli->query($sql);
+    if(!$results){
+        bye('Error when trying to update market information');
+    }
+
+    // Report time to process block
+    $time = $profile->finish();
+    if($debug)
+        print " Done [{$time}ms]\n";
+
+    // Print out an update on the current state of the market
+    if($debug){
+        print "price1_ask    : {$price1_ask}\n";
+        print "price1_bid    : {$price1_bid}\n";
+        print "price1_high   : {$price1_high}\n";
+        print "price1_low    : {$price1_low}\n";
+        print "price1_last   : {$price1_last}\n";
+        print "price1_24hr   : {$price1_24hr}\n";
+        print "price2_ask    : {$price2_ask}\n";
+        print "price2_bid    : {$price2_bid}\n";
+        print "price2_high   : {$price2_high}\n";
+        print "price2_low    : {$price2_low}\n";
+        print "price2_last   : {$price2_last}\n";
+        print "price2_24hr   : {$price2_24hr}\n";
+        print "price1_change : {$price1_change}\n";
+        print "price2_change : {$price2_change}\n";
+        print "asset1_volume : {$asset1_volume}\n";
+        print "asset2_volume : {$asset2_volume}\n";
+        // print "---\n";
+        // print "price_ask_int     : {$price_ask_int}\n";
+        // print "price_bid_int     : {$price_bid_int}\n";
+        // print "price_high_int    : {$price_high_int}\n";
+        // print "price_low_int     : {$price_low_int}\n";
+        // print "price_24hr_int    : {$price_24hr_int}\n";
+        // print "price_last_int    : {$price_last_int}\n";
+        // print "price_change_int  : {$price_change_int}\n";
+        // print "asset1_volume_int : {$asset1_volume_int}\n";
+        // print "asset2_volume_int : {$asset2_volume_int}\n";
+    }
+
+}
+
 ?>
