@@ -594,8 +594,7 @@ function getLastMessageBlock(){
 
 // Handle updating market information
 function updateMarketInfo( $market_id ){
-    global $mysqli, $block_24hr;
-    $debug = false;
+    global $mysqli, $block_24hr, $debug;
 
     // Timer to track each market update
     $profile = new Profiler();

@@ -24,6 +24,7 @@ $block   = (is_numeric($args['block'])) ? intval($args['block']) : false;
 $single  = (isset($args['single'])) ? true : false;  
 $queue   = (isset($args['queue'])) ? true : false;  
 $update  = (isset($args['update'])) ? true : false;  
+$debug   = true;
 
 require_once(__DIR__ . '/../includes/config.php');
 
