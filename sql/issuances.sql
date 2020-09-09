@@ -4,6 +4,7 @@ CREATE TABLE issuances (
     -- tx_hash  TEXT,
     tx_hash_id  INTEGER UNSIGNED, -- id of record in index_transactions
     block_index INTEGER UNSIGNED,
+    msg_index   INTEGER UNSIGNED default 0,
     -- asset    TEXT,
     asset_id    INTEGER UNSIGNED, -- id of record in assets table
     quantity    BIGINT UNSIGNED,
@@ -22,7 +23,7 @@ CREATE TABLE issuances (
     status      TEXT
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
-CREATE UNIQUE INDEX tx_index    ON issuances (tx_index);
+CREATE        INDEX tx_index    ON issuances (tx_index);
 CREATE        INDEX block_index ON issuances (block_index);
 CREATE        INDEX source_id   ON issuances (source_id);
 CREATE        INDEX issuer_id   ON issuances (issuer_id);
