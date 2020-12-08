@@ -754,7 +754,7 @@ function updateMarketInfo( $market_id ){
                 o.give_quantity,
                 o.tx_index
             FROM 
-                {$dbase}.orders o
+                orders o
             WHERE
                 o.get_asset_id='{$asset2_id}' AND
                 o.give_asset_id='{$asset1_id}' AND
