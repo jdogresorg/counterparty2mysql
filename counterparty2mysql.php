@@ -99,7 +99,7 @@ $current = $counterparty->status['last_block']['block_index'];
 // Define array of fields that contain assets, addresses, transactions, and contracts
 $fields_asset       = array('asset', 'backward_asset', 'dividend_asset', 'forward_asset', 'get_asset', 'give_asset');
 $fields_address     = array('address', 'bet_hash', 'destination', 'feed_address', 'issuer', 'source', 'tx0_address', 'tx1_address');
-$fields_transaction = array('event', 'move_random_hash', 'offer_hash', 'order_hash', 'rps_hash', 'tx_hash', 'tx0_hash', 'tx0_move_random_hash', 'tx1_hash', 'tx1_move_random_hash');
+$fields_transaction = array('event', 'move_random_hash', 'offer_hash', 'order_hash', 'rps_hash', 'tx_hash', 'tx0_hash', 'tx0_move_random_hash', 'tx1_hash', 'tx1_move_random_hash', 'dispenser_tx_hash');
 $fields_contract    = array('contract_id');
 
 // Loop through the blocks until we are current
@@ -304,9 +304,6 @@ while($block <= $current){
             } else {
                 byeLog('Error while trying to check if record already exists in ' . $table . ' : ' . $sql);
             }
-            // Handle creating a record in the dispenses table to link a dispense directly to a dispenser
-            if($table=='credits' && $values[array_search('calling_function', $fields)]=='dispense')
-                createDispense($bindings->block_index, $bindings->asset, $bindings->event);
         }
 
         // Handle 'update' commands
