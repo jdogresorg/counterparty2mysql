@@ -15,7 +15,7 @@ CREATE TABLE dispenses (
     dispense_quantity     BIGINT  UNSIGNED, 
     -- dispenser_tx_hash TEXT
     dispenser_tx_hash_id  INTEGER UNSIGNED  -- id of record in index_transactions
-) ENGINE=MyISAM;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
 CREATE        INDEX block_index          ON dispenses (block_index);
 CREATE        INDEX tx_hash_id           ON dispenses (tx_hash_id);

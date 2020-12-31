@@ -65,6 +65,7 @@ if($rollback){
         'dividends',
         'executions',
         'issuances',
+        'index_tx',
         'messages',
         'orders',
         'order_expirations',
@@ -142,8 +143,8 @@ while($block <= $current){
                     $contracts[$value] = createContract($value);
         }
         // Create record in tx_index (so we can map tx_index to tx_hash and table with data)
-        if(isset($obj->tx_index) && isset($transactions[$obj->tx_hash]))
-            createTxIndex($obj->tx_index, $msg->category, $transactions[$obj->tx_hash]);
+        if(isset($obj->tx_index) && isset($obj->block_index) && isset($transactions[$obj->tx_hash]))
+            createTxIndex($obj->tx_index, $obj->block_index, $msg->category, $transactions[$obj->tx_hash]);
         // Create record in the messages table (so we can review the CP messages as needed)
         createMessage($message);
     }

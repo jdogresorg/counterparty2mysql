@@ -409,14 +409,14 @@ function createTxType( $type=null ){
 
 
 // Create records in the 'tx_index' table
-function createTxIndex( $tx_index=null, $tx_type=null, $tx_hash_id=null ){
+function createTxIndex( $tx_index=null, $block_index=null, $tx_type=null, $tx_hash_id=null ){
     global $mysqli;
     $tx_index = $mysqli->real_escape_string($tx_index);
     $type_id  = createTxType($tx_type);
     $results  = $mysqli->query("SELECT type_id FROM index_tx WHERE tx_index='{$tx_index}' LIMIT 1");
     if($results){
         if($results->num_rows==0){
-            $results = $mysqli->query("INSERT INTO index_tx (tx_index, tx_hash_id, type_id) values ('{$tx_index}','{$tx_hash_id}', '{$type_id}')");
+            $results = $mysqli->query("INSERT INTO index_tx (tx_index, block_index, tx_hash_id, type_id) values ('{$tx_index}','{$block_index}','{$tx_hash_id}', '{$type_id}')");
             if(!$results)
                 byeLog('Error while trying to create record in index_tx table');
         }
