@@ -11,7 +11,7 @@ CREATE TABLE sends (
     -- asset       TEXT,
     asset_id       INTEGER UNSIGNED, -- id of record in assets table
     quantity       BIGINT,
-    memo           BLOB,
+    memo           LONGTEXT,
     status         TEXT
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 

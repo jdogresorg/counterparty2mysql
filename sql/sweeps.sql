@@ -10,7 +10,7 @@ CREATE TABLE sweeps (
     destination_id INTEGER UNSIGNED, -- id of record in index_addresses
     -- asset       TEXT,
     flags          INTEGER UNSIGNED, -- id of record in assets table
-    memo           BLOB,
+    memo           LONGTEXT,
     fee_paid       INTEGER UNSIGNED, -- id of record in assets table
     status         TEXT
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;

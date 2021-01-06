@@ -4,7 +4,7 @@ CREATE TABLE messages (
     block_index   INTEGER UNSIGNED,
     command       VARCHAR(50),
     category      VARCHAR(50),
-    bindings      BLOB,
+    bindings      LONGTEXT,
     timestamp     INTEGER UNSIGNED
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
