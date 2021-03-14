@@ -430,9 +430,7 @@ function createTxIndex( $tx_index=null, $block_index=null, $tx_type=null, $tx_ha
 function updateAddressBalance( $address=null, $asset_list=null ){
     global $mysqli, $counterparty, $addresses, $assets;
     // Lookup any balance for this address and asset
-    $filters  = array(array('field' => 'address', 'op' => '==', 'value' => $address),
-                      array('field' => 'asset',   'op' => 'IN', 'value' => $asset_list));
-    $balances = $counterparty->execute('get_balances', array('filters' => $filters, 'filterop' => "AND"));
+    $balances = getAddressBalances($address, $asset_list);
     if(count($balances)){
         foreach($balances as $balance){
             $address_id = $addresses[$balance['address']]; // Translate address to address_id
@@ -459,6 +457,24 @@ function updateAddressBalance( $address=null, $asset_list=null ){
             }
         }
     }
+}
+
+// Handle requesting address balance information for a given address and list of assets
+function getAddressBalances($address=null, $asset_list=null){
+    global $counterparty;
+    $balances = array();
+    // Break asset list up into chunks of 500 (API calls with more than 500 assets fail)
+    $asset_list   = array_chunk($asset_list, 500);
+    foreach($asset_list as $assets){
+        // Lookup any balance for this address and asset
+        $filters  = array(array('field' => 'address', 'op' => '==', 'value' => $address),
+                          array('field' => 'asset',   'op' => 'IN', 'value' => $assets));
+        $data = $counterparty->execute('get_balances', array('filters' => $filters, 'filterop' => "AND"));
+        if(count($data)){
+            $balances = array_merge($balances, $data);
+        }
+    }
+    return $balances;
 }
 
 
