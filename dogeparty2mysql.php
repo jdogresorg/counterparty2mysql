@@ -1,7 +1,7 @@
 #!/usr/bin/env php
 <?php
 /*********************************************************************
- * counterparty2mysql.php 
+ * dogeparty2mysql.php 
  * 
  * Script to handle parsing counterparty data into mysql database
  * 
@@ -31,13 +31,13 @@ $block    = (is_numeric($args['block'])) ? intval($args['block']) : false;
 require_once(__DIR__ . '/includes/config.php');
 
 // Define some constants used for locking processes and logging errors
-define("LOCKFILE", '/var/tmp/counterparty2mysql-' . $runtype . '.lock');
-define("LASTFILE", '/var/tmp/counterparty2mysql-' . $runtype . '.last-block');
-define("ERRORLOG", '/var/tmp/counterparty2mysql-' . $runtype . '.errors');
+define("LOCKFILE", '/var/tmp/dogeparty2mysql-' . $runtype . '.lock');
+define("LASTFILE", '/var/tmp/dogeparty2mysql-' . $runtype . '.last-block');
+define("ERRORLOG", '/var/tmp/dogeparty2mysql-' . $runtype . '.errors');
 
 // Initialize the database and counterparty API connections
 initDB(DB_HOST, DB_USER, DB_PASS, DB_DATA, true);
-initCP(CP_HOST, CP_USER, CP_PASS, true);
+initCP(DP_HOST, DP_USER, DP_PASS, true);
 
 // Create a lock file, and bail if we detect an instance is already running
 createLockFile();

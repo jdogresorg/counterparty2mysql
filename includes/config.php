@@ -12,9 +12,9 @@ if($runtype=='mainnet'){
     define("DB_USER", "mysql_username");
     define("DB_PASS", "mysql_password");
     define("DB_DATA", "Dogeparty");
-    define("CP_HOST", "http://127.0.0.1:14005/api/");
-    define("CP_USER", "dogeparty_username");
-    define("CP_PASS", "dogeparty_password");
+    define("DP_HOST", "http://127.0.0.1:14005/api/");
+    define("DP_USER", "dogeparty_username");
+    define("DP_PASS", "dogeparty_password");
 }
 
 /* Testnet config */
@@ -23,9 +23,9 @@ if($runtype=='testnet'){
     define("DB_USER", "mysql_username");
     define("DB_PASS", "mysql_password");
     define("DB_DATA", "Dogeparty_Testnet");
-    define("CP_HOST", "http://127.0.0.1:14005/api/");
-    define("CP_USER", "dogeparty_username");
-    define("CP_PASS", "dogeparty_password");
+    define("DP_HOST", "http://127.0.0.1:14005/api/");
+    define("DP_USER", "dogeparty_username");
+    define("DP_PASS", "dogeparty_password");
 }
 
 /* Regtest config */
@@ -34,9 +34,9 @@ if($runtype=='regtest'){
     define("DB_USER", "mysql_username");
     define("DB_PASS", "mysql_password");
     define("DB_DATA", "Dogeparty_Regtest");
-    define("CP_HOST", "http://127.0.0.1:44005/api/");
-    define("CP_USER", "dogeparty_username");
-    define("CP_PASS", "dogeparty_password");
+    define("DP_HOST", "http://127.0.0.1:44005/api/");
+    define("DP_USER", "dogeparty_username");
+    define("DP_PASS", "dogeparty_password");
 }
 
 // Require various libraries

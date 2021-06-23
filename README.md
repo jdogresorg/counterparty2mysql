@@ -1,12 +1,12 @@
-counterparty2mysql
+dogeparty2mysql
 ---
-counterparty2mysql is a php script which populates a mysql database with counterparty data.
+dogeparty2mysql is a php script which populates a mysql database with dogeparty data.
 
-counterparty2mysql loads Counterparty data by requesting 'messages' data for a block from the Counterparty API, and then processing each message. The Counterparty 'messages' table holds a list of all of the insert and update actions performed on counterparty tables.
+dogeparty2mysql loads Dogeparty data by requesting 'messages' data for a block from the Dogeparty API, and then processing each message. The Dogeparty 'messages' table holds a list of all of the insert and update actions performed on dogeparty tables.
 
-By default counterparty2mysql starts at the first block with a Counterparty transaction (mainnet=278270, testnet=310000) and parses data for all blocks between the starting block and the current block.
+By default dogeparty2mysql starts at the first block with a Dogeparty transaction (mainnet=335643, testnet=310000) and parses data for all blocks between the starting block and the current block.
 
-If no starting block is given, counterparty2mysql will try to resume parsing at the last successfully parsed block, or use the first block with a counterparty transaction.
+If no starting block is given, dogeparty2mysql will try to resume parsing at the last successfully parsed block, or use the first block with a dogeparty transaction.
 
 
 Database Customizations
@@ -22,16 +22,16 @@ Database Customizations
 Setup
 ---
 ```cd counterparty2mysql/
-echo "CREATE DATABASE IF NOT EXISTS Counterparty" | mysql
-echo "CREATE DATABASE IF NOT EXISTS Counterparty_Testnet" | mysql
-cat sql/*.sql | mysql Counterparty
-cat sql/*.sql | mysql Counterparty_Testnet
+echo "CREATE DATABASE IF NOT EXISTS Dogeparty" | mysql
+echo "CREATE DATABASE IF NOT EXISTS Dogeparty_Testnet" | mysql
+cat sql/*.sql | mysql Dogeparty
+cat sql/*.sql | mysql Dogeparty_Testnet
 ```
 
 Bootstrap Information
 ---
-- [Counterparty.sql.gz](bootstrap/Counterparty.sql.gz) (Mainnet Block # 666,242)
-- [Counterparty_Testnet.sql.gz](bootstrap/Counterparty_Testnet.sql.gz) (Testnet Block # 1,904,221)
+- [Dogeparty.sql.gz](bootstrap/Counterparty.sql.gz) (Mainnet Block # ???)
+- [Dogeparty_Testnet.sql.gz](bootstrap/Counterparty_Testnet.sql.gz) (Testnet Block # ???)
 
 Command line arguments 
 ---
@@ -46,7 +46,7 @@ Command line arguments
 
 Database Information
 ---
-**Counterparty tables** (populated via 'messages')
+**Dogeparty tables** (populated via 'messages')
 - [addresses](sql/addresses.sql)
 - [bets](sql/bets.sql)
 - [bet_expirations](sql/bet_expirations.sql)
@@ -92,4 +92,4 @@ Database Information
 - [index_tx](sql/index_tx.sql)
 - [index_tx_types](sql/index_tx_types.sql)
 
-Helpful? Donate BTC, XCP or any Counterparty asset to 1JDogZS6tQcSxwfxhv6XKKjcyicYA4Feev
+Helpful? Donate DOGE, XDP or any Dogeparty asset to DJDogEP9xQ6cqPKiyAWLhxYrcU4oZih7L7
