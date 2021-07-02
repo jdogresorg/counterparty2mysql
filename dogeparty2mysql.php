@@ -53,7 +53,7 @@ if($rollback){
         'bet_matches',
         'blocks',
         'broadcasts',
-        'btcpays',
+        'dogepays',
         'burns',
         'cancels',
         'contracts',
@@ -90,7 +90,7 @@ if($rollback){
 // If no block given, load last block from state file, or use first block with CP tx
 if(!$block){
     $last  = file_get_contents(LASTFILE);
-    $first = ($regtest) ? 1 : (($testnet) ? 310000 : 278270);
+    $first = ($regtest) ? 1 : (($testnet) ? 166371 : 335643);
     $block = (isset($last) && $last>=$first) ? (intval($last) + 1) : $first;
 }
 
