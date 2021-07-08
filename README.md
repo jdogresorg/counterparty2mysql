@@ -75,7 +75,7 @@ Database Information
 - [rpsresolves](sql/rpsresolves.sql)
 - [sends](sql/sends.sql)
 
-**Additional tables** (populated by counterparty2mysql):
+**Additional tables** (populated by dogeparty2mysql):
 - [assets](sql/assets.sql)
 - [balances](sql/balances.sql)
 - [blocks](sql/blocks.sql)
