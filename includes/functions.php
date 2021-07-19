@@ -98,7 +98,7 @@ function getAssetDatabaseId($asset=null){
 // Big thanks to Joe looney <hello@joelooney.org> for pointing me towards his similar javascript function
 function getAssetId($asset=null){
     $id = false;
-    if($asset == 'XCP'){
+    if($asset == 'XDP'){
         $id =  1;
     } else if(substr($asset,0,1)=='A'){
         $id = substr($asset,1);
@@ -193,7 +193,7 @@ function createAsset( $asset=null, $block_index=null ){
     if(count($info)==0)
         $data->type = 4;
     // Force numeric values for special assets
-    if(in_array($data->asset, array('XCP','BTC'))){
+    if(in_array($data->asset, array('XDP','DOGE'))){
         $data->issuer_id = 0;
         $data->owner_id  = 0;
     }
@@ -478,7 +478,7 @@ function getAddressBalances($address=null, $asset_list=null){
 }
 
 
-// Handle updating asset with latest XCP price from DEX
+// Handle updating asset with latest XDP price from DEX
 function updateAssetPrice( $asset=null ){
     global $mysqli;
     // Lookup asset id 
@@ -491,10 +491,10 @@ function updateAssetPrice( $asset=null ){
     } else {
         byeLog('Error looking up asset id');
     }
-    // Bail out on BTC or XCP
+    // Bail out on DOGE or XDP
     if($asset_id<=2)
         return;
-    // Lookup last order match for XCP
+    // Lookup last order match for XDP
     $sql = "SELECT
                 m.forward_asset_id,
                 m.forward_quantity,
@@ -513,15 +513,15 @@ function updateAssetPrice( $asset=null ){
     if($results){
         if($results->num_rows){
             $data      = $results->fetch_assoc();
-            $xcp_amt   = ($data['forward_asset_id']==2) ? $data['forward_quantity'] : $data['backward_quantity'];
+            $xdp_amt   = ($data['forward_asset_id']==2) ? $data['forward_quantity'] : $data['backward_quantity'];
             $xxx_amt   = ($data['forward_asset_id']==2) ? $data['backward_quantity'] : $data['forward_quantity'];
-            $xcp_qty   = number_format($xcp_amt * 0.00000001,8,'.','');
+            $xdp_qty   = number_format($xdp_amt * 0.00000001,8,'.','');
             $xxx_qty   = ($divisible) ? number_format($xxx_amt * 0.00000001,8,'.','') : number_format($xxx_amt,0,'.','');
-            $price     = number_format($xcp_qty / $xxx_qty,8,'.','');
+            $price     = number_format($xdp_qty / $xxx_qty,8,'.','');
             $price_int = number_format($price * 100000000,0,'.','');
-            $results   = $mysqli->query("UPDATE assets SET xcp_price='{$price_int}' WHERE id='{$asset_id}'");
+            $results   = $mysqli->query("UPDATE assets SET xdp_price='{$price_int}' WHERE id='{$asset_id}'");
             if(!$results)
-                byeLog('Error updating XCP price for asset ' . $asset);
+                byeLog('Error updating XDP price for asset ' . $asset);
         }
     } else {
         byeLog('Error while trying to lookup asset price');
