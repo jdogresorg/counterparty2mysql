@@ -241,6 +241,8 @@ while($block <= $current){
             // Handle ignoring certain items in the bindings that cause issues
             if(in_array($field,array('asset_longname')) || $ignore)
                 continue;
+            // Make value safe for use in SQL queries
+            $value = $mysqli->real_escape_string($value);
             // Add final field and value values to arrays
             array_push($fields, $field);
             array_push($values, $value);
