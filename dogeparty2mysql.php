@@ -333,7 +333,7 @@ while($block <= $current){
                         continue;
                     if($field=='status' && $values[$index]==10)
                         $sql   .= " status='10',";
-                    $where = " source_id='{$fldmap['source_id']}' AND asset_id='{$fldmap['asset_id']}'";
+                    $where = " source_id='{$fldmap['source_id']}' AND asset_id='{$fldmap['asset_id']}' AND tx_index='{$fldmap['tx_index']}'";
                 } else {
                     $sql .= " {$field}='{$values[$index]}',";
                 }
