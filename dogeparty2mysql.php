@@ -328,12 +328,14 @@ while($block <= $current){
                 } else if($table=='nonces' && $field=='address_id'){
                     $where .= " {$field}='{$values[$index]}'";
                 // Skip updating the block_index on dispenser (so we keep the original block_index where the dispenser was created/updated)
-                } else if($table=='dispensers' && in_array($field, array('block_index','status'))){
-                    if($field=='block_index')
+                } else if($table=='dispensers' && in_array($field, array('block_index','status','tx_index'))){
+                    // block_index and tx_index don't change, so skip these fields in the update statement
+                    if($field=='block_index'||$field=='tx_index')
                         continue;
                     if($field=='status' && $values[$index]==10)
                         $sql   .= " status='10',";
-                    $where = " source_id='{$fldmap['source_id']}' AND asset_id='{$fldmap['asset_id']}' AND tx_index='{$fldmap['tx_index']}'";
+                    // Dispenser close messages dont include tx_index or tx_hash, so gotta use this WHERE query to get things done
+                    $where = " source_id='{$fldmap['source_id']}' AND asset_id='{$fldmap['asset_id']}'";
                 } else {
                     $sql .= " {$field}='{$values[$index]}',";
                 }
