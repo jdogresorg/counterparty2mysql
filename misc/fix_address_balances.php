@@ -19,7 +19,7 @@ require_once(__DIR__ . '/../includes/config.php');
 initDB(DB_HOST, DB_USER, DB_PASS, DB_DATA, true);
 initCP(CP_HOST, CP_USER, CP_PASS, true);
 
-$addresses = array('1Pk5iSNoUDcTJiHLJZ4EuoG6nas6UB4NC2');
+$addresses = array('1GJYJoRqR16AtCUFDkajtioAvXMCoZAN9g');
 
 foreach($addresses as $address){
 
@@ -53,9 +53,20 @@ foreach($addresses as $address){
         } else {
             bye('Error looking up asset id');
         }
-        // Update balance
-        $results = $mysqli->query("UPDATE balances SET quantity='{$info->quantity}' WHERE address_id='{$address_id}' AND asset_id='{$asset_id}'");
-        if(!$results)
-            bye('Error while trying to update balance record for ' . $address . ' - ' . $info->asset);
+        // Check if a balance record already exists for this asset
+        $results = $mysqli->query("SELECT id FROM balances WHERE address_id='{$address_id}' AND asset_id='{$asset_id}'");
+        if($results){
+            if($results->num_rows){
+                $sql = "UPDATE balances SET quantity='{$info->quantity}' WHERE address_id='{$address_id}' AND asset_id='{$asset_id}'";
+            } else {
+                $sql = "INSERT INTO balances (quantity, address_id, asset_id) values ('{$info->quantity}', '{$address_id}', '{$asset_id}')";
+            }
+            $results = $mysqli->query($sql);
+            if(!$results)
+                bye('Error while trying to update balance record for ' . $address . ' - ' . $info->asset);
+        } else {
+            bye('Error while trying to check for balance record for ' . $address . ' - ' . $info->asset);
+        }
+
     }
 }
