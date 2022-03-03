@@ -136,8 +136,7 @@ function createBlock( $block_index=null ){
                        previous_block_hash_id = '{$data->previous_block_hash_id}',
                        ledger_hash_id         = '{$data->ledger_hash_id}',
                        txlist_hash_id         = '{$data->txlist_hash_id}',
-                       messages_hash_id       = '{$data->messages_hash_id}',
-                       difficulty             = '{$data->difficulty}'
+                       messages_hash_id       = '{$data->messages_hash_id}'
                     WHERE
                         block_index='{$block_index}'";
             $results = $mysqli->query($sql);
@@ -148,15 +147,14 @@ function createBlock( $block_index=null ){
             }
         } else {
             // Grab data on the asset from api and set some values before stashing info in db
-            $sql = "INSERT INTO blocks (block_index, block_time, block_hash_id, previous_block_hash_id, ledger_hash_id, txlist_hash_id, messages_hash_id, difficulty) values (
+            $sql = "INSERT INTO blocks (block_index, block_time, block_hash_id, previous_block_hash_id, ledger_hash_id, txlist_hash_id, messages_hash_id) values (
                 '{$data->block_index}',
                 '{$data->block_time}',
                 '{$data->block_hash_id}',
                 '{$data->previous_block_hash_id}',
                 '{$data->ledger_hash_id}',
                 '{$data->txlist_hash_id}',
-                '{$data->messages_hash_id}',
-                '{$data->difficulty}')";
+                '{$data->messages_hash_id}')";
             $results = $mysqli->query($sql);
             if($results){
                 return $mysqli->insert_id;
