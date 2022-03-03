@@ -1,9 +1,9 @@
 #!/usr/bin/env php
 <?php
 /*********************************************************************
- * counterparty2mysql.php 
+ * unoparty2mysql.php 
  * 
- * Script to handle parsing counterparty data into mysql database
+ * Script to handle parsing unoparty data into mysql database
  * 
  * Command line arguments :
  * --testnet    Load data from testnet
@@ -31,11 +31,11 @@ $block    = (is_numeric($args['block'])) ? intval($args['block']) : false;
 require_once(__DIR__ . '/includes/config.php');
 
 // Define some constants used for locking processes and logging errors
-define("LOCKFILE", '/var/tmp/counterparty2mysql-' . $runtype . '.lock');
-define("LASTFILE", '/var/tmp/counterparty2mysql-' . $runtype . '.last-block');
-define("ERRORLOG", '/var/tmp/counterparty2mysql-' . $runtype . '.errors');
+define("LOCKFILE", '/var/tmp/unoparty2mysql-' . $runtype . '.lock');
+define("LASTFILE", '/var/tmp/unoparty2mysql-' . $runtype . '.last-block');
+define("ERRORLOG", '/var/tmp/unoparty2mysql-' . $runtype . '.errors');
 
-// Initialize the database and counterparty API connections
+// Initialize the database and unoparty API connections
 initDB(DB_HOST, DB_USER, DB_PASS, DB_DATA, true);
 initCP(CP_HOST, CP_USER, CP_PASS, true);
 
@@ -95,7 +95,7 @@ if(!$block){
 }
 
 // Get the current block index from status info
-$current = $counterparty->status['last_block']['block_index'];
+$current = $unoparty->status['last_block']['block_index'];
 
 // Define array of fields that contain assets, addresses, transactions, and contracts
 $fields_asset       = array('asset', 'backward_asset', 'dividend_asset', 'forward_asset', 'get_asset', 'give_asset');
@@ -118,8 +118,8 @@ while($block <= $current){
     $transactions = array(); // array of transaction id mappings
     $contracts    = array(); // array of contract id mappings
 
-    // Get list of messages (updates to counterparty tables)
-    $messages = $counterparty->execute('get_messages', array('block_index' => $block));
+    // Get list of messages (updates to unoparty tables)
+    $messages = $unoparty->execute('get_messages', array('block_index' => $block));
     // Loop through messages and create assets, addresses, transactions and setup id mappings
     foreach($messages as $message){
         $msg = (object) $message;
@@ -154,7 +154,7 @@ while($block <= $current){
     foreach($addresses as $address => $address_id)
         updateAddressBalance($address, array_keys($assets));
 
-    // Loop through the messages and create/update the counterparty tables
+    // Loop through the messages and create/update the unoparty tables
     foreach($messages as $message){
         $msg      = (object) $message;
         $table    = $msg->category;
