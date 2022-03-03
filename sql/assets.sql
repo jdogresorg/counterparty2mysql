@@ -15,8 +15,8 @@ CREATE TABLE assets (
     xcp_price      BIGINT  UNSIGNED      -- last price of XCP matched order on DEX
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
-INSERT INTO assets (asset_id, asset, divisible, locked) values (0,'BTC', 1, 1);
-INSERT INTO assets (asset_id, asset, divisible, locked, xcp_price) values (1,'XCP', 1, 1, 100000000);
+INSERT INTO assets (asset_id, asset, divisible, locked) values (0,'UNO', 1, 1);
+INSERT INTO assets (asset_id, asset, divisible, locked, xcp_price) values (1,'XUP', 1, 1, 100000000);
 
 CREATE UNIQUE INDEX asset     ON assets (asset);
 CREATE        INDEX issuer_id ON assets (issuer_id);

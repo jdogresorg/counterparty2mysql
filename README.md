@@ -1,12 +1,12 @@
-counterparty2mysql
+unoparty2mysql
 ---
-counterparty2mysql is a php script which populates a mysql database with counterparty data.
+unoparty2mysql is a php script which populates a mysql database with unoparty data.
 
-counterparty2mysql loads Counterparty data by requesting 'messages' data for a block from the Counterparty API, and then processing each message. The Counterparty 'messages' table holds a list of all of the insert and update actions performed on counterparty tables.
+unoparty2mysql loads Unoparty data by requesting 'messages' data for a block from the Unoparty API, and then processing each message. The Unoparty 'messages' table holds a list of all of the insert and update actions performed on unoparty tables.
 
-By default counterparty2mysql starts at the first block with a Counterparty transaction (mainnet=278270, testnet=310000) and parses data for all blocks between the starting block and the current block.
+By default unoparty2mysql starts at the first block with a Unoparty transaction (mainnet=1,777,464, testnet=700) and parses data for all blocks between the starting block and the current block.
 
-If no starting block is given, counterparty2mysql will try to resume parsing at the last successfully parsed block, or use the first block with a counterparty transaction.
+If no starting block is given, unoparty2mysql will try to resume parsing at the last successfully parsed block, or use the first block with a unoparty transaction.
 
 
 Database Customizations
@@ -21,17 +21,17 @@ Database Customizations
 
 Setup
 ---
-```cd counterparty2mysql/
-echo "CREATE DATABASE IF NOT EXISTS Counterparty" | mysql
-echo "CREATE DATABASE IF NOT EXISTS Counterparty_Testnet" | mysql
-cat sql/*.sql | mysql Counterparty
-cat sql/*.sql | mysql Counterparty_Testnet
+```cd unoparty2mysql/
+echo "CREATE DATABASE IF NOT EXISTS Unoparty" | mysql
+echo "CREATE DATABASE IF NOT EXISTS Unoparty_Testnet" | mysql
+cat sql/*.sql | mysql Unoparty
+cat sql/*.sql | mysql Unoparty_Testnet
 ```
 
 Bootstrap Information
 ---
-- [Counterparty.sql.gz](bootstrap/Counterparty.sql.gz) (Mainnet Block # 702,735)
-- [Counterparty_Testnet.sql.gz](bootstrap/Counterparty_Testnet.sql.gz) (Testnet Block # 2,096,832)
+- [Unoparty.sql.gz](bootstrap/Unoparty.sql.gz) (Mainnet Block # 702,735)
+- [Unoparty_Testnet.sql.gz](bootstrap/Unoparty_Testnet.sql.gz) (Testnet Block # 2,096,832)
 
 Command line arguments 
 ---
@@ -46,7 +46,7 @@ Command line arguments
 
 Database Information
 ---
-**Counterparty tables** (populated via 'messages')
+**Unoparty tables** (populated via 'messages')
 - [addresses](sql/addresses.sql)
 - [bets](sql/bets.sql)
 - [bet_expirations](sql/bet_expirations.sql)
@@ -81,7 +81,7 @@ Database Information
 - [nonces](sql/nonces.sql)
 - [storage](sql/storage.sql)
 
-**Additional tables** (populated by counterparty2mysql):
+**Additional tables** (populated by unoparty2mysql):
 - [assets](sql/assets.sql)
 - [balances](sql/balances.sql)
 - [blocks](sql/blocks.sql)
@@ -92,4 +92,4 @@ Database Information
 - [index_tx](sql/index_tx.sql)
 - [index_tx_types](sql/index_tx_types.sql)
 
-Helpful? Donate BTC, XCP or any Counterparty asset to 1JDogZS6tQcSxwfxhv6XKKjcyicYA4Feev
+Helpful? Donate BTC, XCP or any Unoparty asset to 1JDogZS6tQcSxwfxhv6XKKjcyicYA4Feev
