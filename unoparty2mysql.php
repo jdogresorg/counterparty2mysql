@@ -39,6 +39,9 @@ define("ERRORLOG", '/var/tmp/unoparty2mysql-' . $runtype . '.errors');
 initDB(DB_HOST, DB_USER, DB_PASS, DB_DATA, true);
 initCP(CP_HOST, CP_USER, CP_PASS, true);
 
+// Setup simple alias for counterparty API
+$unoparty = $counterparty;
+
 // Create a lock file, and bail if we detect an instance is already running
 createLockFile();
 
@@ -90,7 +93,7 @@ if($rollback){
 // If no block given, load last block from state file, or use first block with CP tx
 if(!$block){
     $last  = file_get_contents(LASTFILE);
-    $first = ($regtest) ? 1 : (($testnet) ? 310000 : 278270);
+    $first = ($regtest) ? 1 : (($testnet) ? 700 : 1777464);
     $block = (isset($last) && $last>=$first) ? (intval($last) + 1) : $first;
 }
 
