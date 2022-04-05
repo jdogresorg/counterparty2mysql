@@ -190,13 +190,14 @@ while($block <= $current){
                 if($field==$name)
                     $value = $contracts[$value];
             // Remove unicode characters from description (fixes issue with breaking SQL queries)
+            $safe_value = preg_replace("/[^[:alnum:][:space:]]/u", '', $value);
             if($field=='description')
-                $value = preg_replace("/[^[:alnum:][:space:]]/u", '', $value);
+                $value = $safe_value;
             // Encode some values to make safe for SQL queries  
             if($table=='broadcasts' && $field=='text')
-                $value = $mysqli->real_escape_string($value);
+                $value = $mysqli->real_escape_string($safe_value);
             if($table=='issuances' && $field=='description')
-                $value = $mysqli->real_escape_string($value);
+                $value = $mysqli->real_escape_string($safe_value);
             // Translate some field names where bindings field names and table field names differ
             if($table=='credits' && $field=='action')
                 $field='calling_function';
