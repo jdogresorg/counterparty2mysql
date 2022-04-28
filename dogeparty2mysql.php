@@ -229,6 +229,10 @@ while($block <= $current){
                 if($field=='prev_status')
                     $ignore = true;
             }
+            if(in_array($table,array('destructions','issuances'))){
+                if($field=='reset')
+                    $ignore = true;
+            }
             // EVM fields
             if($field=='gasprice')
                 $field = 'gas_price';
