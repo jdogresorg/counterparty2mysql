@@ -42,21 +42,23 @@ if($results && $results->num_rows){
         $hash   = $row['tx_hash'];
         print "[{$cnt} / {$errors} / ${fixed}] checking current status of {$hash}...\n";
         $result = $counterparty->execute('get_dispensers', array('filters' => array('field' => 'tx_hash', 'op' => '==', 'value' => $hash)));
-        $data   = $result[0];
-        if($row['status']!=$data['status']){
-            $errors++;
-            $from_desc = ($row['status']==0) ? 'open' : 'closed';
-            $to_desc   = ($data['status']==0) ? 'open' : 'closed';
-            print "[{$cnt} / {$errors} / ${fixed}] Fixing dispenser {$hash} (status {$from_desc}({$row['status']})->{$to_desc}({$data['status']}))\n";
-            $sql = "UPDATE dispensers SET status={$data['status']} WHERE tx_index={$row['tx_index']}";
-            $results2 = $mysqli->query($sql);
-            if($results2){
-                $fixed++;
-            } else {
-                bye('Error while trying to update dispenser status');
+        foreach($result as $data){
+            if($row['status']!=$data['status']){
+                $errors++;
+                $from_desc = ($row['status']==0) ? 'open' : 'closed';
+                $to_desc   = ($data['status']==0) ? 'open' : 'closed';
+                print "[{$cnt} / {$errors} / ${fixed}] Fixing dispenser {$hash} (status {$from_desc}({$row['status']})->{$to_desc}({$data['status']}))\n";
+                $sql = "UPDATE dispensers SET status={$data['status']} WHERE tx_index={$row['tx_index']}";
+                $results2 = $mysqli->query($sql);
+                if($results2){
+                    $fixed++;
+                } else {
+                    bye('Error while trying to update dispenser status');
+                }
             }
         }
     }
+
 } else {
     bye('Error while trying to lookup list of open dispensers');
 }
