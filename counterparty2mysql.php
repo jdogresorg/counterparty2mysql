@@ -189,8 +189,9 @@ while($block <= $current){
             foreach($fields_contract as $name)
                 if($field==$name)
                     $value = $contracts[$value];
-            // Remove unicode characters from description (fixes issue with breaking SQL queries)
-            $safe_value = preg_replace("/[^[:alnum:][:space:]]/u", '', $value);
+            // Remove all characters except alphanumerics, spaces, and characters valid in urls (:/?=;)
+            // Fixes issue where special (unicode) characters in description break SQL queries (temp fix)
+            $safe_value = preg_replace("/[^[:alnum:][:space:]\:\/\.\?\=\&\;]/u", '', $value);
             if($field=='description')
                 $value = $safe_value;
             // Encode some values to make safe for SQL queries  
