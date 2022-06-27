@@ -187,9 +187,10 @@ while($block <= $current){
             foreach($fields_contract as $name)
                 if($field==$name)
                     $value = $contracts[$value];
-            // Remove unicode characters from description (fixes issue with breaking SQL queries)
+            // Remove all characters except alphanumerics, spaces, and characters valid in urls (:/?=;)
+            // Fixes issue where special characters in description break SQL queries (temp fix)
             if($field=='description')
-                $value = preg_replace("/[^[:alnum:][:space:]]/u", '', $value);
+                $value = preg_replace("/[^[:alnum:][:space:]\:\/\.\?\=\&\;]/u", '', $value);
             // Encode some values to make safe for SQL queries  
             if($table=='broadcasts' && $field=='text')
                 $value = $mysqli->real_escape_string($value);
