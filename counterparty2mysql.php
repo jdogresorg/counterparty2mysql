@@ -191,14 +191,13 @@ while($block <= $current){
                     $value = $contracts[$value];
             // Remove all characters except alphanumerics, spaces, and characters valid in urls (:/?=;)
             // Fixes issue where special (unicode) characters in description break SQL queries (temp fix)
-            $safe_value = preg_replace("/[^[:alnum:][:space:]\:\/\.\?\=\&\;]/u", '', $value);
             if($field=='description')
-                $value = $safe_value;
+                $value = preg_replace("/[^[:alnum:][:space:]\:\/\.\?\=\&\;]/u", '', $value);
             // Encode some values to make safe for SQL queries  
             if($table=='broadcasts' && $field=='text')
-                $value = $mysqli->real_escape_string($safe_value);
+                $value = $mysqli->real_escape_string($value);
             if($table=='issuances' && $field=='description')
-                $value = $mysqli->real_escape_string($safe_value);
+                $value = $mysqli->real_escape_string($value);
             // Translate some field names where bindings field names and table field names differ
             if($table=='credits' && $field=='action')
                 $field='calling_function';
