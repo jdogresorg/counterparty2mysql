@@ -12,6 +12,7 @@ CREATE TABLE dispensers (
     escrow_quantity   BIGINT, -- Tokens to escrow in dispenser
     satoshirate       BIGINT, -- Bitcoin satoshis required per dispense
     give_remaining    BIGINT,
+    oracle_address_id INTEGER UNSIGNED, -- id of record in index_addresses table
     status            TEXT
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
@@ -20,4 +21,5 @@ CREATE        INDEX tx_hash_id        ON dispensers (tx_hash_id);
 CREATE        INDEX block_index       ON dispensers (block_index);
 CREATE        INDEX source_id         ON dispensers (source_id);
 CREATE        INDEX asset_id          ON dispensers (asset_id);
+CREATE        INDEX oracle_address_id ON dispensers (oracle_address_id);
 
