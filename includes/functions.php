@@ -274,7 +274,7 @@ function createAddress( $address=null ){
 }
 
 
-// Create records in the 'transactions' table and return record id
+// Create records in the 'index_transactions' table and return record id
 function createTransaction( $hash=null ){
     global $mysqli;
     if(!isset($hash) || $hash=='')
@@ -297,6 +297,49 @@ function createTransaction( $hash=null ){
         byeLog('Error while trying to lookup record in index_transactions table');
     }
 }
+
+
+// Create records in the 'transactions' table
+function createTransactionHistory( $tx = null ){
+    global $mysqli;
+    if(!isset($tx) || $tx=='')
+        return;
+    $tx             = (object) $tx; // Force conversion to object
+    $tx_hash_id     = createTransaction($tx->tx_hash);
+    $block_hash_id  = createTransaction($tx->block_hash);
+    $source_id      = createAddress($tx->source);
+    $destination_id = createAddress($tx->destination);
+    $btc_amount     = (is_int($tx->btc_amount)) ? $tx->btc_amount : 0;
+    // Check if we have an existing record for this tx
+    $results = $mysqli->query("SELECT tx_index FROM transactions WHERE `tx_index`='{$tx->tx_index}'");
+    if($results){
+        if($results->num_rows){
+            $sql = "UPDATE 
+                        transactions 
+                    SET
+                        tx_hash_id='{$tx_hash_id}', 
+                        block_index='{$tx->block_index}', 
+                        block_hash_id='{$block_hash_id}', 
+                        block_time='{$tx->block_time}', 
+                        source_id='{$source_id}', 
+                        destination_id='{$destination_id}', 
+                        btc_amount='{$btc_amount}', 
+                        fee='{$tx->fee}', 
+                        data='{$tx->data}', 
+                        supported='{$tx->supported}'
+                    WHERE 
+                        tx_index='{$tx->tx_index}'";
+        } else {
+            $sql = "INSERT INTO transactions (tx_index, tx_hash_id, block_index, block_hash_id, block_time, source_id, destination_id, btc_amount, fee, data, supported) values ('{$tx->tx_index}','{$tx_hash_id}', '{$tx->block_index}', '{$block_hash_id}','{$tx->block_time}','{$source_id}','{$destination_id}','{$btc_amount}','{$tx->fee}','{$tx->data}','{$tx->supported}')";
+        }
+        $results2 = $mysqli->query($sql);
+        if(!$results2)
+            byeLog('Error while trying to create or update record in transactions table: ' . $sql);
+    } else {
+        byeLog('Error while trying to lookup record in transactions table');
+    }
+}
+
 
 // Create records in the 'messages' table
 function createMessage( $message=null ){

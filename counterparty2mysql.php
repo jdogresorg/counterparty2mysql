@@ -77,7 +77,8 @@ if($rollback){
         'rps_matches',
         'rpsresolves',
         'sends',
-        'sweeps'
+        'sweeps',
+        'transactions'
     ];
     foreach($tables as $table){
         $results = $mysqli->query("DELETE FROM {$table} WHERE block_index>{$block_index}");
@@ -404,6 +405,11 @@ while($block <= $current){
         $block_24hr = get24HourBlockIndex();
         createUpdateMarkets($markets);
     }
+
+    // Get list of transactions from the transactions table (used to track BTC paid and miners fee)
+    $transactions = $counterparty->execute('get_transactions', array('filters' => array("field" => "block_index", "op" => "==", "value" => $block)));
+    foreach($transactions as $transaction)
+        createTransactionHistory($transaction);
 
     // Report time to process block
     $time = $timer->finish();
