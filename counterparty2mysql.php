@@ -334,19 +334,20 @@ while($block <= $current){
                 // Update nonces table using address_id
                 } else if($table=='nonces' && $field=='address_id'){
                     $where .= " {$field}='{$values[$index]}'";
-                // Set correct whereSQL for dispenser updates using source_id and asset_id
-                } else if($table=='dispensers' && in_array($field, array('block_index','status','asset_id'))){
+                // Set correct whereSQL for dispenser updates
+                } else if($table=='dispensers' && in_array($field, array('block_index','status','asset_id', 'tx_index'))){
                     // Skip updating the block_index on dispenser (so we keep the original block_index where the dispenser was created/updated)
-                    if($field=='block_index')
+                    if(in_array($field, array('block_index','asset_id')))
                         continue;
-                    // Skip updating asset_id since asset does not change during dispenser updates
-                    if($field=='asset_id')
-                        continue;
-                    // Only allow status updates to status=10 (Closed) since status can only go from open to closed in updates (otherwise we could open up previously closed dispensers...yikes)
+                    // Only allow status updates to status=10 (Closed) since status can only go from Open to Closed in updates (otherwise we could open up previously closed dispensers...yikes)
                     if($field=='status' && $values[$index]==10)
                         $sql   .= " status='10',";
-                    // DO NOT CHANGE THIS!! (we need to update dispensers via source_id and asset_id in order to close dispensers)
-                    $where = " source_id='{$fldmap['source_id']}' AND asset_id='{$fldmap['asset_id']}'";
+                    // Update dispensers using tx_index if we have it, otherwise default to using source and asset to identify dispenser
+                    if($where=="" && in_array('tx_index',array_values($fields))){
+                        $where = " tx_index='{$fldmap['tx_index']}'";
+                    } else {
+                        $where = " source_id='{$fldmap['source_id']}' AND asset_id='{$fldmap['asset_id']}'";
+                    }
                 } else {
                     $sql .= " {$field}='{$values[$index]}',";
                 }
