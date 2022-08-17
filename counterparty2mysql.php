@@ -335,9 +335,9 @@ while($block <= $current){
                 } else if($table=='nonces' && $field=='address_id'){
                     $where .= " {$field}='{$values[$index]}'";
                 // Set correct whereSQL for dispenser updates
-                } else if($table=='dispensers' && in_array($field, array('block_index','status','asset_id', 'tx_index'))){
-                    // Skip updating the block_index on dispenser (so we keep the original block_index where the dispenser was created/updated)
-                    if(in_array($field, array('block_index','asset_id')))
+                } else if($table=='dispensers' && in_array($field, array('block_index','status','asset_id', 'tx_index','action'))){
+                    // Skip updates on certain fields
+                    if(in_array($field, array('block_index','asset_id','action')))
                         continue;
                     // Only allow status updates to status=10 (Closed) since status can only go from Open to Closed in updates (otherwise we could open up previously closed dispensers...yikes)
                     if($field=='status' && $values[$index]==10)
