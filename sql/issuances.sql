@@ -20,6 +20,7 @@ CREATE TABLE issuances (
     description TEXT,
     fee_paid    BIGINT,
     locked      BOOL,
+    reset       BOOL,
     status      TEXT
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
