@@ -233,6 +233,15 @@ while($block <= $current){
                 if($field=='prev_status')
                     $ignore = true;
             }
+            // Force `reset` to boolean value
+            if($field=='reset'){
+                // Ignore field if this is a destruction
+                if($table=='destructions'){
+                    $ignore = true;
+                } else {
+                    $value = intval($value);
+                }
+            }
             // EVM fields
             if($field=='gasprice')
                 $field = 'gas_price';
