@@ -206,6 +206,9 @@ while($block <= $current){
             if($table=='issuances'){
                 if(in_array($field, array('locked','transfer','divisible','callable')) && $value=='')
                     $ignore = true;
+                // Handle issues with unpacking data where all values are empty
+                if(in_array($field, array('call_date','call_price','quantity')) && $value=='')
+                    $value = 0;
             }
             // Force numeric values on some broadcast values
             if($table=='broadcasts'){
