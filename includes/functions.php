@@ -603,30 +603,44 @@ function updateAssetPrice( $asset=null ){
     }
     // Lookup last Dispense 
     $sql = "SELECT 
-                d.block_index,
+                d1.tx_index,
+                d1.block_index,
                 t.btc_amount,
-                d.dispense_quantity,
+                d1.dispense_quantity,
                 a.asset,
-                a.divisible
+                a.divisible,
+                d2.satoshirate,
+                d2.oracle_address_id,
+                d2.tx_index as dispenser_tx_index
             FROM 
-                dispenses d,
+                dispenses d1,
+                dispensers d2,
                 assets a,
                 transactions t
             WHERE 
-                d.tx_index=t.tx_index AND
-                d.asset_id=a.id AND
-                d.asset_id='{$asset_id}'
+                d1.dispenser_tx_hash_id=d2.tx_hash_id AND
+                d1.tx_index=t.tx_index AND
+                d1.asset_id=a.id AND
+                d1.asset_id='{$asset_id}'
             ORDER BY 
-                d.block_index DESC
+                d1.block_index DESC
             LIMIT 1";
     $results  = $mysqli->query($sql);
     if($results){
         if($results->num_rows){
-            $data      = (object) $results->fetch_assoc();
-            $xxx_qty   = ($data->divisible) ? number_format(($data->dispense_quantity * 0.00000001),8,'.','') : $data->dispense_quantity;
-            $btc_qty   = number_format(($data->btc_amount * 0.00000001),8,'.','');
-            $price     = number_format(($btc_qty / $xxx_qty),8,'.','');
-            $price_int = number_format($price * 100000000,0,'.','');
+            $data       = (object) $results->fetch_assoc();
+            $quantity   = ($data->divisible) ? number_format(($data->dispense_quantity * 0.00000001),8,'.','') : $data->dispense_quantity;
+            $multiplier = 1 / $quantity;
+            if($data->oracle_address_id){
+                // Oracled Dispensers
+                $info  = getDispenserInfo($data->dispenser_tx_index);
+                $price = bcmul(number_format($data->satoshi_price * 0.00000001,8,'.',''),$multiplier,8);
+            } else {
+                // Normal Dispensers
+                $btc_amount = number_format($data->satoshirate * 0.00000001,8,'.','');
+                $price      = bcmul($btc_amount,$multiplier,8);
+            }
+            $price_int  = number_format($price * 100000000,0,'.','');
             if(!array_key_exists($data->block_index,$btc_prices) || $btc_prices[$data->block_index] < $price_int)
                 $btc_prices[$data->block_index] = $price_int;
         }
@@ -1059,5 +1073,74 @@ function updateMarketInfo( $market_id ){
     }
 
 }
+
+
+
+// Handle getting dispensers information, including current pricing 
+function getDispenserInfo($tx_hash){
+    global $mysqli;
+    $whereSql = "t.hash='{$tx_hash}";
+    // Handle passing tx_index instead of tx_hash
+    if(is_numeric($tx_hash))
+        $whereSql = "d.tx_index='{$tx_hash}'";
+    // Lookup info on the dispenser
+    $sql = "SELECT 
+                d.tx_index,
+                d.block_index,
+                d.give_quantity,
+                d.escrow_quantity,
+                d.give_remaining,
+                d.satoshirate,
+                d.status,
+                a1.asset,
+                a1.asset_longname,
+                a1.divisible,
+                t.hash as tx_hash,
+                a2.address as source,
+                b.block_time as timestamp,
+                d.oracle_address_id
+            FROM 
+                dispensers d, 
+                blocks b,
+                assets a1,
+                index_addresses a2,
+                index_transactions t
+            WHERE 
+                b.block_index=d.block_index AND
+                t.id=d.tx_hash_id AND
+                a1.id=d.asset_id AND
+                a2.id=d.source_id AND
+                {$whereSql}
+            LIMIT 1";
+    $results = $mysqli->query($sql);
+    if($results && $results->num_rows){
+        $row = (object) $results->fetch_assoc();
+        // Handle oracled dispensers by looking up oracle info and returning pricing info
+        if(isset($row->oracle_address_id)){
+            // Get the oracle address
+            $results2 = $mysqli->query("SELECT address FROM index_addresses WHERE id={$row->oracle_address_id}");
+            if($results2){
+                $row2 = (object) $results2->fetch_assoc();
+                $row->oracle_address = $row2->address;
+            }
+            // Get the oracle info
+            $results3 = $mysqli->query("SELECT b1.value, b1.text, b1.block_index, b2.block_time FROM broadcasts b1, blocks b2 WHERE b1.block_index=b2.block_index AND b1.source_id='{$row->oracle_address_id}' AND b1.status='valid' ORDER by b1.tx_index DESC LIMIT 1");
+            if($results3){
+                $row3 = (object) $results3->fetch_assoc();
+                $row->oracle_price              = number_format($row3->value,2,'.','');
+                $row->oracle_price_last_updated = $row3->block_index;
+                $row->oracle_price_block_time   = $row3->block_time;
+                $row->fiat_price                = number_format(($row->satoshirate * 0.01),2,'.','');
+                $sat_price                      = ($row->oracle_price==0) ? 0 : ceil(((1 / $row->oracle_price) * $row->fiat_price) * 100000000);
+                $row->satoshi_price             = strval($sat_price);
+                $row->fiat_unit                 = explode('-',$row3->text)[1]; // Extract Fiat from BTC-XXX value
+            }
+        }
+        unset($row->oracle_address_id);
+    }
+    // var_dump($row);
+    return $row;
+}
+
 
 ?>
