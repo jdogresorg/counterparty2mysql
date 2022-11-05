@@ -535,7 +535,7 @@ function updateAssetPrice( $asset=null ){
         byeLog('Error looking up asset id');
     }
     // Bail out on BTC or XCP
-    if($asset_id<=2)
+    if($asset_id<=1)
         return;
     // Lookup last order match for XCP
     $sql = "SELECT
@@ -550,7 +550,7 @@ function updateAssetPrice( $asset=null ){
                 ( m.forward_asset_id='{$asset_id}' AND m.backward_asset_id=2)) AND
                 m.status='completed'
             ORDER BY 
-                m.tx1_index DESC 
+                m.block_index DESC 
             LIMIT 1";
     $results  = $mysqli->query($sql);
     if($results){
@@ -568,6 +568,78 @@ function updateAssetPrice( $asset=null ){
         }
     } else {
         byeLog('Error while trying to lookup asset price');
+    }
+    $btc_prices = array();
+    // Lookup last BTC order match
+    $sql = "SELECT
+                m.block_index,
+                m.forward_asset_id,
+                m.forward_quantity,
+                m.backward_asset_id,
+                m.backward_quantity
+            FROM
+                order_matches m
+            WHERE
+                ((m.forward_asset_id=1 AND m.backward_asset_id='{$asset_id}') OR
+                ( m.forward_asset_id='{$asset_id}' AND m.backward_asset_id=1)) AND
+                m.status='completed'
+            ORDER BY 
+                m.block_index DESC 
+            LIMIT 1";
+    $results  = $mysqli->query($sql);
+    if($results){
+        if($results->num_rows){
+            $data      = $results->fetch_assoc();
+            $btc_amt   = ($data['forward_asset_id']==1) ? $data['forward_quantity'] : $data['backward_quantity'];
+            $xxx_amt   = ($data['forward_asset_id']==1) ? $data['backward_quantity'] : $data['forward_quantity'];
+            $btc_qty   = number_format($btc_amt * 0.00000001,8,'.','');
+            $xxx_qty   = ($divisible) ? number_format($xxx_amt * 0.00000001,8,'.','') : number_format($xxx_amt,0,'.','');
+            $price     = number_format($btc_qty / $xxx_qty,8,'.','');
+            $price_int = number_format($price * 100000000,0,'.','');
+            $btc_prices[$data['block_index']] = $price_int;
+        }
+    } else {
+        byeLog('Error while trying to lookup asset price');
+    }
+    // Lookup last Dispense 
+    $sql = "SELECT 
+                d.block_index,
+                t.btc_amount,
+                d.dispense_quantity,
+                a.asset,
+                a.divisible
+            FROM 
+                dispenses d,
+                assets a,
+                transactions t
+            WHERE 
+                d.tx_index=t.tx_index AND
+                d.asset_id=a.id AND
+                d.asset_id='{$asset_id}'
+            ORDER BY 
+                d.block_index DESC
+            LIMIT 1";
+    $results  = $mysqli->query($sql);
+    if($results){
+        if($results->num_rows){
+            $data      = (object) $results->fetch_assoc();
+            $xxx_qty   = ($data->divisible) ? number_format(($data->dispense_quantity * 0.00000001),8,'.','') : $data->dispense_quantity;
+            $btc_qty   = number_format(($data->btc_amount * 0.00000001),8,'.','');
+            $price     = number_format(($btc_qty / $xxx_qty),8,'.','');
+            $price_int = number_format($price * 100000000,0,'.','');
+            if(!array_key_exists($data->block_index,$btc_prices) || $btc_prices[$data->block_index] < $price_int)
+                $btc_prices[$data->block_index] = $price_int;
+        }
+    } else {
+        byeLog('Error while trying to lookup asset price');
+    }
+    // Update BTC price to use most recent transaction price (block_index)
+    if(count($btc_prices)){
+        ksort($btc_prices);
+        $price_int = array_pop($btc_prices);
+        $results   = $mysqli->query("UPDATE assets SET btc_price='{$price_int}' WHERE id='{$asset_id}'");
+        if(!$results)
+            byeLog('Error updating BTC price for asset ' . $asset);
     }
 }
 
