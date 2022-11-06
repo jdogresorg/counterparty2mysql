@@ -607,6 +607,7 @@ function updateAssetPrice( $asset=null ){
                 d1.block_index,
                 t.btc_amount,
                 d1.dispense_quantity,
+                d2.give_quantity,
                 a.asset,
                 a.divisible,
                 d2.satoshirate,
@@ -628,19 +629,25 @@ function updateAssetPrice( $asset=null ){
     $results  = $mysqli->query($sql);
     if($results){
         if($results->num_rows){
-            $data       = (object) $results->fetch_assoc();
-            $quantity   = ($data->divisible) ? number_format(($data->dispense_quantity * 0.00000001),8,'.','') : $data->dispense_quantity;
-            $multiplier = 1 / $quantity;
+            $data      = (object) $results->fetch_assoc();
             if($data->oracle_address_id){
                 // Oracled Dispensers
-                $info  = getDispenserInfo($data->dispenser_tx_index);
-                $price = bcmul(number_format($data->satoshi_price * 0.00000001,8,'.',''),$multiplier,8);
+                $quantity   = ($data->divisible==1) ? number_format(($data->dispense_quantity * 0.00000001),8,'.','') : $data->dispense_quantity;
+                $btc_amount = number_format($data->btc_amount * 0.00000001,8,'.','');
+                $price      = number_format($btc_amount / $quantity,8,'.','');
             } else {
                 // Normal Dispensers
+                $quantity   = ($data->divisible==1) ? number_format(($data->give_quantity * 0.00000001),8,'.','') : $data->give_quantity;
                 $btc_amount = number_format($data->satoshirate * 0.00000001,8,'.','');
-                $price      = bcmul($btc_amount,$multiplier,8);
+                $price      = bcmul($btc_amount, (1 / $quantity), 8);
             }
             $price_int  = number_format($price * 100000000,0,'.','');
+            // Old way of doing things price = asset_quantity / btc_paid
+            // Problem with this method is if someone overpays on a btcpay, then that is factored into the price
+            // $xxx_qty    = ($data->divisible) ? number_format(($data->dispense_quantity * 0.00000001),8,'.','') : $data->dispense_quantity;
+            // $btc_qty    = number_format(($data->btc_amount * 0.00000001),8,'.','');
+            // $price      = number_format(($btc_qty / $xxx_qty),8,'.','');
+            // $price_int  = number_format($price * 100000000,0,'.','');
             if(!array_key_exists($data->block_index,$btc_prices) || $btc_prices[$data->block_index] < $price_int)
                 $btc_prices[$data->block_index] = $price_int;
         }
