@@ -601,8 +601,9 @@ function updateAssetPrice( $asset=null ){
     } else {
         byeLog('Error while trying to lookup asset price');
     }
-    // Lookup last Dispense 
+    // Lookup last Dispense
     $sql = "SELECT 
+                count(c.event_id) as credits,
                 d1.tx_index,
                 d1.block_index,
                 t.btc_amount,
@@ -617,39 +618,48 @@ function updateAssetPrice( $asset=null ){
                 dispenses d1,
                 dispensers d2,
                 assets a,
-                transactions t
+                transactions t,
+                credits c
             WHERE 
                 d1.dispenser_tx_hash_id=d2.tx_hash_id AND
                 d1.tx_index=t.tx_index AND
+                d1.tx_hash_id=c.event_id AND
                 d1.asset_id=a.id AND
                 d1.asset_id='{$asset_id}'
+            GROUP BY c.event_id 
             ORDER BY 
                 d1.block_index DESC
-            LIMIT 1";
-    $results  = $mysqli->query($sql);
+            LIMIT 25";
+    // print $sql;
+    $results = $mysqli->query($sql);
+    $found   = false;
     if($results){
         if($results->num_rows){
             $data      = (object) $results->fetch_assoc();
-            if($data->oracle_address_id){
-                // Oracled Dispensers
-                $quantity   = ($data->divisible==1) ? number_format(($data->dispense_quantity * 0.00000001),8,'.','') : $data->dispense_quantity;
-                $btc_amount = number_format($data->btc_amount * 0.00000001,8,'.','');
-                $price      = number_format($btc_amount / $quantity,8,'.','');
-            } else {
-                // Normal Dispensers
-                $quantity   = ($data->divisible==1) ? number_format(($data->give_quantity * 0.00000001),8,'.','') : $data->give_quantity;
-                $btc_amount = number_format($data->satoshirate * 0.00000001,8,'.','');
-                $price      = bcmul($btc_amount, (1 / $quantity), 8);
+            // Only update price on first dispense (ignore dispenses of multiple items)
+            if(!$found && $data->credits==1){
+                $found = true;
+                if($data->oracle_address_id){
+                    // Oracled Dispensers
+                    $quantity   = ($data->divisible==1) ? number_format(($data->dispense_quantity * 0.00000001),8,'.','') : $data->dispense_quantity;
+                    $btc_amount = number_format($data->btc_amount * 0.00000001,8,'.','');
+                    $price      = number_format($btc_amount / $quantity,8,'.','');
+                } else {
+                    // Normal Dispensers
+                    $quantity   = ($data->divisible==1) ? number_format(($data->give_quantity * 0.00000001),8,'.','') : $data->give_quantity;
+                    $btc_amount = number_format($data->satoshirate * 0.00000001,8,'.','');
+                    $price      = bcmul($btc_amount, (1 / $quantity), 8);
+                }
+                $price_int  = number_format($price * 100000000,0,'.','');
+                // Old way of doing things price = asset_quantity / btc_paid
+                // Problem with this method is if someone overpays on a btcpay, then that is factored into the price
+                // $xxx_qty    = ($data->divisible) ? number_format(($data->dispense_quantity * 0.00000001),8,'.','') : $data->dispense_quantity;
+                // $btc_qty    = number_format(($data->btc_amount * 0.00000001),8,'.','');
+                // $price      = number_format(($btc_qty / $xxx_qty),8,'.','');
+                // $price_int  = number_format($price * 100000000,0,'.','');
+                if(!array_key_exists($data->block_index,$btc_prices) || $btc_prices[$data->block_index] < $price_int)
+                    $btc_prices[$data->block_index] = $price_int;
             }
-            $price_int  = number_format($price * 100000000,0,'.','');
-            // Old way of doing things price = asset_quantity / btc_paid
-            // Problem with this method is if someone overpays on a btcpay, then that is factored into the price
-            // $xxx_qty    = ($data->divisible) ? number_format(($data->dispense_quantity * 0.00000001),8,'.','') : $data->dispense_quantity;
-            // $btc_qty    = number_format(($data->btc_amount * 0.00000001),8,'.','');
-            // $price      = number_format(($btc_qty / $xxx_qty),8,'.','');
-            // $price_int  = number_format($price * 100000000,0,'.','');
-            if(!array_key_exists($data->block_index,$btc_prices) || $btc_prices[$data->block_index] < $price_int)
-                $btc_prices[$data->block_index] = $price_int;
         }
     } else {
         byeLog('Error while trying to lookup asset price');
