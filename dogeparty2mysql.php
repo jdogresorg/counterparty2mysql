@@ -220,6 +220,10 @@ while($block <= $current){
                 if($field=='calling_function')
                     $ignore = true;
             }
+            if($table=='rpsresolves'){
+                if($field=='move')
+                    $value = intval($value);
+            }
             if($table=='sends'){
                 if($field=='quantity')
                     $value = intval($value);
