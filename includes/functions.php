@@ -648,7 +648,7 @@ function updateAssetPrice( $asset=null ){
                     // Normal Dispensers
                     $quantity   = ($data->divisible==1) ? number_format(($data->give_quantity * 0.00000001),8,'.','') : $data->give_quantity;
                     $btc_amount = number_format($data->satoshirate * 0.00000001,8,'.','');
-                    $price      = bcmul($btc_amount, (1 / $quantity), 8);
+                    $price      = bcmul($btc_amount, bcdiv(1, $quantity, 8), 8);
                 }
                 $price_int  = number_format($price * 100000000,0,'.','');
                 // Old way of doing things price = asset_quantity / btc_paid
@@ -997,8 +997,12 @@ function updateMarketInfo( $market_id ){
 
     // Calculate price change percentage
     // $price_change = number_format(((($price1_last - $price1_24hr) / $price1_24hr) * 100), 2, '.','');
-    $price1_change = bcmul(bcdiv(bcsub($price1_last, $price1_24hr,8), $price1_24hr, 8), '100', 2);
-    $price2_change = bcmul(bcdiv(bcsub($price2_last, $price2_24hr,8), $price2_24hr, 8), '100', 2);
+    $price1_change = 0.00;
+    $price2_change = 0.00;
+    if($price1_last > 0)
+        $price1_change = bcmul(bcdiv(bcsub($price1_last, $price1_24hr,8), $price1_24hr, 8), '100', 2);
+    if($price2_last > 0)
+        $price2_change = bcmul(bcdiv(bcsub($price2_last, $price2_24hr,8), $price2_24hr, 8), '100', 2);
 
     // Pass last trade price forward
     if($price1_high==0) $price1_high = $price1_last;
@@ -1021,8 +1025,8 @@ function updateMarketInfo( $market_id ){
     $price2_24hr_int   = bcmul($price2_24hr,   '100000000',0);
     $price1_change_int = bcmul($price1_change,  '100',0);
     $price2_change_int = bcmul($price2_change,  '100',0);
-    $asset1_volume_int = bcmul($asset1_volume, '100000000',0);
-    $asset2_volume_int = bcmul($asset2_volume, '100000000',0);
+    $asset1_volume_int = bcmul(number_format($asset1_volume, 8,'.',''), '100000000',0);
+    $asset2_volume_int = bcmul(number_format($asset2_volume, 8,'.',''), '100000000',0);
 
     // Update the market info
     $sql = "UPDATE 
