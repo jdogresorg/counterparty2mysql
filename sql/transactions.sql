@@ -11,8 +11,8 @@ CREATE TABLE transactions (
     source_id      INTEGER UNSIGNED, -- id of record in index_addresses
     -- destination TEXT,
     destination_id INTEGER UNSIGNED, -- id of record in index_addresses
-    btc_amount     INTEGER UNSIGNED, -- BTC amount sent
-    fee            INTEGER UNSIGNED, -- BTC Fee paid (miners fee)
+    btc_amount     BIGINT,           -- BTC amount sent
+    fee            BIGINT,           -- BTC Fee paid (miners fee)
     data           MEDIUMTEXT,
     supported      TINYINT(1)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
