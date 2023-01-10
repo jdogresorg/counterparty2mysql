@@ -12,7 +12,7 @@ CREATE TABLE transactions (
     -- destination TEXT,
     destination_id INTEGER UNSIGNED, -- id of record in index_addresses
     doge_amount    BIGINT,           -- DOGE amount sent
-    fee            INTEGER UNSIGNED, -- DOGE Fee paid (miners fee)
+    fee            BIGINT,           -- DOGE Fee paid (miners fee)
     data           MEDIUMTEXT,
     supported      TINYINT(1)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
