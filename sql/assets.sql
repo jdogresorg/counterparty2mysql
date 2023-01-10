@@ -12,7 +12,8 @@ CREATE TABLE assets (
     locked         TINYINT(1),
     supply         BIGINT  UNSIGNED,
     type           TINYINT(1),           -- asset type (1=Named, 2=Numeric, 3=Subasset, 4=Failed issuance)
-    xdp_price      BIGINT  UNSIGNED      -- last price of XDP matched order on DEX
+    xdp_price      BIGINT  UNSIGNED,     -- last price of XDP matched order on DEX
+    doge_price     BIGINT  UNSIGNED      -- last price of DOGE matched order on DEX or Dispense
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
 INSERT INTO assets (asset_id, asset, divisible, locked) values (0,'DOGE', 1, 1);
@@ -22,4 +23,3 @@ CREATE UNIQUE INDEX asset     ON assets (asset);
 CREATE        INDEX issuer_id ON assets (issuer_id);
 CREATE        INDEX owner_id  ON assets (owner_id);
 
--- ALTER TABLE assets RENAME COLUMN xcp_price to xdp_price

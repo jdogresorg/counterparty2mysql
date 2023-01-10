@@ -3,7 +3,7 @@
 /*********************************************************************
  * dogeparty2mysql.php 
  * 
- * Script to handle parsing counterparty data into mysql database
+ * Script to handle parsing dogeparty data into mysql database
  * 
  * Command line arguments :
  * --testnet    Load data from testnet
@@ -35,7 +35,7 @@ define("LOCKFILE", '/var/tmp/dogeparty2mysql-' . $runtype . '.lock');
 define("LASTFILE", '/var/tmp/dogeparty2mysql-' . $runtype . '.last-block');
 define("ERRORLOG", '/var/tmp/dogeparty2mysql-' . $runtype . '.errors');
 
-// Initialize the database and counterparty API connections
+// Initialize the database and dogeparty API connections
 initDB(DB_HOST, DB_USER, DB_PASS, DB_DATA, true);
 initCP(DP_HOST, DP_USER, DP_PASS, true);
 
@@ -75,7 +75,8 @@ if($rollback){
         'rps_matches',
         'rpsresolves',
         'sends',
-        'sweeps'
+        'sweeps',
+        'transactions'
     ];
     foreach($tables as $table){
         $results = $mysqli->query("DELETE FROM {$table} WHERE block_index>{$block_index}");
@@ -93,11 +94,11 @@ if(!$block){
 }
 
 // Get the current block index from status info
-$current = $counterparty->status['last_block']['block_index'];
+$current = $dogeparty->status['last_block']['block_index'];
 
 // Define array of fields that contain assets, addresses, transactions, and contracts
 $fields_asset       = array('asset', 'backward_asset', 'dividend_asset', 'forward_asset', 'get_asset', 'give_asset');
-$fields_address     = array('address', 'bet_hash', 'destination', 'feed_address', 'issuer', 'oracle_address', 'source', 'tx0_address', 'tx1_address');
+$fields_address     = array('address', 'bet_hash', 'destination', 'feed_address', 'issuer', 'source', 'oracle_address', 'tx0_address', 'tx1_address');
 $fields_transaction = array('event', 'move_random_hash', 'offer_hash', 'order_hash', 'rps_hash', 'tx_hash', 'tx0_hash', 'tx0_move_random_hash', 'tx1_hash', 'tx1_move_random_hash', 'dispenser_tx_hash');
 $fields_contract    = array('contract_id');
 
@@ -116,8 +117,8 @@ while($block <= $current){
     $transactions = array(); // array of transaction id mappings
     $contracts    = array(); // array of contract id mappings
 
-    // Get list of messages (updates to counterparty tables)
-    $messages = $counterparty->execute('get_messages', array('block_index' => $block));
+    // Get list of messages (updates to dogeparty tables)
+    $messages = $dogeparty->execute('get_messages', array('block_index' => $block));
     // Loop through messages and create assets, addresses, transactions and setup id mappings
     foreach($messages as $message){
         $msg = (object) $message;
@@ -152,7 +153,7 @@ while($block <= $current){
     foreach($addresses as $address => $address_id)
         updateAddressBalance($address, array_keys($assets));
 
-    // Loop through the messages and create/update the counterparty tables
+    // Loop through the messages and create/update the dogeparty tables
     foreach($messages as $message){
         $msg      = (object) $message;
         $table    = $msg->category;
@@ -187,15 +188,21 @@ while($block <= $current){
             foreach($fields_contract as $name)
                 if($field==$name)
                     $value = $contracts[$value];
-            // Remove all characters except alphanumerics, spaces, and characters valid in urls (:/?=;)
-            // Fixes issue where special characters in description break SQL queries (temp fix)
+            // Force numeric values on some broadcast values
+            if($table=='broadcasts'){
+                if(in_array($field,array('locked','fee_fraction_int')))
+                    $value = intval($value);
+                if($field=='value' && $value=='')
+                    $value = 0;
+                // Remove all characters except alphanumerics, spaces, and characters valid in urls (:/?=-;)
+                // Fixes issue where special (unicode) characters in text break SQL queries (temp fix)
+                if($field=='text')
+                    $value = preg_replace("/[^[:alnum:][:space:]\:\/\.\?\=\&\-\;]/u", '', $value);
+            }
+            // Remove all characters except alphanumerics, spaces, and characters valid in urls (:/?=-;)
+            // Fixes issue where special (unicode) characters in description break SQL queries (temp fix)
             if($field=='description')
-                $value = preg_replace("/[^[:alnum:][:space:]\:\/\.\?\=\&\;]/u", '', $value);
-            // Encode some values to make safe for SQL queries  
-            if($table=='broadcasts' && $field=='text')
-                $value = $mysqli->real_escape_string($value);
-            if($table=='issuances' && $field=='description')
-                $value = $mysqli->real_escape_string($value);
+                $value = preg_replace("/[^[:alnum:][:space:]\:\/\.\?\=\&\-\;]/u", '', $value);
             // Translate some field names where bindings field names and table field names differ
             if($table=='credits' && $field=='action')
                 $field='calling_function';
@@ -203,12 +210,8 @@ while($block <= $current){
             if($table=='issuances'){
                 if(in_array($field, array('locked','transfer','divisible','callable')) && $value=='')
                     $ignore = true;
-            }
-            // Force numeric values on some broadcast values
-            if($table=='broadcasts'){
-                if(in_array($field,array('locked','fee_fraction_int')))
-                    $value = intval($value);
-                if($field=='value' && $value=='')
+                // Handle issues with unpacking data where all values are empty
+                if(in_array($field, array('call_date','call_price','quantity')) && $value=='')
                     $value = 0;
             }
             // Rock / Paper / Sciscors
@@ -234,9 +237,14 @@ while($block <= $current){
                 if($field=='prev_status')
                     $ignore = true;
             }
-            if(in_array($table,array('destructions','issuances'))){
-                if($field=='reset')
+            // Force `reset` to boolean value
+            if($field=='reset'){
+                // Ignore field if this is a destruction
+                if($table=='destructions'){
                     $ignore = true;
+                } else {
+                    $value = intval($value);
+                }
             }
             // EVM fields
             if($field=='gasprice')
@@ -339,15 +347,20 @@ while($block <= $current){
                 // Update nonces table using address_id
                 } else if($table=='nonces' && $field=='address_id'){
                     $where .= " {$field}='{$values[$index]}'";
-                // Skip updating the block_index on dispenser (so we keep the original block_index where the dispenser was created/updated)
-                } else if($table=='dispensers' && in_array($field, array('block_index','status','tx_index'))){
-                    // block_index and tx_index don't change, so skip these fields in the update statement
-                    if($field=='block_index'||$field=='tx_index')
+                // Set correct whereSQL for dispenser updates
+                } else if($table=='dispensers' && in_array($field, array('block_index','status','asset_id', 'tx_index','action'))){
+                    // Skip updates on certain fields
+                    if(in_array($field, array('block_index','asset_id','action')))
                         continue;
+                    // Only allow status updates to status=10 (Closed) since status can only go from Open to Closed in updates (otherwise we could open up previously closed dispensers...yikes)
                     if($field=='status' && $values[$index]==10)
                         $sql   .= " status='10',";
-                    // Dispenser close messages dont include tx_index or tx_hash, so gotta use this WHERE query to get things done
-                    $where = " source_id='{$fldmap['source_id']}' AND asset_id='{$fldmap['asset_id']}'";
+                    // Update dispensers using tx_index if we have it, otherwise default to using source and asset to identify dispenser
+                    if($where=="" && in_array('tx_index',array_values($fields))){
+                        $where = " tx_index='{$fldmap['tx_index']}'";
+                    } else {
+                        $where = " source_id='{$fldmap['source_id']}' AND asset_id='{$fldmap['asset_id']}'";
+                    }
                 } else {
                     $sql .= " {$field}='{$values[$index]}',";
                 }
@@ -365,7 +378,7 @@ while($block <= $current){
 
     }
 
-    // Loop through assets and update XCP price 
+    // Loop through assets and update DOGE & XDP price 
     foreach($assets as $asset =>$id)
         updateAssetPrice($asset);
 
@@ -406,6 +419,11 @@ while($block <= $current){
         $block_24hr = get24HourBlockIndex();
         createUpdateMarkets($markets);
     }
+
+    // Get list of transactions from the transactions table (used to track BTC paid and miners fee)
+    $transactions = $dogeparty->execute('get_transactions', array('filters' => array("field" => "block_index", "op" => "==", "value" => $block)));
+    foreach($transactions as $transaction)
+        createTransactionHistory($transaction);
 
     // Report time to process block
     $time = $timer->finish();

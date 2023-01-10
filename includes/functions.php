@@ -60,18 +60,18 @@ function initDB($hostname=null, $username=null, $password=null, $database=null, 
 }
 
 
-// Setup Counterparty API connection
+// Setup Dogeparty API connection
 function initCP($hostname=null, $username=null, $password=null, $log=false){
-    global $counterparty;
-    $counterparty = new Client($hostname);
-    $counterparty->authentication($username, $password);
-    $status = $counterparty->execute('get_running_info');
+    global $dogeparty;
+    $dogeparty = new Client($hostname);
+    $dogeparty->authentication($username, $password);
+    $status = $dogeparty->execute('get_running_info');
     // If we have a successfull response, store it in 'status'
     if(isset($status)){
-        $counterparty->status = $status;
+        $dogeparty->status = $status;
     } else {
         // If we failed to establish a connection, bail out
-        $msg = 'Counterparty Connection Failure';
+        $msg = 'Dogeparty Connection Failure';
         if($log){
             byeLog($msg);
         } else {
@@ -118,8 +118,8 @@ function getAssetId($asset=null){
 
 // Create/Update records in the 'blocks' table and return record id
 function createBlock( $block_index=null ){
-    global $mysqli, $counterparty;
-    $data = (object) $counterparty->execute('get_block_info', array('block_index' => $block_index));
+    global $mysqli, $dogeparty;
+    $data = (object) $dogeparty->execute('get_block_info', array('block_index' => $block_index));
     $data->block_hash_id          = createTransaction($data->block_hash);
     $data->previous_block_hash_id = createTransaction($data->previous_block_hash);
     $data->ledger_hash_id         = createTransaction($data->ledger_hash);
@@ -172,9 +172,9 @@ function createBlock( $block_index=null ){
 
 // Create/Update records in the 'assets' table and return record id
 function createAsset( $asset=null, $block_index=null ){
-    global $mysqli, $counterparty;
+    global $mysqli, $dogeparty;
     // Get current information on this asset
-    $info = $counterparty->execute('get_asset_info', array('assets' => array($asset)));
+    $info = $dogeparty->execute('get_asset_info', array('assets' => array($asset)));
     // Create data object using asset info (if any)
     $data                 = (count($info)) ? (object) $info[0] : (object) [];
     $description          = substr($data->description,0,250); // Truncate to 250 chars
@@ -274,7 +274,7 @@ function createAddress( $address=null ){
 }
 
 
-// Create records in the 'transactions' table and return record id
+// Create records in the 'index_transactions' table and return record id
 function createTransaction( $hash=null ){
     global $mysqli;
     if(!isset($hash) || $hash=='')
@@ -297,6 +297,49 @@ function createTransaction( $hash=null ){
         byeLog('Error while trying to lookup record in index_transactions table');
     }
 }
+
+
+// Create records in the 'transactions' table
+function createTransactionHistory( $tx = null ){
+    global $mysqli;
+    if(!isset($tx) || $tx=='')
+        return;
+    $tx             = (object) $tx; // Force conversion to object
+    $tx_hash_id     = createTransaction($tx->tx_hash);
+    $block_hash_id  = createTransaction($tx->block_hash);
+    $source_id      = createAddress($tx->source);
+    $destination_id = createAddress($tx->destination);
+    $doge_amount     = (is_int($tx->doge_amount)) ? $tx->doge_amount : 0;
+    // Check if we have an existing record for this tx
+    $results = $mysqli->query("SELECT tx_index FROM transactions WHERE `tx_index`='{$tx->tx_index}'");
+    if($results){
+        if($results->num_rows){
+            $sql = "UPDATE 
+                        transactions 
+                    SET
+                        tx_hash_id='{$tx_hash_id}', 
+                        block_index='{$tx->block_index}', 
+                        block_hash_id='{$block_hash_id}', 
+                        block_time='{$tx->block_time}', 
+                        source_id='{$source_id}', 
+                        destination_id='{$destination_id}', 
+                        doge_amount='{$doge_amount}', 
+                        fee='{$tx->fee}', 
+                        data='{$tx->data}', 
+                        supported='{$tx->supported}'
+                    WHERE 
+                        tx_index='{$tx->tx_index}'";
+        } else {
+            $sql = "INSERT INTO transactions (tx_index, tx_hash_id, block_index, block_hash_id, block_time, source_id, destination_id, doge_amount, fee, data, supported) values ('{$tx->tx_index}','{$tx_hash_id}', '{$tx->block_index}', '{$block_hash_id}','{$tx->block_time}','{$source_id}','{$destination_id}','{$doge_amount}','{$tx->fee}','{$tx->data}','{$tx->supported}')";
+        }
+        $results2 = $mysqli->query($sql);
+        if(!$results2)
+            byeLog('Error while trying to create or update record in transactions table: ' . $sql);
+    } else {
+        byeLog('Error while trying to lookup record in transactions table');
+    }
+}
+
 
 // Create records in the 'messages' table
 function createMessage( $message=null ){
@@ -428,7 +471,7 @@ function createTxIndex( $tx_index=null, $block_index=null, $tx_type=null, $tx_ha
 
 // Create/Update records in the 'balances' table
 function updateAddressBalance( $address=null, $asset_list=null ){
-    global $mysqli, $counterparty, $addresses, $assets;
+    global $mysqli, $dogeparty, $addresses, $assets;
     // Lookup any balance for this address and asset
     $balances = getAddressBalances($address, $asset_list);
     if(count($balances)){
@@ -461,7 +504,7 @@ function updateAddressBalance( $address=null, $asset_list=null ){
 
 // Handle requesting address balance information for a given address and list of assets
 function getAddressBalances($address=null, $asset_list=null){
-    global $counterparty;
+    global $dogeparty;
     $balances = array();
     // Break asset list up into chunks of 500 (API calls with more than 500 assets fail)
     $asset_list   = array_chunk($asset_list, 500);
@@ -469,7 +512,7 @@ function getAddressBalances($address=null, $asset_list=null){
         // Lookup any balance for this address and asset
         $filters  = array(array('field' => 'address', 'op' => '==', 'value' => $address),
                           array('field' => 'asset',   'op' => 'IN', 'value' => $assets));
-        $data = $counterparty->execute('get_balances', array('filters' => $filters, 'filterop' => "AND"));
+        $data = $dogeparty->execute('get_balances', array('filters' => $filters, 'filterop' => "AND"));
         if(count($data)){
             $balances = array_merge($balances, $data);
         }
@@ -492,7 +535,7 @@ function updateAssetPrice( $asset=null ){
         byeLog('Error looking up asset id');
     }
     // Bail out on DOGE or XDP
-    if($asset_id<=2)
+    if($asset_id<=1)
         return;
     // Lookup last order match for XDP
     $sql = "SELECT
@@ -507,7 +550,7 @@ function updateAssetPrice( $asset=null ){
                 ( m.forward_asset_id='{$asset_id}' AND m.backward_asset_id=2)) AND
                 m.status='completed'
             ORDER BY 
-                m.tx1_index DESC 
+                m.block_index DESC 
             LIMIT 1";
     $results  = $mysqli->query($sql);
     if($results){
@@ -525,6 +568,109 @@ function updateAssetPrice( $asset=null ){
         }
     } else {
         byeLog('Error while trying to lookup asset price');
+    }
+    $doge_prices = array();
+    // Lookup last DOGE order match
+    $sql = "SELECT
+                m.block_index,
+                m.forward_asset_id,
+                m.forward_quantity,
+                m.backward_asset_id,
+                m.backward_quantity
+            FROM
+                order_matches m
+            WHERE
+                ((m.forward_asset_id=1 AND m.backward_asset_id='{$asset_id}') OR
+                ( m.forward_asset_id='{$asset_id}' AND m.backward_asset_id=1)) AND
+                m.status='completed'
+            ORDER BY 
+                m.block_index DESC 
+            LIMIT 1";
+    $results  = $mysqli->query($sql);
+    if($results){
+        if($results->num_rows){
+            $data      = $results->fetch_assoc();
+            $doge_amt   = ($data['forward_asset_id']==1) ? $data['forward_quantity'] : $data['backward_quantity'];
+            $xxx_amt   = ($data['forward_asset_id']==1) ? $data['backward_quantity'] : $data['forward_quantity'];
+            $doge_qty   = number_format($doge_amt * 0.00000001,8,'.','');
+            $xxx_qty   = ($divisible) ? number_format($xxx_amt * 0.00000001,8,'.','') : number_format($xxx_amt,0,'.','');
+            $price     = number_format($doge_qty / $xxx_qty,8,'.','');
+            $price_int = number_format($price * 100000000,0,'.','');
+            $doge_prices[$data['block_index']] = $price_int;
+        }
+    } else {
+        byeLog('Error while trying to lookup asset price');
+    }
+    // Lookup last Dispense
+    $sql = "SELECT 
+                count(c.event_id) as credits,
+                d1.tx_index,
+                d1.block_index,
+                t.doge_amount,
+                d1.dispense_quantity,
+                d2.give_quantity,
+                a.asset,
+                a.divisible,
+                d2.satoshirate,
+                d2.oracle_address_id,
+                d2.tx_index as dispenser_tx_index
+            FROM 
+                dispenses d1,
+                dispensers d2,
+                assets a,
+                transactions t,
+                credits c
+            WHERE 
+                d1.dispenser_tx_hash_id=d2.tx_hash_id AND
+                d1.tx_index=t.tx_index AND
+                d1.tx_hash_id=c.event_id AND
+                d1.asset_id=a.id AND
+                d1.asset_id='{$asset_id}'
+            GROUP BY c.event_id 
+            ORDER BY 
+                d1.block_index DESC
+            LIMIT 25";
+    // print $sql;
+    $results = $mysqli->query($sql);
+    $found   = false;
+    if($results){
+        if($results->num_rows){
+            $data      = (object) $results->fetch_assoc();
+            // Only update price on first dispense (ignore dispenses of multiple items)
+            if(!$found && $data->credits==1){
+                $found = true;
+                if($data->oracle_address_id){
+                    // Oracled Dispensers
+                    $quantity   = ($data->divisible==1) ? number_format(($data->dispense_quantity * 0.00000001),8,'.','') : $data->dispense_quantity;
+                    $doge_amount = number_format($data->doge_amount * 0.00000001,8,'.','');
+                    $price      = number_format($doge_amount / $quantity,8,'.','');
+                } else {
+                    // Normal Dispensers
+                    $quantity   = ($data->divisible==1) ? number_format(($data->give_quantity * 0.00000001),8,'.','') : $data->give_quantity;
+                    $doge_amount = number_format($data->satoshirate * 0.00000001,8,'.','');
+                    $price      = bcmul($doge_amount, bcdiv(1, $quantity, 8), 8);
+                }
+                $price_int  = number_format($price * 100000000,0,'.','');
+                // Old way of doing things price = asset_quantity / doge_paid
+                // Problem with this method is if someone overpays on a dogepay, then that is factored into the price
+                // $xxx_qty    = ($data->divisible) ? number_format(($data->dispense_quantity * 0.00000001),8,'.','') : $data->dispense_quantity;
+                // $doge_qty    = number_format(($data->doge_amount * 0.00000001),8,'.','');
+                // $price      = number_format(($doge_qty / $xxx_qty),8,'.','');
+                // $price_int  = number_format($price * 100000000,0,'.','');
+                if(!array_key_exists($data->block_index,$doge_prices) || $doge_prices[$data->block_index] < $price_int)
+                    $doge_prices[$data->block_index] = $price_int;
+            }
+        }
+    } else {
+        byeLog('Error while trying to lookup asset price');
+    }
+    // Update DOGE price to use most recent transaction price (block_index)
+    if(count($doge_prices)){
+        ksort($doge_prices);
+        $price_int = array_pop($doge_prices);
+        $results   = $mysqli->query("UPDATE assets SET doge_price='{$price_int}' WHERE id='{$asset_id}'");
+        if(!$results)
+            byeLog('Error updating DOGE price for asset ' . $asset);
     }
 }
 
@@ -879,8 +1025,8 @@ function updateMarketInfo( $market_id ){
     $price2_24hr_int   = bcmul($price2_24hr,   '100000000',0);
     $price1_change_int = bcmul($price1_change,  '100',0);
     $price2_change_int = bcmul($price2_change,  '100',0);
-    $asset1_volume_int = bcmul($asset1_volume, '100000000',0);
-    $asset2_volume_int = bcmul($asset2_volume, '100000000',0);
+    $asset1_volume_int = bcmul(number_format($asset1_volume, 8,'.',''), '100000000',0);
+    $asset2_volume_int = bcmul(number_format($asset2_volume, 8,'.',''), '100000000',0);
 
     // Update the market info
     $sql = "UPDATE 
@@ -948,5 +1094,74 @@ function updateMarketInfo( $market_id ){
     }
 
 }
+
+
+
+// Handle getting dispensers information, including current pricing 
+function getDispenserInfo($tx_hash){
+    global $mysqli;
+    $whereSql = "t.hash='{$tx_hash}";
+    // Handle passing tx_index instead of tx_hash
+    if(is_numeric($tx_hash))
+        $whereSql = "d.tx_index='{$tx_hash}'";
+    // Lookup info on the dispenser
+    $sql = "SELECT 
+                d.tx_index,
+                d.block_index,
+                d.give_quantity,
+                d.escrow_quantity,
+                d.give_remaining,
+                d.satoshirate,
+                d.status,
+                a1.asset,
+                a1.asset_longname,
+                a1.divisible,
+                t.hash as tx_hash,
+                a2.address as source,
+                b.block_time as timestamp,
+                d.oracle_address_id
+            FROM 
+                dispensers d, 
+                blocks b,
+                assets a1,
+                index_addresses a2,
+                index_transactions t
+            WHERE 
+                b.block_index=d.block_index AND
+                t.id=d.tx_hash_id AND
+                a1.id=d.asset_id AND
+                a2.id=d.source_id AND
+                {$whereSql}
+            LIMIT 1";
+    $results = $mysqli->query($sql);
+    if($results && $results->num_rows){
+        $row = (object) $results->fetch_assoc();
+        // Handle oracled dispensers by looking up oracle info and returning pricing info
+        if(isset($row->oracle_address_id)){
+            // Get the oracle address
+            $results2 = $mysqli->query("SELECT address FROM index_addresses WHERE id={$row->oracle_address_id}");
+            if($results2){
+                $row2 = (object) $results2->fetch_assoc();
+                $row->oracle_address = $row2->address;
+            }
+            // Get the oracle info
+            $results3 = $mysqli->query("SELECT b1.value, b1.text, b1.block_index, b2.block_time FROM broadcasts b1, blocks b2 WHERE b1.block_index=b2.block_index AND b1.source_id='{$row->oracle_address_id}' AND b1.status='valid' ORDER by b1.tx_index DESC LIMIT 1");
+            if($results3){
+                $row3 = (object) $results3->fetch_assoc();
+                $row->oracle_price              = number_format($row3->value,2,'.','');
+                $row->oracle_price_last_updated = $row3->block_index;
+                $row->oracle_price_block_time   = $row3->block_time;
+                $row->fiat_price                = number_format(($row->satoshirate * 0.01),2,'.','');
+                $sat_price                      = ($row->oracle_price==0) ? 0 : ceil(((1 / $row->oracle_price) * $row->fiat_price) * 100000000);
+                $row->satoshi_price             = strval($sat_price);
+                $row->fiat_unit                 = explode('-',$row3->text)[1]; // Extract Fiat from DOGE-XXX value
+            }
+        }
+        unset($row->oracle_address_id);
+    }
+    // var_dump($row);
+    return $row;
+}
+
 
 ?>
