@@ -1,7 +1,7 @@
 #!/usr/bin/env php
 <?php
 /*********************************************************************
- * fix_issuance_descriptions.php
+ * fix_asset_descriptions.php
  * 
  * Script to fix issuance descriptions
  ********************************************************************/
@@ -19,23 +19,13 @@ require_once(__DIR__ . '/../../includes/config.php');
 initDB(DB_HOST, DB_USER, DB_PASS, DB_DATA, true);
 initCP(CP_HOST, CP_USER, CP_PASS, true);
 
-// Lookup all issuances
+// Lookup all assets
 $sql = "SELECT
-            a.asset, 
-            i.asset_id,
-            i.tx_index,
-            i.block_index,
-            t.hash as tx_hash,
-            i.description
+            a.asset,
+            a.description
         FROM
-            issuances i,
-            index_transactions t,
             assets a
-        WHERE
-            i.tx_hash_id = t.id AND
-            i.asset_id = a.id AND
-            i.tx_index <= 2214679
-        ORDER BY i.tx_index DESC";
+        ORDER BY a.asset";
 print $sql . "\n";
 $results = $mysqli->query($sql);
 if($results && $results->num_rows){
@@ -44,16 +34,9 @@ if($results && $results->num_rows){
     $fixed  = 0;
     while($row = $results->fetch_assoc()){
         $cnt++;
-        print "[{$cnt} / {$errors} / ${fixed}] checking issuance tx #{$row['tx_index']}...\n";
-        $filters = array(
-                        array(  'field' => 'tx_index', 
-                                'op'    => '==', 
-                                'value' => $row['tx_index']),
-                        // array(  'field' => 'block_index', 
-                        //         'op'    => '==', 
-                        //         'value' => $block)
-                    );
-        $result = $counterparty->execute('get_issuances', array('filters' => $filters));
+        print "[{$cnt} / {$errors} / ${fixed}] checking asset {$row['asset']}...\n";
+
+        $result = $counterparty->execute('get_asset_info', array('asset' => $row['asset']));
         foreach($result as $data){
             if($row['description']!=$data['description'] && $row['asset']==$data['asset']){
                 $errors++;
@@ -63,19 +46,19 @@ if($results && $results->num_rows){
                 // print "final \t: {$desc}\n";
                 // print "[{$cnt} / {$errors} / ${fixed}] Fixing issuance {$row['tx_index']}\n";
                 $description = $mysqli->real_escape_string($desc);
-                $sql = "UPDATE issuances SET description='{$description}' WHERE asset_id='{$row['asset_id']}' AND tx_index={$row['tx_index']}";
+                $sql = "UPDATE assets SET description='{$description}' WHERE asset='{$row['asset']}'";
                 print $sql . "\n";
                 $results2 = $mysqli->query($sql);
                 if($results2){
                     $fixed++;
                 } else {
-                    bye('Error while trying to update issuance description');
+                    bye('Error while trying to update asset description');
                 }
             }
         }
     }
 } else {
-    bye('Error while trying to lookup list of issuances');
+    bye('Error while trying to lookup list of assets');
 }
 
-print "Checked {$cnt} issuances, encountered {$errors} errors, and fixed {$fixed} of those errors\n";
+print "Checked {$cnt} assets, encountered {$errors} errors, and fixed {$fixed} of those errors\n";

@@ -196,15 +196,13 @@ while($block <= $current){
                     $value = intval($value);
                 if($field=='value' && $value=='')
                     $value = 0;
-                // Remove all characters except alphanumerics, spaces, and characters valid in urls (:/?=-;)
-                // Fixes issue where special (unicode) characters in text break SQL queries (temp fix)
+                // Replace 4-byte UTF-8 characters (fixes issue with breaking SQL queries) 
                 if($field=='text')
-                    $value = preg_replace("/[^[:alnum:][:space:]\:\/\.\?\=\&\-\;]/u", '', $value);
+                    $value = preg_replace('/[\x{10000}-\x{10FFFF}]/u', '', $value);
             }
-            // Remove all characters except alphanumerics, spaces, and characters valid in urls (:/?=-;)
-            // Fixes issue where special (unicode) characters in description break SQL queries (temp fix)
+            // Replace 4-byte UTF-8 characters (fixes issue with breaking SQL queries) 
             if($field=='description')
-                $value = preg_replace("/[^[:alnum:][:space:]\:\/\.\?\=\&\-\;]/u", '', $value);
+                $value = preg_replace('/[\x{10000}-\x{10FFFF}]/u', '', $value);
             // Translate some field names where bindings field names and table field names differ
             if($table=='credits' && $field=='action')
                 $field='calling_function';

@@ -5,7 +5,7 @@ CREATE TABLE assets (
     asset          VARCHAR(40) NOT NULL, -- asset name
     asset_longname VARCHAR(255),         -- subasset name
     block_index    INTEGER UNSIGNED,     -- block that asset was created
-    description    VARCHAR(250),
+    description    VARCHAR(10000),       -- store up to 10k characters
     divisible      TINYINT(1),
     owner_id       INTEGER UNSIGNED,     -- id of record in index_addresses
     issuer_id      INTEGER UNSIGNED,     -- id of record in index_addresses
@@ -24,3 +24,4 @@ CREATE        INDEX issuer_id ON assets (issuer_id);
 CREATE        INDEX owner_id  ON assets (owner_id);
 
 -- ALTER TABLE assets ADD btc_price BIGINT UNSIGNED AFTER xcp_price;
+-- ALTER TABLE assets MODIFY description VARCHAR(10000);

@@ -17,7 +17,7 @@ CREATE TABLE issuances (
     callable    BOOL,
     call_date   INTEGER UNSIGNED,
     call_price  REAL,
-    description TEXT,
+    description VARCHAR(10000),   -- store up to 10k characters
     fee_paid    BIGINT,
     locked      BOOL,
     reset       BOOL,
@@ -30,3 +30,5 @@ CREATE        INDEX source_id   ON issuances (source_id);
 CREATE        INDEX issuer_id   ON issuances (issuer_id);
 CREATE        INDEX asset_id    ON issuances (asset_id);
 CREATE        INDEX tx_hash_id  ON issuances (tx_hash_id);
+
+-- ALTER TABLE issuances MODIFY description VARCHAR(10000);
