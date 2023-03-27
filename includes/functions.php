@@ -177,7 +177,7 @@ function createAsset( $asset=null, $block_index=null ){
     $info = $counterparty->execute('get_asset_info', array('assets' => array($asset)));
     // Create data object using asset info (if any)
     $data                 = (count($info)) ? (object) $info[0] : (object) [];
-    $description          = substr($data->description,0,250); // Truncate to 250 chars
+    $description          = substr($data->description,0,10000); // Truncate to 10,000 chars (max field length)
     $data->asset_id       = getAssetId($asset);
     $data->issuer_id      = createAddress($data->issuer);
     $data->owner_id       = createAddress($data->owner);
@@ -999,9 +999,9 @@ function updateMarketInfo( $market_id ){
     // $price_change = number_format(((($price1_last - $price1_24hr) / $price1_24hr) * 100), 2, '.','');
     $price1_change = 0.00;
     $price2_change = 0.00;
-    if($price1_last > 0)
+    if($price1_last > 0 && $price1_24hr > 0)
         $price1_change = bcmul(bcdiv(bcsub($price1_last, $price1_24hr,8), $price1_24hr, 8), '100', 2);
-    if($price2_last > 0)
+    if($price2_last > 0 && $price2_24hr > 0)
         $price2_change = bcmul(bcdiv(bcsub($price2_last, $price2_24hr,8), $price2_24hr, 8), '100', 2);
 
     // Pass last trade price forward
