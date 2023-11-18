@@ -100,8 +100,8 @@ $current = $counterparty->status['last_block']['block_index'];
 
 // Define array of fields that contain assets, addresses, transactions, and contracts
 $fields_asset       = array('asset', 'backward_asset', 'dividend_asset', 'forward_asset', 'get_asset', 'give_asset');
-$fields_address     = array('address', 'bet_hash', 'destination', 'feed_address', 'issuer', 'source', 'oracle_address', 'tx0_address', 'tx1_address');
-$fields_transaction = array('event', 'move_random_hash', 'offer_hash', 'order_hash', 'rps_hash', 'tx_hash', 'tx0_hash', 'tx0_move_random_hash', 'tx1_hash', 'tx1_move_random_hash', 'dispenser_tx_hash');
+$fields_address     = array('address', 'bet_hash', 'destination', 'feed_address', 'issuer', 'source', 'oracle_address', 'tx0_address', 'tx1_address', 'origin');
+$fields_transaction = array('event', 'move_random_hash', 'offer_hash', 'order_hash', 'rps_hash', 'tx_hash', 'tx0_hash', 'tx0_move_random_hash', 'tx1_hash', 'tx1_move_random_hash', 'dispenser_tx_hash', 'last_status_tx_hash', 'dispenser_tx_hash');
 $fields_contract    = array('contract_id');
 
 // Loop through the blocks until we are current
@@ -232,6 +232,9 @@ while($block <= $current){
             if($table=='dispensers'){
                 if($field=='prev_status')
                     $ignore = true;
+                // Force null value to integer value
+                if($field=='last_status_tx_hash_id' && $value==null)
+                    $value = 0;
             }
             // Force `reset` to boolean value
             if($field=='reset'){
