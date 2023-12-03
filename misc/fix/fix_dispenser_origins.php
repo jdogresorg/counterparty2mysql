@@ -44,11 +44,10 @@ if($results && $results->num_rows){
         print "[{$cnt} / {$errors} / ${fixed}] checking current origin of {$tx_index}...\n";
         $result = $counterparty->execute('get_dispensers', array('filters' => array('field' => 'tx_hash', 'op' => '==', 'value' => $hash)));
         foreach($result as $data){
-            $origin_id = createAddress($data['origin']);
+            $origin    = $data['origin'];
+            $origin_id = createAddress($origin);
             if($row['origin_id']!=$origin_id){
                 $errors++;
-                $origin    = $data['origin'];
-                $origin_id = createAddress($origin);
                 print "[{$cnt} / {$errors} / ${fixed}] Fixing dispenser {$tx_index} - origin={$origin}\n";
                 $sql = "UPDATE dispensers SET origin_id={$origin_id} WHERE tx_index={$tx_index}";
                 // print $sql;
