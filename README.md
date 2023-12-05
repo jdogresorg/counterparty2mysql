@@ -30,8 +30,8 @@ cat sql/*.sql | mysql Counterparty_Testnet
 
 Bootstrap Information
 ---
-- [Counterparty.sql.gz](bootstrap/Counterparty.sql.gz) (Mainnet Block # 762,021)
-- [Counterparty_Testnet.sql.gz](bootstrap/Counterparty_Testnet.sql.gz) (Testnet Block # 2,405,088)
+- [Counterparty.sql.gz](bootstrap/Counterparty.sql.gz) (Mainnet Block # 819,905)
+- [Counterparty_Testnet.sql.gz](bootstrap/Counterparty_Testnet.sql.gz) (Testnet Block # 2,541,723)
 
 Command line arguments 
 ---
@@ -61,6 +61,7 @@ Database Information
 - [debits](sql/debits.sql)
 - [destructions](sql/destructions.sql)
 - [dispensers](sql/dispensers.sql)
+- [dispenser_refills](sql/dispenser_refills.sql)
 - [dispenses](sql/dispenses.sql)
 - [dividends](sql/dividends.sql)
 - [issuances](sql/issuances.sql)
