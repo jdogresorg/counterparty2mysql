@@ -6,7 +6,7 @@ CREATE TABLE broadcasts (
     block_index      INTEGER,
     -- source        TEXT,
     source_id        INTEGER UNSIGNED, -- id of record in index_addresses
-    timestamp        INTEGER,
+    timestamp        INTEGER UNSIGNED,
     value            REAL,
     fee_fraction_int BIGINT,
     text             TEXT,
