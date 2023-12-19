@@ -236,6 +236,10 @@ while($block <= $current){
                 if($field=='last_status_tx_hash_id' && $value==null)
                     $value = 0;
             }
+            if($table=='dispenser_refills'){
+                if(in_array($field, array('dispenser_quantity','status')))
+                    $ignore = true;
+            }
             // Force `reset` to boolean value
             if($field=='reset'){
                 // Ignore field if this is a destruction
