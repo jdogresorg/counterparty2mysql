@@ -999,9 +999,9 @@ function updateMarketInfo( $market_id ){
     // $price_change = number_format(((($price1_last - $price1_24hr) / $price1_24hr) * 100), 2, '.','');
     $price1_change = 0.00;
     $price2_change = 0.00;
-    if($price1_last > 0)
+    if($price1_last > 0 && $price1_24hr > 0)
         $price1_change = bcmul(bcdiv(bcsub($price1_last, $price1_24hr,8), $price1_24hr, 8), '100', 2);
-    if($price2_last > 0)
+    if($price2_last > 0 && $price2_24hr > 0)
         $price2_change = bcmul(bcdiv(bcsub($price2_last, $price2_24hr,8), $price2_24hr, 8), '100', 2);
 
     // Pass last trade price forward
