@@ -27,8 +27,3 @@ CREATE        INDEX asset_id               ON dispensers (asset_id);
 CREATE        INDEX oracle_address_id      ON dispensers (oracle_address_id);
 CREATE        INDEX last_status_tx_hash_id ON dispensers (last_status_tx_hash_id);
 CREATE        INDEX origin_id              ON dispensers (origin_id);
-
-
-ALTER TABLE dispensers ADD last_status_tx_hash_id INTEGER UNSIGNED AFTER oracle_address_id;
-ALTER TABLE dispensers ADD origin_id              INTEGER UNSIGNED AFTER last_status_tx_hash_id;
-ALTER TABLE dispensers ADD closing_reason         TEXT    AFTER origin_id;
