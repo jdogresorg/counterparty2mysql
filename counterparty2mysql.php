@@ -121,6 +121,19 @@ while($block <= $current){
 
     // Get list of messages (updates to counterparty tables)
     $messages = $counterparty->execute('get_messages', array('block_index' => $block));
+
+    // Filter out abusive transactions (optional)
+    // $data = array();
+    // foreach($messages as $message){
+    //     $msg      = (object) $message;
+    //     $table    = $msg->category;
+    //     $bindings = json_decode($msg->bindings);
+    //     if(in_array($table, array('credits','debits','issuances','sends')) && substr($bindings->asset,0,1)=='A')
+    //         continue;
+    //     array_push($data, $msg);
+    // }
+    // $messages = $data;
+
     // Loop through messages and create assets, addresses, transactions and setup id mappings
     foreach($messages as $message){
         $msg = (object) $message;
