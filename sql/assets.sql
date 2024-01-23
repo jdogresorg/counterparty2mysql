@@ -5,7 +5,7 @@ CREATE TABLE assets (
     asset          VARCHAR(40) NOT NULL, -- asset name
     asset_longname VARCHAR(255),         -- subasset name
     block_index    INTEGER UNSIGNED,     -- block that asset was created
-    description    VARCHAR(250),
+    description    VARCHAR(10000),       -- store up to 10k characters
     divisible      TINYINT(1),
     owner_id       INTEGER UNSIGNED,     -- id of record in index_addresses
     issuer_id      INTEGER UNSIGNED,     -- id of record in index_addresses
@@ -22,4 +22,3 @@ INSERT INTO assets (asset_id, asset, divisible, locked, xdp_price) values (1,'XD
 CREATE UNIQUE INDEX asset     ON assets (asset);
 CREATE        INDEX issuer_id ON assets (issuer_id);
 CREATE        INDEX owner_id  ON assets (owner_id);
-

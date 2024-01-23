@@ -177,7 +177,10 @@ function createAsset( $asset=null, $block_index=null ){
     $info = $dogeparty->execute('get_asset_info', array('assets' => array($asset)));
     // Create data object using asset info (if any)
     $data                 = (count($info)) ? (object) $info[0] : (object) [];
-    $description          = substr($data->description,0,250); // Truncate to 250 chars
+    // Replace 4-byte UTF-8 characters (fixes issue with breaking SQL queries) 
+    $description          = preg_replace('/[\x{10000}-\x{10FFFF}]/u', '', $data->description);
+    // Truncate to 10,000 chars (max field length)
+    $description          = substr($description,0,10000); 
     $data->asset_id       = getAssetId($asset);
     $data->issuer_id      = createAddress($data->issuer);
     $data->owner_id       = createAddress($data->owner);
@@ -236,6 +239,7 @@ function createAsset( $asset=null, $block_index=null ){
                 '{$data->locked}',
                 '{$data->owner_id}',
                 '{$data->supply}')";
+            // print $sql;
             $results = $mysqli->query($sql);
             if($results){
                 return $mysqli->insert_id;
@@ -297,7 +301,6 @@ function createTransaction( $hash=null ){
         byeLog('Error while trying to lookup record in index_transactions table');
     }
 }
-
 
 // Create records in the 'transactions' table
 function createTransactionHistory( $tx = null ){
