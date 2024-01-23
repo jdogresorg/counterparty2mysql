@@ -368,9 +368,9 @@ while($block <= $current){
                     // Skip updates on certain fields
                     if(in_array($field, array('block_index','asset_id','action')))
                         continue;
-                    // Only allow status updates to status=10 (Closed) since status can only go from Open to Closed in updates (otherwise we could open up previously closed dispensers...yikes)
-                    if($field=='status' && $values[$index]==10)
-                        $sql   .= " status='10',";
+                    // Only allow status updates to status=11 (Closing) andstatus=10 (Closed) since status can only go from Open to Closed in updates (otherwise we could open up previously closed dispensers...yikes)
+                    if($field=='status' && ($values[$index]==10||$values[$index]==11))
+                        $sql   .= " status='{$values[$index]}',";
                     // Update dispensers using tx_index if we have it, otherwise default to using source and asset to identify dispenser
                     if($where=="" && in_array('tx_index',array_values($fields))){
                         $where = " tx_index='{$fldmap['tx_index']}'";
