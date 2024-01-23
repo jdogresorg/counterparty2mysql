@@ -125,7 +125,17 @@ class Client {
             $payload['params'] = $params;
         }
 
+        $debug = false;
+        if($debug){
+            print "---Request---\n";
+            var_dump($payload);
+        }
         $result = $this->doRequest($payload);
+
+        if($debug){
+            print "---Result---\n";
+            var_dump($result);
+        }
 
         if (isset($result['id']) && $result['id'] == $id && array_key_exists('result', $result)) {
             return $result['result'];
