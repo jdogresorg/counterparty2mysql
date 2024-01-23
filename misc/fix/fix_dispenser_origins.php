@@ -17,7 +17,7 @@ require_once(__DIR__ . '/../../includes/config.php');
 
 // Initialize the database and counterparty API connections
 initDB(DB_HOST, DB_USER, DB_PASS, DB_DATA, true);
-initCP(CP_HOST, CP_USER, CP_PASS, true);
+initCP(DP_HOST, DP_USER, DP_PASS, true);
 
 // Lookup all dispensers
 $sql = "SELECT 
@@ -42,7 +42,7 @@ if($results && $results->num_rows){
         $hash      = $row['tx_hash'];
         $tx_index  = $row['tx_index'];
         print "[{$cnt} / {$errors} / ${fixed}] checking current origin of {$tx_index}...\n";
-        $result = $counterparty->execute('get_dispensers', array('filters' => array('field' => 'tx_hash', 'op' => '==', 'value' => $hash)));
+        $result = $dogeparty->execute('get_dispensers', array('filters' => array('field' => 'tx_hash', 'op' => '==', 'value' => $hash)));
         foreach($result as $data){
             $origin    = $data['origin'];
             $origin_id = createAddress($origin);
