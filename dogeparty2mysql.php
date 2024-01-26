@@ -212,8 +212,11 @@ while($block <= $current){
                     $value = preg_replace('/[\x{10000}-\x{10FFFF}]/u', '', $value);
             }
             // Replace 4-byte UTF-8 characters (fixes issue with breaking SQL queries) 
-            if($field=='description')
+            if($field=='description'){
                 $value = preg_replace('/[\x{10000}-\x{10FFFF}]/u', '', $value);
+                // Truncate to first 10K characters
+                $value = substr($value,0,10000); 
+            }
             // Translate some field names where bindings field names and table field names differ
             if($table=='credits' && $field=='action')
                 $field='calling_function';
