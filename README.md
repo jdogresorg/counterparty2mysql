@@ -93,5 +93,6 @@ Database Information
 - [index_tx](sql/index_tx.sql)
 - [index_tx_types](sql/index_tx_types.sql)
 - [transactions](sql/transactions.sql)
+- [transaction_outputs](sql/transaction_outputs.sql)
 
 Helpful? Donate BTC, XCP or any Counterparty asset to 1JDogZS6tQcSxwfxhv6XKKjcyicYA4Feev
