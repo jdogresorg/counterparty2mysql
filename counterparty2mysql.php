@@ -175,6 +175,10 @@ while($block <= $current){
         $bindings = json_decode($msg->bindings);
         $command  = $msg->command;
 
+        // v10.0.0 - Ignore certain messages for now
+        if(in_array($table,array('assets', 'blocks','transactions','transaction_outputs')))
+            continue;
+
         // Build out array of fields and values
         $fields = array();
         $values = array();
@@ -251,7 +255,13 @@ while($block <= $current){
                 // Force null value to integer value
                 if($field=='last_status_tx_hash_id' && $value==null)
                     $value = 0;
+                // v10.0.0 - Ignore certain fields for now
+                if(in_array($field,array('rowid','dispense_count')))
+                    $ignore=true;
             }
+            // v10.0.0 - Remap 'id' to 'order_match_id' for updates
+            if($table=='order_matches' && $field=='id' && $command=='update')
+                $field = 'order_match_id';
             if($table=='dispenser_refills'){
                 if(in_array($field, array('dispenser_quantity','status')))
                     $ignore = true;
