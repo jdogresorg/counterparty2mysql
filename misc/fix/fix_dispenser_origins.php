@@ -15,6 +15,11 @@ $runtype = ($testnet) ? 'testnet' : 'mainnet';
 
 require_once(__DIR__ . '/../../includes/config.php');
 
+// Define some constants used for locking processes and logging errors
+define("LOCKFILE", '/var/tmp/counterparty2mysql-' . $runtype . '.lock');
+define("LASTFILE", '/var/tmp/counterparty2mysql-' . $runtype . '.last-block');
+define("ERRORLOG", '/var/tmp/counterparty2mysql-' . $runtype . '.errors');
+
 // Initialize the database and counterparty API connections
 initDB(DB_HOST, DB_USER, DB_PASS, DB_DATA, true);
 initCP(CP_HOST, CP_USER, CP_PASS, true);
