@@ -1,9 +1,9 @@
 #!/usr/bin/env php
 <?php
 /*********************************************************************
- * fix_dispenser_statuses.php
+ * fix_dispenser_origins.php
  * 
- * Script to loop through all open dispensers and validate open/closed state
+ * Script to loop through all open dispensers and validate origin
  ********************************************************************/
 
 // Hide all but errors
