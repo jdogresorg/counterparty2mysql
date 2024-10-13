@@ -14,7 +14,8 @@ CREATE TABLE transactions (
     btc_amount     BIGINT,           -- BTC amount sent
     fee            BIGINT,           -- BTC Fee paid (miners fee)
     data           MEDIUMTEXT,
-    supported      TINYINT(1)
+    supported      TINYINT(1),
+    utxos_info     TEXT
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
 CREATE UNIQUE INDEX tx_index       ON transactions (tx_index);

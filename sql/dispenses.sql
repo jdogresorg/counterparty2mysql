@@ -14,7 +14,8 @@ CREATE TABLE dispenses (
     asset_id              INTEGER UNSIGNED, -- id of record in assets table
     dispense_quantity     BIGINT  UNSIGNED, 
     -- dispenser_tx_hash TEXT
-    dispenser_tx_hash_id  INTEGER UNSIGNED  -- id of record in index_transactions
+    dispenser_tx_hash_id  INTEGER UNSIGNED,  -- id of record in index_transactions
+    btc_amount            INTEGER UNSIGNED DEFAULT 0
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
 CREATE        INDEX block_index          ON dispenses (block_index);
