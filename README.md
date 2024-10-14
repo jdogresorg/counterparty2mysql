@@ -30,8 +30,8 @@ cat sql/*.sql | mysql Counterparty_Testnet
 
 Bootstrap Information
 ---
-- [Counterparty.sql.gz](bootstrap/Counterparty.sql.gz) (Mainnet Block # 821,957)
-- [Counterparty_Testnet.sql.gz](bootstrap/Counterparty_Testnet.sql.gz) (Testnet Block # 2,543,400)
+- [Counterparty.sql.gz](bootstrap/Counterparty.sql.gz) (Mainnet Block # 865,600)
+- [Counterparty_Testnet.sql.gz](bootstrap/Counterparty_Testnet.sql.gz) (Testnet Block # 3,128,074)
 
 Command line arguments 
 ---
@@ -48,6 +48,7 @@ Database Information
 ---
 **Counterparty tables** (populated via 'messages')
 - [addresses](sql/addresses.sql)
+- [address_events](sql/address_events.sql)
 - [bets](sql/bets.sql)
 - [bet_expirations](sql/bet_expirations.sql)
 - [bet_match_expirations](sql/bet_match_expirations.sql)
@@ -64,6 +65,8 @@ Database Information
 - [dispenser_refills](sql/dispenser_refills.sql)
 - [dispenses](sql/dispenses.sql)
 - [dividends](sql/dividends.sql)
+- [fairminters](sql/fairminters.sql)
+- [fairmints](sql/fairmints.sql)
 - [issuances](sql/issuances.sql)
 - [order_expirations](sql/order_expirations.sql)
 - [order_match_expirations](sql/order_match_expirations.sql)
