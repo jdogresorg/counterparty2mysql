@@ -64,6 +64,8 @@ if($rollback){
         'dispenses',
         'dividends',
         'executions',
+        'fairminters',
+        'fairmints',
         'issuances',
         'index_tx',
         'messages',
