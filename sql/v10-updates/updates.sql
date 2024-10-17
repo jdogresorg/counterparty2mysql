@@ -34,6 +34,9 @@ ALTER TABLE issuances ADD description_locked VARCHAR(1);
 ALTER TABLE issuances ADD fair_minting BOOL DEFAULT 0;
 ALTER TABLE issuances ADD asset_events TEXT;
 
+-- sends table
+ALTER TABLE sends ADD fee_paid INTEGER UNSIGNED;
+
 -- address_events table
 DROP TABLE IF EXISTS address_events;
 CREATE TABLE address_events (
@@ -48,31 +51,32 @@ CREATE TABLE fairminters (
     tx_hash_id                  INTEGER UNSIGNED,
     tx_index                    INTEGER UNSIGNED,
     block_index                 INTEGER UNSIGNED,
-    source_id                   INTEGER UNSIGNED, -- id of record in index_addresses table
-    asset_id                    INTEGER UNSIGNED, -- id of record in assets table
-    asset_parent_id             INTEGER UNSIGNED, -- id of record in assets table
+    source_id                   INTEGER UNSIGNED, 
+    asset_id                    INTEGER UNSIGNED, 
+    asset_parent_id             INTEGER UNSIGNED, 
     asset_longname              VARCHAR(255),
     description                 VARCHAR(10000),
     price                       INTEGER UNSIGNED,
     quantity_by_price           INTEGER UNSIGNED,
-    hard_cap                    INTEGER UNSIGNED,
-    burn_payment                BOOL,
-    max_mint_per_tx             INTEGER UNSIGNED,
+    hard_cap                    VARCHAR(250),
+    burn_payment                VARCHAR(250),
+    max_mint_per_tx             VARCHAR(250),
     premint_quantity            INTEGER UNSIGNED,
     start_block                 INTEGER UNSIGNED,
     end_block                   INTEGER UNSIGNED,
-    minted_asset_commission_int INTEGER UNSIGNED,
-    soft_cap                    INTEGER UNSIGNED,
+    minted_asset_commission_int VARCHAR(250),
+    soft_cap                    VARCHAR(250),
     soft_cap_deadline_block     INTEGER UNSIGNED,
-    lock_description            BOOL,
-    lock_quantity               BOOL,
-    divisible                   BOOL,
-    pre_minted                  BOOL DEFAULT 0,
+    lock_description            VARCHAR(250),
+    lock_quantity               VARCHAR(250),
+    divisible                   VARCHAR(250),
+    pre_minted                  VARCHAR(250),
     status                      VARCHAR(250),
-    earned_quantity             INTEGER UNSIGNED,
+    earned_quantity             VARCHAR(250),
     commission                  INTEGER UNSIGNED,
     paid_quantity               INTEGER UNSIGNED
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+
 CREATE INDEX tx_hash_id      ON fairminters (tx_hash_id);
 CREATE INDEX block_index     ON fairminters (block_index);
 CREATE INDEX source_id       ON fairminters (source_id);
@@ -81,21 +85,21 @@ CREATE INDEX asset_parent_id ON fairminters (asset_parent_id);
 CREATE INDEX asset_longname  ON fairminters (asset_longname);
 CREATE INDEX status          ON fairminters (status);
 
-
 -- fairmints table
 DROP TABLE IF EXISTS fairmints;
 CREATE TABLE fairmints (
     tx_hash_id                  INTEGER UNSIGNED,
     tx_index                    INTEGER UNSIGNED,
     block_index                 INTEGER UNSIGNED,
-    source_id                   INTEGER UNSIGNED, -- id of record in index_addresses table
+    source_id                   INTEGER UNSIGNED, 
     fairminter_tx_hash_id       INTEGER UNSIGNED,
-    asset_id                    INTEGER UNSIGNED, -- id of record in assets table
-    earn_quantity               INTEGER UNSIGNED,
-    paid_quantity               INTEGER UNSIGNED,
-    commission                  INTEGER UNSIGNED,
+    asset_id                    INTEGER UNSIGNED, 
+    earn_quantity               VARCHAR(250),
+    paid_quantity               VARCHAR(250),
+    commission                  VARCHAR(250),
     status                      VARCHAR(250)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+
 CREATE INDEX tx_hash_id            ON fairmints (tx_hash_id);
 CREATE INDEX block_index           ON fairmints (block_index);
 CREATE INDEX source_id             ON fairmints (source_id);
@@ -103,3 +107,13 @@ CREATE INDEX fairminter_tx_hash_id ON fairmints (fairminter_tx_hash_id);
 CREATE INDEX asset_id              ON fairmints (asset_id);
 CREATE INDEX status                ON fairmints (status);
 
+-- transaction_count table
+DROP TABLE IF EXISTS transaction_count;
+CREATE TABLE transaction_count (
+    block_index                 INTEGER UNSIGNED,
+    transaction_id              INTEGER UNSIGNED,
+    count                       INTEGER UNSIGNED
+) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+
+CREATE INDEX block_index     ON transaction_count (block_index);
+CREATE INDEX transaction_id  ON transaction_count (transaction_id);

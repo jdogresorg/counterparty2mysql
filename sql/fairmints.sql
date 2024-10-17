@@ -10,9 +10,9 @@ CREATE TABLE fairmints (
     fairminter_tx_hash_id       INTEGER UNSIGNED,
     -- asset                    TEXT,
     asset_id                    INTEGER UNSIGNED, -- id of record in assets table
-    earn_quantity               INTEGER UNSIGNED,
-    paid_quantity               INTEGER UNSIGNED,
-    commission                  INTEGER UNSIGNED,
+    earn_quantity               VARCHAR(250),
+    paid_quantity               VARCHAR(250),
+    commission                  VARCHAR(250),
     status                      VARCHAR(250)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 

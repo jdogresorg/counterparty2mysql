@@ -14,21 +14,21 @@ CREATE TABLE fairminters (
     description                 VARCHAR(10000),
     price                       INTEGER UNSIGNED,
     quantity_by_price           INTEGER UNSIGNED,
-    hard_cap                    INTEGER UNSIGNED,
-    burn_payment                BOOL,
-    max_mint_per_tx             INTEGER UNSIGNED,
+    hard_cap                    VARCHAR(250),
+    burn_payment                VARCHAR(250),
+    max_mint_per_tx             VARCHAR(250),
     premint_quantity            INTEGER UNSIGNED,
     start_block                 INTEGER UNSIGNED,
     end_block                   INTEGER UNSIGNED,
-    minted_asset_commission_int INTEGER UNSIGNED,
-    soft_cap                    INTEGER UNSIGNED,
+    minted_asset_commission_int VARCHAR(250),
+    soft_cap                    VARCHAR(250),
     soft_cap_deadline_block     INTEGER UNSIGNED,
-    lock_description            BOOL,
-    lock_quantity               BOOL,
-    divisible                   BOOL,
-    pre_minted                  BOOL DEFAULT 0,
+    lock_description            VARCHAR(250),
+    lock_quantity               VARCHAR(250),
+    divisible                   VARCHAR(250),
+    pre_minted                  VARCHAR(250),
     status                      VARCHAR(250),
-    earned_quantity             INTEGER UNSIGNED,
+    earned_quantity             VARCHAR(250),
     commission                  INTEGER UNSIGNED,
     paid_quantity               INTEGER UNSIGNED
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
@@ -40,3 +40,5 @@ CREATE INDEX asset_id        ON fairminters (asset_id);
 CREATE INDEX asset_parent_id ON fairminters (asset_parent_id);
 CREATE INDEX asset_longname  ON fairminters (asset_longname);
 CREATE INDEX status          ON fairminters (status);
+
+ALTER TABLE fairminters MODIFY divisible VARCHAR(250);
