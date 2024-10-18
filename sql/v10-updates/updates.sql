@@ -48,12 +48,13 @@ CREATE UNIQUE INDEX address_id ON addresses (address_id);
 -- fairminters table
 DROP TABLE IF EXISTS fairminters;
 CREATE TABLE fairminters (
+    -- tx_hash                  TEXT,
     tx_hash_id                  INTEGER UNSIGNED,
     tx_index                    INTEGER UNSIGNED,
     block_index                 INTEGER UNSIGNED,
-    source_id                   INTEGER UNSIGNED, 
-    asset_id                    INTEGER UNSIGNED, 
-    asset_parent_id             INTEGER UNSIGNED, 
+    source_id                   INTEGER UNSIGNED,
+    asset_id                    INTEGER UNSIGNED,
+    asset_parent_id             INTEGER UNSIGNED,
     asset_longname              VARCHAR(255),
     description                 VARCHAR(10000),
     price                       INTEGER UNSIGNED,
@@ -61,7 +62,7 @@ CREATE TABLE fairminters (
     hard_cap                    VARCHAR(250),
     burn_payment                VARCHAR(250),
     max_mint_per_tx             VARCHAR(250),
-    premint_quantity            INTEGER UNSIGNED,
+    premint_quantity            VARCHAR(250),,
     start_block                 INTEGER UNSIGNED,
     end_block                   INTEGER UNSIGNED,
     minted_asset_commission_int VARCHAR(250),
@@ -73,8 +74,8 @@ CREATE TABLE fairminters (
     pre_minted                  VARCHAR(250),
     status                      VARCHAR(250),
     earned_quantity             VARCHAR(250),
-    commission                  INTEGER UNSIGNED,
-    paid_quantity               INTEGER UNSIGNED
+    commission                  VARCHAR(250),
+    paid_quantity               VARCHAR(250)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
 CREATE INDEX tx_hash_id      ON fairminters (tx_hash_id);

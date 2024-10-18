@@ -17,7 +17,7 @@ CREATE TABLE fairminters (
     hard_cap                    VARCHAR(250),
     burn_payment                VARCHAR(250),
     max_mint_per_tx             VARCHAR(250),
-    premint_quantity            INTEGER UNSIGNED,
+    premint_quantity            VARCHAR(250),,
     start_block                 INTEGER UNSIGNED,
     end_block                   INTEGER UNSIGNED,
     minted_asset_commission_int VARCHAR(250),
@@ -29,8 +29,8 @@ CREATE TABLE fairminters (
     pre_minted                  VARCHAR(250),
     status                      VARCHAR(250),
     earned_quantity             VARCHAR(250),
-    commission                  INTEGER UNSIGNED,
-    paid_quantity               INTEGER UNSIGNED
+    commission                  VARCHAR(250),
+    paid_quantity               VARCHAR(250)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
 CREATE INDEX tx_hash_id      ON fairminters (tx_hash_id);
@@ -40,5 +40,3 @@ CREATE INDEX asset_id        ON fairminters (asset_id);
 CREATE INDEX asset_parent_id ON fairminters (asset_parent_id);
 CREATE INDEX asset_longname  ON fairminters (asset_longname);
 CREATE INDEX status          ON fairminters (status);
-
-ALTER TABLE fairminters MODIFY divisible VARCHAR(250);
