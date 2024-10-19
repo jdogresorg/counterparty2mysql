@@ -104,6 +104,12 @@ if(!$block){
 // ./misc/update_market_info.php --update
 $updatePrices = true;
 
+// Flag to indicate if we should update balances as we parse each block
+// Set this to false if you want a faster parse 
+// NOTE: If this is set to false, be sure to run the following scripts after your done with your parse to update all address balances since block_index
+// ./misc/fix_address_balances.php --block=block_index
+$updateBalances = true;
+
 // Get the current block index from status info
 $current = $counterparty->status['last_block']['block_index'];
 
@@ -174,8 +180,10 @@ while($block <= $current){
 
     // Loop through addresses and update any asset balances
     // Doing this first ensures that address balances are correct immediately
-    foreach($addresses as $address => $address_id)
-        updateAddressBalance($address, array_keys($assets));
+    if($updateBalances){
+        foreach($addresses as $address => $address_id)
+            updateAddressBalance($address, array_keys($assets));
+    }
 
     // Loop through the messages and create/update the counterparty tables
     foreach($messages as $message){
