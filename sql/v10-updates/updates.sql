@@ -37,6 +37,10 @@ ALTER TABLE issuances ADD asset_events TEXT;
 -- sends table
 ALTER TABLE sends ADD fee_paid INTEGER UNSIGNED;
 
+-- transactions table
+ALTER TABLE transactions MODIFY btc_amount VARCHAR(250);
+ALTER TABLE transactions MODIFY fee VARCHAR(250);
+
 -- address_events table
 DROP TABLE IF EXISTS address_events;
 CREATE TABLE address_events (
