@@ -174,7 +174,11 @@ function createBlock( $block_index=null ){
 function createAsset( $asset=null, $block_index=null ){
     global $mysqli, $counterparty;
     // Get current information on this asset
-    $info = $counterparty->execute('get_asset_info', array('assets' => array($asset)));
+    // V1 API method (POST request - returns array)
+    // $info = $counterparty->execute('get_asset_info', array('assets' => array($asset)));
+    // V2 API method (GET request - returns object)
+    $json = json_decode(file_get_contents(CP_HOST . '/v2/assets/' . $asset));
+    $info = ($json && $json->result) ? [$json->result] : [];
     // Create data object using asset info (if any)
     $data                 = (count($info)) ? (object) $info[0] : (object) [];
     // Replace 4-byte UTF-8 characters (fixes issue with breaking SQL queries) 
