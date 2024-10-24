@@ -376,7 +376,7 @@ while($block <= $current){
             $where = "";
             foreach($fields as $index => $field){
                 // Update bets and orders records using tx_hash
-                if(in_array($table,array('orders','bets','dispensers')) && $field=='tx_hash_id'){
+                if(in_array($table,array('orders','bets','dispensers','fairminters')) && $field=='tx_hash_id'){
                     if($where!="")
                         $where .= " AND ";
                     $where .= " tx_hash_id='{$values[$index]}'";

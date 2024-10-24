@@ -22,14 +22,15 @@ CREATE TABLE issuances (
     locked             BOOL,
     reset              BOOL,
     status             TEXT,
-    description_locked VARCHAR(1),
-    fair_minting       BOOL DEFAULT 0, 
+    description_locked VARCHAR(1) DEFAULT 0,
+    fair_minting       VARCHAR(1), 
     asset_events       TEXT
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
-CREATE        INDEX tx_index    ON issuances (tx_index);
-CREATE        INDEX block_index ON issuances (block_index);
-CREATE        INDEX source_id   ON issuances (source_id);
-CREATE        INDEX issuer_id   ON issuances (issuer_id);
-CREATE        INDEX asset_id    ON issuances (asset_id);
-CREATE        INDEX tx_hash_id  ON issuances (tx_hash_id);
+CREATE        INDEX tx_index     ON issuances (tx_index);
+CREATE        INDEX block_index  ON issuances (block_index);
+CREATE        INDEX source_id    ON issuances (source_id);
+CREATE        INDEX issuer_id    ON issuances (issuer_id);
+CREATE        INDEX asset_id     ON issuances (asset_id);
+CREATE        INDEX tx_hash_id   ON issuances (tx_hash_id);
+CREATE        INDEX fair_minting ON issuances (fair_minting);

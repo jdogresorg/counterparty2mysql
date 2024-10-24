@@ -31,8 +31,9 @@ ALTER TABLE dispenses ADD btc_amount INTEGER UNSIGNED DEFAULT 0;
 
 -- issuances table
 ALTER TABLE issuances ADD description_locked VARCHAR(1);
-ALTER TABLE issuances ADD fair_minting BOOL DEFAULT 0;
+ALTER TABLE issuances ADD fair_minting VARCHAR(1) DEFAULT 0;
 ALTER TABLE issuances ADD asset_events TEXT;
+CREATE INDEX fair_minting ON issuances (fair_minting);
 
 -- sends table
 ALTER TABLE sends ADD fee_paid INTEGER UNSIGNED;
