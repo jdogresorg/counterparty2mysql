@@ -8,6 +8,12 @@ By default dogeparty2mysql starts at the first block with a Dogeparty transactio
 
 If no starting block is given, dogeparty2mysql will try to resume parsing at the last successfully parsed block, or use the first block with a dogeparty transaction.
 
+Versions / Branches
+---
+- counterparty-classic - https://github.com/jdogresorg/counterparty2mysql/tree/counterparty-classic
+- counterparty-2.0 - https://github.com/jdogresorg/counterparty2mysql/tree/counterparty-2.0
+- dogeparty - https://github.com/jdogresorg/counterparty2mysql/tree/dogeparty
+- unoparty - https://github.com/jdogresorg/counterparty2mysql/tree/unoparty
 
 Database Customizations
 ---
