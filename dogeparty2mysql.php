@@ -30,11 +30,6 @@ $block    = (is_numeric($args['block'])) ? intval($args['block']) : false;
 // Load config (only after runtype is defined)
 require_once(__DIR__ . '/includes/config.php');
 
-// Define some constants used for locking processes and logging errors
-define("LOCKFILE", '/var/tmp/dogeparty2mysql-' . $runtype . '.lock');
-define("LASTFILE", '/var/tmp/dogeparty2mysql-' . $runtype . '.last-block');
-define("ERRORLOG", '/var/tmp/dogeparty2mysql-' . $runtype . '.errors');
-
 // Initialize the database and dogeparty API connections
 initDB(DB_HOST, DB_USER, DB_PASS, DB_DATA, true);
 initCP(DP_HOST, DP_USER, DP_PASS, true);
