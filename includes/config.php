@@ -6,6 +6,11 @@
 // Hide all but errors
 error_reporting(E_ERROR);
 
+/* Log, lock, and state file config */
+define("LOCKFILE", '/var/tmp/counterparty2mysql-cp20-' . $runtype . '.lock');
+define("LASTFILE", '/var/tmp/counterparty2mysql-cp20-' . $runtype . '.last-block');
+define("ERRORLOG", '/var/tmp/counterparty2mysql-cp20-' . $runtype . '.errors');
+
 /* Mainnet config */
 if($runtype=='mainnet'){
     define("DB_HOST", "localhost");
