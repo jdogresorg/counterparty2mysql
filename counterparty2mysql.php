@@ -95,6 +95,19 @@ if(!$block){
     $block = (isset($last) && $last>=$first) ? (intval($last) + 1) : $first;
 }
 
+// Flag to indicate if we should update market/asset prices as we parse each block
+// Set this to false if you want a faster parse (price updates take a lil while)
+// NOTE: If this is set to false, be sure to run the following scripts after your done with your parse to update asset and market prices
+// ./misc/update_asset_prices.php
+// ./misc/update_market_info.php --update
+$updatePrices = true;
+
+// Flag to indicate if we should update balances as we parse each block
+// Set this to false if you want a faster parse 
+// NOTE: If this is set to false, be sure to run the following scripts after your done with your parse to update all address balances since block_index
+// ./misc/fix_address_balances.php --block=block_index
+$updateBalances = true;
+
 // Get the current block index from status info
 $current = $counterparty->status['last_block']['block_index'];
 
@@ -165,8 +178,10 @@ while($block <= $current){
 
     // Loop through addresses and update any asset balances
     // Doing this first ensures that address balances are correct immediately
-    foreach($addresses as $address => $address_id)
-        updateAddressBalance($address, array_keys($assets));
+    if($updateBalances){
+        foreach($addresses as $address => $address_id)
+            updateAddressBalance($address, array_keys($assets));
+    }
 
     // Loop through the messages and create/update the counterparty tables
     foreach($messages as $message){
@@ -409,7 +424,8 @@ while($block <= $current){
 
     // Loop through assets and update BTC & XCP price 
     foreach($assets as $asset =>$id)
-        updateAssetPrice($asset);
+        if($updatePrices)
+            updateAssetPrice($asset);
 
     // array of markets
     $markets = array(); 
@@ -444,7 +460,7 @@ while($block <= $current){
         }
     }
     // If we have any market changes, update the markets
-    if(count($markets)){
+    if(count($markets) && $updatePrices){
         $block_24hr = get24HourBlockIndex();
         createUpdateMarkets($markets);
     }
