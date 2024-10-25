@@ -8,6 +8,12 @@ By default counterparty2mysql starts at the first block with a Counterparty tran
 
 If no starting block is given, counterparty2mysql will try to resume parsing at the last successfully parsed block, or use the first block with a counterparty transaction.
 
+Versions / Branches
+---
+- counterparty-classic - https://github.com/jdogresorg/counterparty2mysql/tree/counterparty-classic
+- counterparty-2.0 - https://github.com/jdogresorg/counterparty2mysql/tree/counterparty-2.0
+- dogeparty - https://github.com/jdogresorg/counterparty2mysql/tree/dogeparty
+- unoparty - https://github.com/jdogresorg/counterparty2mysql/tree/unoparty
 
 Database Customizations
 ---
@@ -30,8 +36,8 @@ cat sql/*.sql | mysql Counterparty_Testnet
 
 Bootstrap Information
 ---
-- [Counterparty.sql.gz](bootstrap/Counterparty.sql.gz) (Mainnet Block # 866,528)
-- [Counterparty_Testnet.sql.gz](bootstrap/Counterparty_Testnet.sql.gz) (Testnet Block # 3,192,303)
+- [Counterparty.sql.gz](bootstrap/Counterparty.sql.gz) (Mainnet Block # 821,957)
+- [Counterparty_Testnet.sql.gz](bootstrap/Counterparty_Testnet.sql.gz) (Testnet Block # 2,543,400)
 
 Command line arguments 
 ---
@@ -48,7 +54,6 @@ Database Information
 ---
 **Counterparty tables** (populated via 'messages')
 - [addresses](sql/addresses.sql)
-- [address_events](sql/address_events.sql)
 - [bets](sql/bets.sql)
 - [bet_expirations](sql/bet_expirations.sql)
 - [bet_match_expirations](sql/bet_match_expirations.sql)
@@ -65,8 +70,6 @@ Database Information
 - [dispenser_refills](sql/dispenser_refills.sql)
 - [dispenses](sql/dispenses.sql)
 - [dividends](sql/dividends.sql)
-- [fairminters](sql/fairminters.sql)
-- [fairmints](sql/fairmints.sql)
 - [issuances](sql/issuances.sql)
 - [order_expirations](sql/order_expirations.sql)
 - [order_match_expirations](sql/order_match_expirations.sql)
