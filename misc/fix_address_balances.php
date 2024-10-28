@@ -115,7 +115,8 @@ function processAddresses($list){
                 if($results && $results->num_rows==1){
                     $asset_id = $results->fetch_assoc()['id'];
                 } else {
-                    bye('Error looking up asset id');
+                    continue;
+                    // bye('Error looking up asset id');
                 }
                 // Check if a balance record already exists for this asset
                 $results = $mysqli->query("SELECT id FROM balances WHERE address_id='{$address_id}' AND asset_id='{$asset_id}'");

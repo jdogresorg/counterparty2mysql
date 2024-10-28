@@ -681,10 +681,13 @@ function updateAssetPrice( $asset=null ){
 
 // Handle looping through a list of DEX markets and creating/updating the market information
 function createUpdateMarkets($markets){
+    $cnt   = 0;
+    $total = count($markets);
     foreach($markets as $market => $value){
+        $cnt++;
         list($asset1, $asset2) = explode('|',$market);
         $market_id = createMarket($asset1, $asset2);
-        updateMarketInfo($market_id);
+        updateMarketInfo($market_id, $cnt, $total);
     }
 }
 
@@ -759,7 +762,7 @@ function getLastMessageBlock(){
 
 
 // Handle updating market information
-function updateMarketInfo( $market_id ){
+function updateMarketInfo( $market_id, $cnt, $total ){
     global $mysqli, $block_24hr, $debug;
 
     // Timer to track each market update
@@ -813,7 +816,7 @@ function updateMarketInfo( $market_id ){
     }
 
     if($debug)
-        print "\nUpdating market information for {$asset1} / {$asset2}...";
+        print "\n[{$cnt} / {$total}] Updating market information for {$asset1} / {$asset2}...";
 
     // Lookup last trade price
     $sql = "SELECT

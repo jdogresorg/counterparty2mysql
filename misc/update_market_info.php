@@ -134,9 +134,12 @@ if($update){
 }
 
 
+$cnt   = 0;
+$total = count($markets);
 // Loop through any markets and update them 
 if(($queue || $update) && count($markets)){
-    print "Updating " . count($markets) . " Markets...\n";
+    $cnt++;
+    print "[{$cnt} / {$total}] Updating " . count($markets) . " Markets...\n";
     createUpdateMarkets($markets);
 }
 
