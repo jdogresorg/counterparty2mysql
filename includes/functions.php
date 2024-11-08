@@ -195,12 +195,9 @@ function createAsset( $asset=null, $block_index=null ){
     $data->asset_longname = $mysqli->real_escape_string($data->asset_longname);
     // Set asset type (1=Named, 2=Numeric, 3=Subasset, 4=Failed issuance, 5=Numeric Subasset)
     $data->type           = (substr($asset,0,1)=='A') ? 2 : 1;
-    // Named Subasset
-    if($data->type == 1 && $data->asset_longname!='')
-        $data->type = 3;
-    // Numeric Subasset
-    if($data->type == 2 && $data->asset_longname!='')
-        $data->type = 5;
+    // If subasset, determine if named subasset or numeric subassset 
+    if($data->asset_longname!='')
+        $data->type = (substr($data->asset_longname,0,1)=='A') ? 5 : 3;
     // Failed asset registration
     if(count($info)==0)
         $data->type = 4;
