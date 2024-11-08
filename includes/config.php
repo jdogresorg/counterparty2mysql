@@ -7,9 +7,9 @@
 error_reporting(E_ERROR);
 
 /* Log, lock, and state file config */
-define("LOCKFILE", '/var/tmp/counterparty2mysql-classic-' . $runtype . '.lock');
-define("LASTFILE", '/var/tmp/counterparty2mysql-classic-' . $runtype . '.last-block');
-define("ERRORLOG", '/var/tmp/counterparty2mysql-classic-' . $runtype . '.errors');
+define("LOCKFILE", '/var/tmp/counterparty2mysql-cp20-' . $runtype . '.lock');
+define("LASTFILE", '/var/tmp/counterparty2mysql-cp20-' . $runtype . '.last-block');
+define("ERRORLOG", '/var/tmp/counterparty2mysql-cp20-' . $runtype . '.errors');
 
 /* Mainnet config */
 if($runtype=='mainnet'){

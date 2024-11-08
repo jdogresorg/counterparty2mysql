@@ -174,7 +174,11 @@ function createBlock( $block_index=null ){
 function createAsset( $asset=null, $block_index=null ){
     global $mysqli, $counterparty;
     // Get current information on this asset
-    $info = $counterparty->execute('get_asset_info', array('assets' => array($asset)));
+    // V1 API method (POST request - returns array)
+    // $info = $counterparty->execute('get_asset_info', array('assets' => array($asset)));
+    // V2 API method (GET request - returns object)
+    $json = json_decode(file_get_contents(CP_HOST . '/v2/assets/' . $asset));
+    $info = ($json && $json->result) ? [$json->result] : [];
     // Create data object using asset info (if any)
     $data                 = (count($info)) ? (object) $info[0] : (object) [];
     // Replace 4-byte UTF-8 characters (fixes issue with breaking SQL queries) 
@@ -189,10 +193,12 @@ function createAsset( $asset=null, $block_index=null ){
     $data->supply         = intval($data->supply);
     $data->description    = $mysqli->real_escape_string($description);
     $data->asset_longname = $mysqli->real_escape_string($data->asset_longname);
-    // Set asset type (1=Named, 2=Numeric, 3=Subasset, 4=Failed issuance)
+    // Set asset type (1=Named, 2=Numeric, 3=Subasset, 4=Failed issuance, 5=Numeric Subasset)
     $data->type           = (substr($asset,0,1)=='A') ? 2 : 1;
+    // If subasset, determine if named subasset or numeric subassset 
     if($data->asset_longname!='')
-        $data->type = 3;
+        $data->type = (substr($data->asset_longname,0,1)=='A') ? 5 : 3;
+    // Failed asset registration
     if(count($info)==0)
         $data->type = 4;
     // Force numeric values for special assets
@@ -354,13 +360,16 @@ function createMessage( $message=null ){
     $bindings      = $mysqli->real_escape_string($msg->bindings);
     $block_index   = $mysqli->real_escape_string($msg->block_index);
     $message_index = $mysqli->real_escape_string($msg->message_index);
-    $timestamp     = $mysqli->real_escape_string($msg->timestamp);
+    $timestamp     = ($msg->timestamp) ? $msg->timestamp : 'NULL';
+    $event         = $mysqli->real_escape_string($msg->event);
+    $tx_hash       = $mysqli->real_escape_string($msg->tx_hash);
+    $event_hash    = $mysqli->real_escape_string($msg->event_hash);
     $results       = $mysqli->query("SELECT message_index FROM messages WHERE `message_index`='{$message_index}' LIMIT 1");
     if($results){
         if($results->num_rows==0){
-            $sql = "INSERT INTO messages (message_index, block_index, command, category, bindings, timestamp) values ('{$message_index}','{$block_index}','{$command}','{$category}','{$bindings}','{$timestamp}')";
+            $sql = "INSERT INTO messages (message_index, block_index, command, category, bindings, timestamp, event, tx_hash, event_hash) values ('{$message_index}','{$block_index}','{$command}','{$category}','{$bindings}', " . $timestamp . ",'{$event}','{$tx_hash}','{$event_hash}')";
         } else {
-            $sql = "UPDATE messages SET block_index='{$block_index}', command='{$command}', category='{$category}', bindings='{$bindings}', timestamp='{$timestamp}' WHERE message_index='{$message_index}'";
+            $sql = "UPDATE messages SET block_index='{$block_index}', command='{$command}', category='{$category}', bindings='{$bindings}', timestamp=" . $timestamp . ",  event='{$event}', tx_hash='{$tx_hash}', event_hash='{$event_hash}' WHERE message_index='{$message_index}'";
         }
         $results = $mysqli->query($sql);
         if(!$results){
