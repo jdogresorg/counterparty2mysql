@@ -59,6 +59,8 @@ if($rollback){
         'dispenses',
         'dividends',
         'executions',
+        'fairminters',
+        'fairmints',
         'issuances',
         'index_tx',
         'messages',
@@ -107,9 +109,9 @@ $updateBalances = true;
 $current = $counterparty->status['last_block']['block_index'];
 
 // Define array of fields that contain assets, addresses, transactions, and contracts
-$fields_asset       = array('asset', 'backward_asset', 'dividend_asset', 'forward_asset', 'get_asset', 'give_asset');
-$fields_address     = array('address', 'bet_hash', 'destination', 'feed_address', 'issuer', 'source', 'oracle_address', 'tx0_address', 'tx1_address', 'origin');
-$fields_transaction = array('event', 'move_random_hash', 'offer_hash', 'order_hash', 'rps_hash', 'tx_hash', 'tx0_hash', 'tx0_move_random_hash', 'tx1_hash', 'tx1_move_random_hash', 'dispenser_tx_hash', 'last_status_tx_hash', 'dispenser_tx_hash');
+$fields_asset       = array('asset', 'backward_asset', 'dividend_asset', 'forward_asset', 'get_asset', 'give_asset','asset_parent');
+$fields_address     = array('address', 'bet_hash', 'destination', 'feed_address', 'issuer', 'source', 'oracle_address', 'tx0_address', 'tx1_address', 'origin', 'last_status_tx_source');
+$fields_transaction = array('event', 'move_random_hash', 'offer_hash', 'order_hash', 'rps_hash', 'tx_hash', 'tx0_hash', 'tx0_move_random_hash', 'tx1_hash', 'tx1_move_random_hash', 'dispenser_tx_hash', 'last_status_tx_hash', 'dispenser_tx_hash', 'block_hash', 'fairminter_tx_hash');
 $fields_contract    = array('contract_id');
 
 // Loop through the blocks until we are current
@@ -165,7 +167,7 @@ while($block <= $current){
                     $contracts[$value] = createContract($value);
         }
         // Create record in tx_index (so we can map tx_index to tx_hash and table with data)
-        if(isset($obj->tx_index) && isset($obj->block_index) && isset($transactions[$obj->tx_hash]))
+        if(isset($obj->tx_index) && isset($obj->block_index) && isset($transactions[$obj->tx_hash]) && $msg->category!='transactions' && $msg->category!='transaction_outputs')
             createTxIndex($obj->tx_index, $obj->block_index, $msg->category, $transactions[$obj->tx_hash]);
         // Create record in the messages table (so we can review the CP messages as needed)
         createMessage($message);
@@ -185,8 +187,8 @@ while($block <= $current){
         $bindings = json_decode($msg->bindings);
         $command  = $msg->command;
 
-        // v10.0.0 - Ignore certain messages for now
-        if(in_array($table,array('assets', 'blocks','transactions','transaction_outputs')))
+        // v10.0.0 - Ignore certain messages for now as they conflict with our already existing tables and bloats database by not indexing addresses/hashes via id
+        if(in_array($table,array('assets', 'blocks', 'transaction_outputs')))
             continue;
 
         // Build out array of fields and values
@@ -269,9 +271,6 @@ while($block <= $current){
                 if(in_array($field,array('rowid','dispense_count')))
                     $ignore=true;
             }
-            // v10.0.0 - Remap 'id' to 'order_match_id' for updates
-            if($table=='order_matches' && $field=='id' && $command=='update')
-                $field = 'order_match_id';
             if($table=='dispenser_refills'){
                 if(in_array($field, array('dispenser_quantity','status')))
                     $ignore = true;
@@ -351,7 +350,7 @@ while($block <= $current){
             $sql = rtrim($sql, " AND");
             $sqlUpdate = rtrim($sqlUpdate, " AND");
 
-            // print $sql;
+            // print "{$sql}\n";
             $results = $mysqli->query($sql);
             if($results){
                 //on duplicate key statement will update the row if exists already
@@ -372,7 +371,7 @@ while($block <= $current){
             $where = "";
             foreach($fields as $index => $field){
                 // Update bets and orders records using tx_hash
-                if(in_array($table,array('orders','bets','dispensers')) && $field=='tx_hash_id'){
+                if(in_array($table,array('orders','bets','dispensers','fairminters')) && $field=='tx_hash_id'){
                     if($where!="")
                         $where .= " AND ";
                     $where .= " tx_hash_id='{$values[$index]}'";
@@ -400,6 +399,9 @@ while($block <= $current){
                     } else {
                         $where = " source_id='{$fldmap['source_id']}' AND asset_id='{$fldmap['asset_id']}'";
                     }
+                // Skup updating the id field unnecessarily when updating an order match
+                } else if($table=='order_matches' && $field=='id'){
+                    continue;
                 } else {
                     $sql .= " {$field}='{$values[$index]}',";
                 }
@@ -410,6 +412,7 @@ while($block <= $current){
             } else {
                 byeLog('Error - no WHERE criteria found');
             }
+            // print "{$sql}\n";
             $results = $mysqli->query($sql);
             if(!$results)
                 byeLog('Error while trying to update record in ' . $table . ' : ' . $sql);
@@ -461,9 +464,9 @@ while($block <= $current){
     }
 
     // Get list of transactions from the transactions table (used to track BTC paid and miners fee)
-    $transactions = $counterparty->execute('get_transactions', array('filters' => array("field" => "block_index", "op" => "==", "value" => $block)));
-    foreach($transactions as $transaction)
-        createTransactionHistory($transaction);
+    // $transactions = $counterparty->execute('get_transactions', array('filters' => array("field" => "block_index", "op" => "==", "value" => $block)));
+    // foreach($transactions as $transaction)
+    //     createTransactionHistory($transaction);
 
     // Report time to process block
     $time = $timer->finish();
