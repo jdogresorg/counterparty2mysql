@@ -214,7 +214,7 @@ function createAsset( $asset=null, $block_index=null ){
             $row = $results->fetch_assoc();
             $id  = $row['id'];
             // If we don't have any asset data, skip update and just return asset id
-            if(count($data)==0)
+            if(!isset($data->asset_id))
                 return $id;
             $sql = "UPDATE assets SET
                         asset_id       = '{$data->asset_id}',
@@ -235,8 +235,8 @@ function createAsset( $asset=null, $block_index=null ){
                 byeLog('Error while trying to update asset record for ' . $asset . ' : ' . $sql);
             }
         } else {
-            // If we don't have any asset data, skip update and just return asset id
-            if(count($data)==0)
+            // If we don't have any asset data, throw error
+            if(!isset($data->asset_id))
                 byeLog('Error while trying to create asset record for ' . $asset . ': no asset data found!');
             // Create asset information
             $sql = "INSERT INTO assets (asset_id, asset, asset_longname, block_index, type, divisible, description, issuer_id, locked, owner_id, supply) values (
