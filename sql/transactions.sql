@@ -15,6 +15,7 @@ CREATE TABLE transactions (
     fee            VARCHAR(250),     -- BTC Fee paid (miners fee)
     data           MEDIUMTEXT,
     supported      TINYINT(1),
+    transaction_type VARCHAR(45),  
     utxos_info     TEXT
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
