@@ -245,6 +245,9 @@ while($block <= $current){
                 // Handle issues with unpacking data where all values are empty
                 if(in_array($field, array('call_date','call_price','quantity')) && $value=='')
                     $value = 0;
+                // Handle fair_minting as false, (real_escape_string of false gives empty string which is not compatible with column type in DB)
+                if (in_array($field, array('fair_minting')) && $value == false)
+                    $value = 0;                
             }
             // Rock / Paper / Sciscors
             if($table=='rps'){
@@ -260,6 +263,11 @@ while($block <= $current){
                     $value = intval($value);
                 if($field=='msg_index')
                     $ignore = true;
+            }
+            // Handle btc_amount/fee null cases, (real_escape_string of false/null gives empty string which is not compatible with column type in DB)
+            if($table == 'transactions'){
+                if(($field == 'btc_amount' || $field == 'fee') && !isset($value))
+                    $value = intval($value);
             }
             if($table=='dispensers'){
                 if($field=='prev_status')
