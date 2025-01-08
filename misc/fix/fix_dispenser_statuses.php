@@ -29,7 +29,7 @@ $sql = "SELECT
             index_transactions t
         WHERE
             d.tx_hash_id = t.id AND
-            d.status = 0 
+            d.status != 10 
         ORDER BY d.tx_index";
 // print $sql;
 $results = $mysqli->query($sql);
@@ -41,7 +41,7 @@ if($results && $results->num_rows){
         $cnt++;
         $hash   = $row['tx_hash'];
         print "[{$cnt} / {$errors} / ${fixed}] checking current status of {$hash}...\n";
-        $result = $counterparty->execute('get_dispensers', array('filters' => array('field' => 'tx_hash', 'op' => '==', 'value' => $hash)));
+        $result = $dogeparty->execute('get_dispensers', array('filters' => array('field' => 'tx_hash', 'op' => '==', 'value' => $hash)));
         foreach($result as $data){
             if($row['status']!=$data['status']){
                 $errors++;
