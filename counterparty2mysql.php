@@ -245,9 +245,9 @@ while($block <= $current){
                     $value = 0;
             }
             // Rock / Paper / Sciscors
-            if($table=='rps'){
-                // Force move_random_hash_id to numeric value
-                if($field=='move_random_hash_id' && !isset($value))
+            if($table=='rps' || $table=='rpsresolves'){
+                // Force certain fields to numeric value
+                if(($field=='move_random_hash_id' || $field=='move') && !isset($value))
                     $value = intval($value);
                 // Ignore the 'calling_function'
                 if($field=='calling_function')
