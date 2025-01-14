@@ -379,7 +379,7 @@ while($block <= $current){
             $where = "";
             foreach($fields as $index => $field){
                 // Update bets and orders records using tx_hash
-                if(in_array($table,array('orders','bets','dispensers','fairminters')) && $field=='tx_hash_id'){
+                if(in_array($table,array('orders','bets','fairminters')) && $field=='tx_hash_id'){
                     if($where!="")
                         $where .= " AND ";
                     $where .= " tx_hash_id='{$values[$index]}'";
@@ -402,10 +402,12 @@ while($block <= $current){
                     if($field=='status' && ($values[$index]==10||$values[$index]==11))
                         $sql   .= " status='{$values[$index]}',";
                     // Update dispensers using tx_index if we have it, otherwise default to using source and asset to identify dispenser
-                    if($where=="" && in_array('tx_index',array_values($fields))){
-                        $where = " tx_index='{$fldmap['tx_index']}'";
-                    } else {
-                        $where = " source_id='{$fldmap['source_id']}' AND asset_id='{$fldmap['asset_id']}'";
+                    if($where==""){
+                        if(in_array('tx_index',array_values($fields))){
+                            $where = " tx_index='{$fldmap['tx_index']}'";
+                        } else {
+                            $where = " source_id='{$fldmap['source_id']}' AND asset_id='{$fldmap['asset_id']}'";
+                        }
                     }
                 // Skup updating the id field unnecessarily when updating an order match
                 } else if($table=='order_matches' && $field=='id'){
