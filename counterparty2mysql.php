@@ -73,7 +73,8 @@ if($rollback){
         'rpsresolves',
         'sends',
         'sweeps',
-        'transactions'
+        'transactions',
+        'transaction_outputs'
     ];
     foreach($tables as $table){
         $results = $mysqli->query("DELETE FROM {$table} WHERE block_index>{$block_index}");
@@ -259,6 +260,9 @@ while($block <= $current){
                 if($field=='msg_index')
                     $ignore = true;
             }
+            // Force null out_index value to integer value
+            if($table=='dispenses' && $field=='out_index' && !isset($value))
+                $value = intval($value);
             if($table=='dispensers'){
                 if($field=='prev_status')
                     $ignore = true;
