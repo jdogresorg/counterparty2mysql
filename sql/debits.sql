@@ -9,8 +9,8 @@ CREATE TABLE debits (
     quantity     BIGINT,
     action       TEXT,
     -- event     TEXT,
-    event_id     INTEGER UNSIGNED  -- id of record in index_transactions
-    utxo         TEXT, 
+    event_id     INTEGER UNSIGNED,  -- id of record in index_transactions
+    utxo         TEXT,
     utxo_address TEXT
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 

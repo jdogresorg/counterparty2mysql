@@ -17,7 +17,7 @@ CREATE TABLE fairminters (
     hard_cap                    VARCHAR(250),
     burn_payment                VARCHAR(250),
     max_mint_per_tx             VARCHAR(250),
-    premint_quantity            VARCHAR(250),,
+    premint_quantity            VARCHAR(250),
     start_block                 INTEGER UNSIGNED,
     end_block                   INTEGER UNSIGNED,
     minted_asset_commission_int VARCHAR(250),
