@@ -110,8 +110,8 @@ $current = $counterparty->status['last_block']['block_index'];
 
 // Define array of fields that contain assets, addresses, transactions, and contracts
 $fields_asset       = array('asset', 'backward_asset', 'dividend_asset', 'forward_asset', 'get_asset', 'give_asset','asset_parent');
-$fields_address     = array('address', 'bet_hash', 'destination', 'feed_address', 'issuer', 'source', 'oracle_address', 'tx0_address', 'tx1_address', 'origin', 'last_status_tx_source');
-$fields_transaction = array('event', 'move_random_hash', 'offer_hash', 'order_hash', 'rps_hash', 'tx_hash', 'tx0_hash', 'tx0_move_random_hash', 'tx1_hash', 'tx1_move_random_hash', 'dispenser_tx_hash', 'last_status_tx_hash', 'dispenser_tx_hash', 'block_hash', 'fairminter_tx_hash');
+$fields_address     = array('address', 'bet_hash', 'destination', 'feed_address', 'issuer', 'source', 'oracle_address', 'tx0_address', 'tx1_address', 'origin', 'last_status_tx_source', 'destination_address', 'source_address', 'utxo_address');
+$fields_transaction = array('event', 'move_random_hash', 'offer_hash', 'order_hash', 'rps_hash', 'tx_hash', 'tx0_hash', 'tx0_move_random_hash', 'tx1_hash', 'tx1_move_random_hash', 'dispenser_tx_hash', 'last_status_tx_hash', 'dispenser_tx_hash', 'block_hash', 'fairminter_tx_hash', 'utxo');
 $fields_contract    = array('contract_id');
 
 // Loop through the blocks until we are current
@@ -258,6 +258,11 @@ while($block <= $current){
                 if($field=='calling_function')
                     $ignore = true;
             }
+            // Force numeric values on utxo fields
+            if($table=='credits' || $table=='debits'){
+                if(($field=='utxo_id' || $field=='utxo_address_id') && (!isset($value) || is_null($value)))
+                    $value = intval($value);
+            }
             if($table=='sends'){
                 if($field=='quantity')
                     $value = intval($value);
@@ -379,14 +384,14 @@ while($block <= $current){
             $where = "";
             foreach($fields as $index => $field){
                 // Update bets and orders records using tx_hash
-                if(in_array($table,array('orders','bets','dispensers','fairminters')) && $field=='tx_hash_id'){
+                if(in_array($table,array('orders','bets','fairminters')) && $field=='tx_hash_id'){
                     if($where!="")
                         $where .= " AND ";
                     $where .= " tx_hash_id='{$values[$index]}'";
                 // Update *_matches tables using id field
                 } else if(in_array($table,array('order_matches','bet_matches','rps_matches')) && 
-                          in_array($field,array('order_match_id','bet_match_id','rps_match_id'))){
-                    $where .= " id='{$values[$index]}'";
+                          in_array($field,array('order_match_id','bet_match_id','rps_match_id', 'id'))){
+                    $where = " id='{$values[$index]}'";
                 // Update rps table using tx_hash or tx_index
                 } else if($table=='rps' && in_array($field,array('tx_hash_id','tx_index'))){
                     $where .= " {$field}='{$values[$index]}'";
@@ -402,10 +407,12 @@ while($block <= $current){
                     if($field=='status' && ($values[$index]==10||$values[$index]==11))
                         $sql   .= " status='{$values[$index]}',";
                     // Update dispensers using tx_index if we have it, otherwise default to using source and asset to identify dispenser
-                    if($where=="" && in_array('tx_index',array_values($fields))){
-                        $where = " tx_index='{$fldmap['tx_index']}'";
-                    } else {
-                        $where = " source_id='{$fldmap['source_id']}' AND asset_id='{$fldmap['asset_id']}'";
+                    if($where==""){
+                        if(in_array('tx_index',array_values($fields))){
+                            $where = " tx_index='{$fldmap['tx_index']}'";
+                        } else {
+                            $where = " source_id='{$fldmap['source_id']}' AND asset_id='{$fldmap['asset_id']}'";
+                        }
                     }
                 // Skup updating the id field unnecessarily when updating an order match
                 } else if($table=='order_matches' && $field=='id'){

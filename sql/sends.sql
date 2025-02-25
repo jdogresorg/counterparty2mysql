@@ -6,19 +6,24 @@ CREATE TABLE sends (
     block_index    INTEGER UNSIGNED,
     -- source      TEXT,
     source_id      INTEGER UNSIGNED, -- id of record in index_addresses
+    source_address_id INTEGER UNSIGNED, -- id of record in index_addresses
     -- destination TEXT,
     destination_id INTEGER UNSIGNED, -- id of record in index_addresses
+    destination_address_id INTEGER UNSIGNED, -- id of record in index_addresses
     -- asset       TEXT,
     asset_id       INTEGER UNSIGNED, -- id of record in assets table
     quantity       BIGINT,
     memo           LONGTEXT,
     fee_paid       INTEGER UNSIGNED,    
+    send_type      TEXT,    
     status         TEXT
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
-CREATE        INDEX tx_index       ON sends (tx_index);
-CREATE        INDEX block_index    ON sends (block_index);
-CREATE        INDEX tx_hash_id     ON sends (tx_hash_id);
-CREATE        INDEX source_id      ON sends (source_id);
-CREATE        INDEX destination_id ON sends (destination_id);
-CREATE        INDEX asset_id       ON sends (asset_id);
+CREATE        INDEX tx_index               ON sends (tx_index);
+CREATE        INDEX block_index            ON sends (block_index);
+CREATE        INDEX tx_hash_id             ON sends (tx_hash_id);
+CREATE        INDEX source_id              ON sends (source_id);
+CREATE        INDEX destination_id         ON sends (destination_id);
+CREATE        INDEX destination_address_id ON sends (destination_address_id);
+CREATE        INDEX source_address_id      ON sends (source_address_id);
+CREATE        INDEX asset_id               ON sends (asset_id);
