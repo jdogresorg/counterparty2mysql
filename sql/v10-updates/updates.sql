@@ -9,16 +9,20 @@ CREATE INDEX event on messages (event);
 ALTER TABLE transactions ADD utxos_info TEXT;
 
 -- credits table
-ALTER TABLE credits add tx_index     INTEGER UNSIGNED;
-ALTER TABLE credits add utxo         TEXT;
-ALTER TABLE credits add utxo_address TEXT;
-CREATE INDEX tx_index ON credits (tx_index);
+ALTER TABLE credits add tx_index INTEGER UNSIGNED;
+ALTER TABLE credits add utxo_id INTEGER UNSIGNED;
+ALTER TABLE credits add utxo_address_id INTEGER UNSIGNED;
+CREATE INDEX tx_index        ON credits (tx_index);
+CREATE INDEX utxo_id         ON credits (utxo_id);
+CREATE INDEX utxo_address_id ON credits (utxo_address_id);
 
 -- debits table
-ALTER TABLE debits add tx_index     INTEGER UNSIGNED;
-ALTER TABLE debits add utxo         TEXT;
-ALTER TABLE debits add utxo_address TEXT;
-CREATE INDEX tx_index ON debits (tx_index);
+ALTER TABLE debits add tx_index INTEGER UNSIGNED;
+ALTER TABLE debits add utxo_id INTEGER UNSIGNED;
+ALTER TABLE debits add utxo_address_id INTEGER UNSIGNED;
+CREATE INDEX tx_index        ON debits (tx_index);
+CREATE INDEX utxo_id         ON debits (utxo_id);
+CREATE INDEX utxo_address_id ON debits (utxo_address_id);
 
 -- dispensers table
 ALTER TABLE dispensers ADD dispense_count INTEGER DEFAULT 0;
