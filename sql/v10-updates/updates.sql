@@ -31,7 +31,7 @@ ALTER TABLE dispensers ADD close_block_index INTEGER UNSIGNED;
 CREATE INDEX last_status_tx_source_id ON dispensers (last_status_tx_source_id);
 
 -- dispenses table
-ALTER TABLE dispenses ADD btc_amount INTEGER UNSIGNED DEFAULT 0;
+ALTER TABLE dispenses ADD btc_amount VARCHAR(12);
 
 -- issuances table
 ALTER TABLE issuances ADD description_locked VARCHAR(1);

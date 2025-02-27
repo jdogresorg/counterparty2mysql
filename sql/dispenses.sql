@@ -15,7 +15,7 @@ CREATE TABLE dispenses (
     dispense_quantity     BIGINT  UNSIGNED, 
     -- dispenser_tx_hash TEXT
     dispenser_tx_hash_id  INTEGER UNSIGNED,  -- id of record in index_transactions
-    btc_amount            INTEGER UNSIGNED DEFAULT 0
+    btc_amount            VARCHAR(12)        -- BTC amount in satoshis (support up to 9999.99999999)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
 CREATE        INDEX block_index          ON dispenses (block_index);
