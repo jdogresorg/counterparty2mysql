@@ -508,7 +508,7 @@ function updateAddressBalance( $address=null, $asset_list=null ){
                         byeLog('Error while trying to update balance record for ' . $address . ' - ' . $asset);
                 } else {
                     // Create asset balance only if the quantity is greater than 0
-                    if($quantity){
+                    if($quantity > 0){
                         $results = $mysqli->query("INSERT INTO balances (asset_id, address_id, quantity) values ('{$asset_id}','{$address_id}','{$quantity}')");
                         if(!$results)
                             byeLog('Error while trying to create balance record for ' . $address . ' - ' . $asset);
