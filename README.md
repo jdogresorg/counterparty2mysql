@@ -36,8 +36,8 @@ cat sql/*.sql | mysql Counterparty_Testnet
 
 Bootstrap Information
 ---
-- [Counterparty.sql.gz](bootstrap/Counterparty.sql.gz) (Mainnet Block # 878,868)
-- [Counterparty_Testnet.sql.gz](bootstrap/Counterparty_Testnet.sql.gz) (Testnet Block # 3,613,109)
+- [Counterparty](bootstrap/Counterparty/) (Mainnet Block # 886,169)
+- [Counterparty_Testnet](bootstrap/Counterparty_Testnet) (Testnet Block # 3,613,109)
 
 Command line arguments 
 ---
@@ -81,6 +81,7 @@ Database Information
 - [rps_matches](sql/rps_matches.sql)
 - [rpsresolves](sql/rpsresolves.sql)
 - [sends](sql/sends.sql)
+- [sweeps](sql/sweeps.sql)
 
 **EVM-related tables**
 - [contracts](sql/contracts.sql)
