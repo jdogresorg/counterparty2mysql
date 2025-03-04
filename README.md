@@ -36,8 +36,8 @@ cat sql/*.sql | mysql Counterparty_Testnet
 
 Bootstrap Information
 ---
-- [Counterparty.sql.gz](bootstrap/Counterparty.sql.gz) (Mainnet Block # 879,246)
-- [Counterparty_Testnet.sql.gz](bootstrap/Counterparty_Testnet.sql.gz) (Testnet Block # 3,613,173)
+- [Counterparty](bootstrap/Counterparty/) (Mainnet Block # 886,169)
+- [Counterparty_Testnet](bootstrap/Counterparty_Testnet/) (Testnet Block # 3,613,173)
 
 Command line arguments 
 ---
@@ -74,6 +74,7 @@ Database Information
 - [fairminters](sql/fairminters.sql)
 - [fairmints](sql/fairmints.sql)
 - [issuances](sql/issuances.sql)
+- [messages](sql/messages.sql)
 - [order_expirations](sql/order_expirations.sql)
 - [order_match_expirations](sql/order_match_expirations.sql)
 - [order_matches](sql/order_matches.sql)
@@ -84,6 +85,7 @@ Database Information
 - [rps_matches](sql/rps_matches.sql)
 - [rpsresolves](sql/rpsresolves.sql)
 - [sends](sql/sends.sql)
+- [sweeps](sql/sweeps.sql)
 
 **EVM-related tables**
 - [contracts](sql/contracts.sql)
@@ -102,6 +104,7 @@ Database Information
 - [index_tx](sql/index_tx.sql)
 - [index_tx_types](sql/index_tx_types.sql)
 - [transactions](sql/transactions.sql)
+- [transaction_counts](sql/transaction_counts.sql)
 - [transaction_outputs](sql/transaction_outputs.sql)
 
 Helpful? Donate BTC, XCP or any Counterparty asset to 1JDogZS6tQcSxwfxhv6XKKjcyicYA4Feev
