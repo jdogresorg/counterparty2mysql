@@ -36,7 +36,7 @@ cat sql/*.sql | mysql Counterparty_Testnet
 
 Bootstrap Information
 ---
-- [Counterparty](bootstrap/Counterparty/) (Mainnet Block # 886,169)
+- [Counterparty](bootstrap/Counterparty/) (Mainnet Block # 886,442)
 - [Counterparty_Testnet](bootstrap/Counterparty_Testnet/) (Testnet Block # 3,613,173)
 
 Command line arguments 
