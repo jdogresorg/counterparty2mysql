@@ -489,7 +489,7 @@ function updateAddressBalances( $address=null, $asset_list=null ){
         }
     } else {
         // Delete all balances records for this address 
-        $sql = "DELETE FROM balances WHERE address_id='{$address_id}' OR utxo_address_id='{$address_id}";
+        $sql = "DELETE FROM balances WHERE address_id='{$address_id}' OR utxo_address_id='{$address_id}'";
         $results = $mysqli->query($sql);
         if(!$results)
             byeLog('Error while trying to delete address records in the balances table');
@@ -514,7 +514,7 @@ function updateAddressBalances( $address=null, $asset_list=null ){
             $asset_id   = getAssetDatabaseId($balance->asset);               
             $quantity   = $balance->quantity;
             // Create asset balance only if the quantity is greater than 0
-            if($quantity > 0){
+            if($quantity > 0 && isset($asset_id)){
                 $sql = "INSERT INTO balances (asset_id, address_id, quantity, utxo_id, utxo_output, utxo_address_id) values ('{$asset_id}','{$address_id}','{$quantity}','{$utxo_id}','{$utxo_output}','{$utxo_address_id}')";
                 $results = $mysqli->query($sql);
                 if(!$results)
