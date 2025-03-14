@@ -120,7 +120,7 @@ $fields_asset       = array('asset', 'backward_asset', 'dividend_asset', 'forwar
 $fields_address     = array('address', 'destination', 'feed_address', 'issuer', 'source', 'oracle_address', 'tx0_address', 'tx1_address', 'origin', 'last_status_tx_source', 'destination_address', 'source_address', 'utxo_address');
 $fields_transaction = array('event', 'bet_hash', 'move_random_hash', 'offer_hash', 'order_hash', 'rps_hash', 'tx_hash', 'tx0_hash', 'tx0_move_random_hash', 'tx1_hash', 'tx1_move_random_hash', 'dispenser_tx_hash', 'last_status_tx_hash', 'dispenser_tx_hash', 'block_hash', 'fairminter_tx_hash', 'utxo', 'previous_block_hash','ledger_hash','txlist_hash','messages_hash');
 $fields_contract    = array('contract_id');
-$fields_integer     = array('asset_id','address_id','destination_id','utxo_id','utxo_address_id','locked','btc_amount','fee','fee_fraction_int','call_date','call_price','quantity','fair_minting','move_random_hash_id','last_status_tx_hash_id','reset','description_locked','supported');
+$fields_integer     = array('locked','btc_amount','fee','fee_fraction_int','call_date','call_price','quantity','fair_minting','reset','description_locked','supported');
 
 // Loop through the blocks until we are current
 while($block <= $current){
@@ -261,8 +261,9 @@ while($block <= $current){
                     $value = $transactions[$value];
                 }
             }
-            // Force certain fields to always have a numeric value
-            if(in_array($field, $fields_integer) && (!isset($value) || $value==''))
+            // Force certain fields to always have a integer value
+            // NOTE: fields that end in `_id` are automatically forced to integer value
+            if((in_array($field, $fields_integer) || str_contains($field,'_id'))  && (!isset($value) || $value==''))
                 $value = intval($value);
             // swap contract for id
             foreach($fields_contract as $name)
@@ -437,7 +438,7 @@ while($block <= $current){
         }
 
         // Handle 'update' and 'parse' commands
-        if($command=='update' || $command=='parse'){
+        if(in_array($command,array('update','parse'))){
             $sql   = "UPDATE {$table} SET";
             $where = "";
             foreach($fields as $index => $field){
