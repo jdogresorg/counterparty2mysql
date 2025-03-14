@@ -22,7 +22,6 @@ require_once(__DIR__ . '/../includes/config.php');
 initDB(DB_HOST, DB_USER, DB_PASS, DB_DATA, true);
 initCP(CP_HOST, CP_USER, CP_PASS, true);
 
-
 // Define list of addresses
 $addresses = array();
 
@@ -62,81 +61,17 @@ if($block){
     }
 }
 
-// Define list of addresses to retry
-$retry = array();
+$total = count($addresses);
+print "Updating {$total} addresses...\n";
 
-// Try to process the address list
-processAddresses($addresses);
+// Loop through addresses and update each
+foreach($addresses as $address){
+    $cnt++;
+    print "[{$cnt} / {$total}] Updating balances for {$address}...\n";
 
-// Try to process and address list failures
-if(count($retry)!=0)
-    processAddresses($retry);
+    // Ignore any multi-sig addresses (address1-address2)
+    if(str_contains($address, '-'))
+        continue;
 
-// Function to handle processing address list and update balances
-function processAddresses($list){
-    global $mysqli, $counterparty, $retry;
-    // Reset the retry list
-    $retry = array();
-    $total = count($list);
-    print "Updating {$total} addresses...\n";
-
-    $cnt = 0;
-    foreach($list as $address){
-        $cnt++;
-
-        print "[{$cnt} / {$total}] Updating balances for {$address}...\n";
-        // Lookup the address_id
-        $results = $mysqli->query("SELECT id FROM index_addresses WHERE address='{$address}'");
-        if($results && $results->num_rows==1){
-            $address_id = $results->fetch_assoc()['id'];
-        } else {
-            bye('Error looking up address id');
-        }
-
-        // Lookup any balance for this address and asset
-        $filters  = array(array('field' => 'address', 'op' => '==', 'value' => $address));
-        $offset   = 0;
-        $data     = $counterparty->execute('get_balances', array('filters' => $filters));
-        $balances = $data;
-
-        if($data){
-
-            // Loop until we get all balances
-            while(count($data)==1000){
-                $data     = $counterparty->execute('get_balances', array('filters' => $filters, 'offset' => count($balances)));
-                $balances = array_merge($balances, $data);
-            }
-
-            // Loop through balances
-            foreach($balances as $info){
-                $info    = (object) $info;
-                // Lookup asset id
-                $results = $mysqli->query("SELECT id FROM assets WHERE asset='{$info->asset}'");
-                if($results && $results->num_rows==1){
-                    $asset_id = $results->fetch_assoc()['id'];
-                } else {
-                    bye('Error looking up asset id');
-                }
-                // Check if a balance record already exists for this asset
-                $results = $mysqli->query("SELECT id FROM balances WHERE address_id='{$address_id}' AND asset_id='{$asset_id}'");
-                if($results){
-                    if($results->num_rows){
-                        $sql = "UPDATE balances SET quantity='{$info->quantity}' WHERE address_id='{$address_id}' AND asset_id='{$asset_id}'";
-                    } else {
-                        $sql = "INSERT INTO balances (quantity, address_id, asset_id) values ('{$info->quantity}', '{$address_id}', '{$asset_id}')";
-                    }
-                    $results = $mysqli->query($sql);
-                    if(!$results)
-                        bye('Error while trying to update balance record for ' . $address . ' - ' . $info->asset);
-                } else {
-                    bye('Error while trying to check for balance record for ' . $address . ' - ' . $info->asset);
-                }
-
-            }
-        } else {
-            // Add the failure to the retry list
-            print "adding {$address} to retry list...\n";
-            array_push($retry, $address);
-        }
-    }
+    updateAddressBalances($address);
 }
