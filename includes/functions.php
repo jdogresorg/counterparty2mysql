@@ -63,12 +63,16 @@ function initDB($hostname=null, $username=null, $password=null, $database=null, 
 // Setup Counterparty API connection
 function initCP($hostname=null, $username=null, $password=null, $log=false){
     global $counterparty;
-    $counterparty = new Client($hostname);
-    $counterparty->authentication($username, $password);
-    $status = $counterparty->execute('get_running_info');
+    // V2 API request method
+    $counterparty = new CounterpartyV2API();
+    $counterparty->getStatus();
+    // Old V1 API request method
+    // $counterparty = new Client($hostname);
+    // $counterparty->authentication($username, $password);
+    // $status = $counterparty->execute('get_running_info');
     // If we have a successfull response, store it in 'status'
-    if(isset($status)){
-        $counterparty->status = $status;
+    if(isset($counterparty->status->server_ready)){
+        print "Connected to counterparty server\n";
     } else {
         // If we failed to establish a connection, bail out
         $msg = 'Counterparty Connection Failure';
@@ -116,60 +120,6 @@ function getAssetId($asset=null){
 }
 
 
-// Create/Update records in the 'blocks' table and return record id
-function createBlock( $block_index=null ){
-    global $mysqli, $counterparty;
-    $data = (object) $counterparty->execute('get_block_info', array('block_index' => $block_index));
-    $data->block_hash_id          = createTransaction($data->block_hash);
-    $data->previous_block_hash_id = createTransaction($data->previous_block_hash);
-    $data->ledger_hash_id         = createTransaction($data->ledger_hash);
-    $data->txlist_hash_id         = createTransaction($data->txlist_hash);
-    $data->messages_hash_id       = createTransaction($data->messages_hash);
-    $results = $mysqli->query("SELECT block_index FROM blocks WHERE block_index='{$data->block_index}' LIMIT 1");
-    if($results){
-        if($results->num_rows){
-            $row = $results->fetch_assoc();
-            $id  = $row['id'];
-            $sql = "UPDATE blocks SET
-                       block_time             = '{$data->block_time}',
-                       block_hash_id          = '{$data->block_hash_id}',
-                       previous_block_hash_id = '{$data->previous_block_hash_id}',
-                       ledger_hash_id         = '{$data->ledger_hash_id}',
-                       txlist_hash_id         = '{$data->txlist_hash_id}',
-                       messages_hash_id       = '{$data->messages_hash_id}',
-                       difficulty             = '{$data->difficulty}'
-                    WHERE
-                        block_index='{$block_index}'";
-            $results = $mysqli->query($sql);
-            if($results){
-                return $id;
-            } else {
-                byeLog('Error while trying to update block ' . $data->block_index);
-            }
-        } else {
-            // Grab data on the asset from api and set some values before stashing info in db
-            $sql = "INSERT INTO blocks (block_index, block_time, block_hash_id, previous_block_hash_id, ledger_hash_id, txlist_hash_id, messages_hash_id, difficulty) values (
-                '{$data->block_index}',
-                '{$data->block_time}',
-                '{$data->block_hash_id}',
-                '{$data->previous_block_hash_id}',
-                '{$data->ledger_hash_id}',
-                '{$data->txlist_hash_id}',
-                '{$data->messages_hash_id}',
-                '{$data->difficulty}')";
-            $results = $mysqli->query($sql);
-            if($results){
-                return $mysqli->insert_id;
-            } else {
-                byeLog('Error while trying to create block ' . $data->block_index);
-            }
-        }
-    } else {
-        byeLog('Error while trying to lookup record in blocks table');
-    }
-}
-
-
 // Create/Update records in the 'assets' table and return record id
 function createAsset( $asset=null, $block_index=null ){
     global $mysqli, $counterparty;
@@ -180,21 +130,22 @@ function createAsset( $asset=null, $block_index=null ){
     $json = json_decode(file_get_contents(CP_HOST . '/v2/assets/' . $asset));
     $info = ($json && $json->result) ? [$json->result] : [];
     // Create data object using asset info (if any)
-    $data                 = (count($info)) ? (object) $info[0] : (object) [];
+    $data = (count($info)) ? (object) $info[0] : (object) [];
     // Replace 4-byte UTF-8 characters (fixes issue with breaking SQL queries) 
-    $description          = preg_replace('/[\x{10000}-\x{10FFFF}]/u', '', $data->description);
+    $description = preg_replace('/[\x{10000}-\x{10FFFF}]/u', '', $data->description);
     // Truncate to 10,000 chars (max field length)
-    $description          = substr($description,0,10000); 
-    $data->asset_id       = getAssetId($asset);
-    $data->issuer_id      = createAddress($data->issuer);
-    $data->owner_id       = createAddress($data->owner);
-    $data->divisible      = ($data->divisible) ? 1 : 0;  // convert to boolean
-    $data->locked         = ($data->locked) ? 1 : 0 ;    // convert to boolean
-    $data->supply         = intval($data->supply);
-    $data->description    = $mysqli->real_escape_string($description);
-    $data->asset_longname = $mysqli->real_escape_string($data->asset_longname);
+    $description              = substr($description,0,10000); 
+    $data->asset_id           = ($asset=='XCP') ? 1 : $data->asset_id;
+    $data->issuer_id          = createAddress($data->issuer);
+    $data->owner_id           = createAddress($data->owner);
+    $data->divisible          = ($data->divisible) ? 1 : 0;  // convert to boolean
+    $data->locked             = ($data->locked) ? 1 : 0 ;    // convert to boolean
+    $data->supply             = intval($data->supply);
+    $data->description        = $mysqli->real_escape_string($description);
+    $data->description_locked = ($data->description_locked) ? 1 : 0 ;    // convert to boolean
+    $data->asset_longname     = $mysqli->real_escape_string($data->asset_longname);
     // Set asset type (1=Named, 2=Numeric, 3=Subasset, 4=Failed issuance, 5=Numeric Subasset)
-    $data->type           = (substr($asset,0,1)=='A') ? 2 : 1;
+    $data->type               = (substr($asset,0,1)=='A') ? 2 : 1;
     // If subasset, determine if named subasset or numeric subassset 
     if($data->asset_longname!='')
         $data->type = (substr($data->asset_longname,0,1)=='A') ? 5 : 3;
@@ -206,6 +157,9 @@ function createAsset( $asset=null, $block_index=null ){
         $data->issuer_id = 0;
         $data->owner_id  = 0;
     }
+    // If we failed to get asset data in API request, get asset_id from function
+    if(!isset($data->asset_id))
+        $data->asset_id = getAssetId($asset);
     // Check if this asset already exists
     $results = $mysqli->query("SELECT id FROM assets WHERE asset='{$asset}' LIMIT 1");
     if($results){
@@ -217,17 +171,19 @@ function createAsset( $asset=null, $block_index=null ){
             if(!isset($data->asset_id))
                 return $id;
             $sql = "UPDATE assets SET
-                        asset_id       = '{$data->asset_id}',
-                        asset_longname = '{$data->asset_longname}',
-                        divisible      = '{$data->divisible}',
-                        description    = '{$data->description}',
-                        issuer_id      = '{$data->issuer_id}',
-                        owner_id       = '{$data->owner_id}',
-                        locked         = '{$data->locked}',
-                        type           = '{$data->type}',
-                        supply         = '{$data->supply}'
+                        asset_id           = '{$data->asset_id}',
+                        asset_longname     = '{$data->asset_longname}',
+                        divisible          = '{$data->divisible}',
+                        description        = '{$data->description}',
+                        description_locked = '{$data->description_locked}',
+                        issuer_id          = '{$data->issuer_id}',
+                        owner_id           = '{$data->owner_id}',
+                        locked             = '{$data->locked}',
+                        type               = '{$data->type}',
+                        supply             = '{$data->supply}'
                     WHERE
                         id='{$id}'";
+            // print "{$sql}\n";
             $results = $mysqli->query($sql);
             if($results){
                 return $id;
@@ -239,7 +195,7 @@ function createAsset( $asset=null, $block_index=null ){
             if(!isset($data->asset_id))
                 byeLog('Error while trying to create asset record for ' . $asset . ': no asset data found!');
             // Create asset information
-            $sql = "INSERT INTO assets (asset_id, asset, asset_longname, block_index, type, divisible, description, issuer_id, locked, owner_id, supply) values (
+            $sql = "INSERT INTO assets (asset_id, asset, asset_longname, block_index, type, divisible, description, description_locked, issuer_id, locked, owner_id, supply) values (
                 '{$data->asset_id}',
                 '{$asset}',
                 '{$data->asset_longname}',
@@ -247,6 +203,7 @@ function createAsset( $asset=null, $block_index=null ){
                 '{$data->type}',
                 '{$data->divisible}',
                 '{$data->description}',
+                '{$data->description_locked}',
                 '{$data->issuer_id}',
                 '{$data->locked}',
                 '{$data->owner_id}',
@@ -356,6 +313,14 @@ function createTransactionHistory( $tx = null ){
     }
 }
 
+// Handle populating the messages table by converting events to messages
+// function createMessages( $events ){
+//     global $counterparty;
+//     foreach( $events as $event){
+//         $message = $counterparty->eventToMessage($event);
+//         createMessage($message);
+//     }
+// }
 
 // Create records in the 'messages' table
 function createMessage( $message=null ){
@@ -366,7 +331,7 @@ function createMessage( $message=null ){
     $bindings      = $mysqli->real_escape_string($msg->bindings);
     $block_index   = $mysqli->real_escape_string($msg->block_index);
     $message_index = $mysqli->real_escape_string($msg->message_index);
-    $timestamp     = ($msg->timestamp) ? $msg->timestamp : 'NULL';
+    $timestamp     = $mysqli->real_escape_string($msg->timestamp);
     $event         = $mysqli->real_escape_string($msg->event);
     $tx_hash       = $mysqli->real_escape_string($msg->tx_hash);
     $event_hash    = $mysqli->real_escape_string($msg->event_hash);
@@ -377,6 +342,7 @@ function createMessage( $message=null ){
         } else {
             $sql = "UPDATE messages SET block_index='{$block_index}', command='{$command}', category='{$category}', bindings='{$bindings}', timestamp=" . $timestamp . ",  event='{$event}', tx_hash='{$tx_hash}', event_hash='{$event_hash}' WHERE message_index='{$message_index}'";
         }
+        // print "{$sql}\n";
         $results = $mysqli->query($sql);
         if(!$results){
             byeLog('Error while trying to create or update record in messages table');
@@ -385,6 +351,20 @@ function createMessage( $message=null ){
         byeLog('Error while trying to lookup record in messages table');
     }
 }
+
+// // Handle getting a list of messages from the messages table
+// function getMessages( $block_index=null ){
+//     global $mysqli;
+//     $block_index = $mysqli->real_escape_string($block_index);
+//     $messages = array();
+//     $results = $mysqli->query("SELECT * FROM messages WHERE block_index='{$block_index}' ORDER BY message_index");
+//     if($results){
+//         while($message = $results->fetch_assoc()){
+//             array_push($messages, $message);
+//         }
+//     }
+//     return $messages;
+// }
 
 // Create records in the 'dispenses' table
 function createDispense( $block_index=null, $asset=null, $hash=null ){
@@ -488,54 +468,93 @@ function createTxIndex( $tx_index=null, $block_index=null, $tx_type=null, $tx_ha
 }
 
 
-// Create/Update records in the 'balances' table
-function updateAddressBalance( $address=null, $asset_list=null ){
-    global $mysqli, $counterparty, $addresses, $assets;
+// Create/Update/Delete records in the 'balances' table
+function updateAddressBalances( $address=null, $asset_list=null ){
+    global $mysqli, $counterparty;
     // Lookup any balance for this address and asset
-    $balances = getAddressBalances($address, $asset_list);
+    $balances   = getAddressBalances($address, $asset_list);
+    $address_id = createAddress($address);
+    // Delete balances for any assets in the asset list
+    if(isset($asset_list)){
+        // Get list type and if single asset, convert to array
+        $type = gettype($asset_list);
+        if($type=='string')
+            $asset_list = array($asset_list);
+        foreach($asset_list as $asset){
+            $asset_id = getAssetDatabaseId($asset);
+            $sql = "DELETE FROM balances WHERE asset_id='{$asset_id}' AND (address_id='{$address_id}' OR utxo_address_id='{$address_id}')";
+            $results = $mysqli->query($sql);
+            if(!$results)
+                byeLog('Error while trying to delete asset records in the balances table');
+        }
+    } else {
+        // Delete all balances records for this address 
+        $sql = "DELETE FROM balances WHERE address_id='{$address_id}' OR utxo_address_id='{$address_id}";
+        $results = $mysqli->query($sql);
+        if(!$results)
+            byeLog('Error while trying to delete address records in the balances table');
+    }
     if(count($balances)){
         foreach($balances as $balance){
-            $address_id = $addresses[$balance['address']]; // Translate address to address_id
-            $asset      = $balance['asset'];
-            $asset_id   = $assets[$asset];                 // Translate asset to asset_id
-            $quantity   = $balance['quantity'];
-            $results    = $mysqli->query("SELECT id FROM balances WHERE address_id='{$address_id}' AND asset_id='{$asset_id}' LIMIT 1");
-            if($results){
-                if($results->num_rows){
-                    // Update asset balance
-                    $results = $mysqli->query("UPDATE balances SET quantity='{$quantity}' WHERE address_id='{$address_id}' AND asset_id='{$asset_id}'");
-                    if(!$results)
-                        byeLog('Error while trying to update balance record for ' . $address . ' - ' . $asset);
-                } else {
-                    // Create asset balance only if the quantity is greater than 0
-                    if($quantity > 0){
-                        $results = $mysqli->query("INSERT INTO balances (asset_id, address_id, quantity) values ('{$asset_id}','{$address_id}','{$quantity}')");
-                        if(!$results)
-                            byeLog('Error while trying to create balance record for ' . $address . ' - ' . $asset);
-                    }
-                }
-            } else {
-                byeLog('Error while trying to lookup balance record for ' . $address . ' - ' . $asset);
+            $address_id      = 0;
+            $utxo_id         = 0;
+            $utxo_output     = 0;
+            $utxo_address_id = 0;
+            // Translate address to address_id
+            if(isset($balance->address) && !is_null($balance->address))
+                $address_id = createAddress($balance->address);
+            // Handle setting utxo, utxo_output, and utxo_address_id
+            if(isset($balance->utxo) && !is_null($balance->utxo)){
+                $utxo            = explode(':',$balance->utxo);
+                $utxo_id         = createTransaction($utxo[0]);
+                $utxo_output     = $utxo[1];
+                $utxo_address_id = createAddress($balance->utxo_address);
+            }
+            // Translate asset to asset_id
+            $asset_id   = getAssetDatabaseId($balance->asset);               
+            $quantity   = $balance->quantity;
+            // Create asset balance only if the quantity is greater than 0
+            if($quantity > 0){
+                $sql = "INSERT INTO balances (asset_id, address_id, quantity, utxo_id, utxo_output, utxo_address_id) values ('{$asset_id}','{$address_id}','{$quantity}','{$utxo_id}','{$utxo_output}','{$utxo_address_id}')";
+                $results = $mysqli->query($sql);
+                if(!$results)
+                    byeLog('Error while trying to create balance record for ' . $address . ' - ' . $asset);
             }
         }
     }
 }
 
 // Handle requesting address balance information for a given address and list of assets
-function getAddressBalances($address=null, $asset_list=null){
+function getAddressBalances($address=null, $assets=null){
     global $counterparty;
     $balances = array();
-    // Break asset list up into chunks of 500 (API calls with more than 500 assets fail)
-    $asset_list   = array_chunk($asset_list, 500);
-    foreach($asset_list as $assets){
-        // Lookup any balance for this address and asset
-        $filters  = array(array('field' => 'address', 'op' => '==', 'value' => $address),
-                          array('field' => 'asset',   'op' => 'IN', 'value' => $assets));
-        $data = $counterparty->execute('get_balances', array('filters' => $filters, 'filterop' => "AND"));
-        if(count($data)){
-            $balances = array_merge($balances, $data);
+    // V2 API method
+    $data = $counterparty->getAddressBalances($address);
+    if(isset($assets)){
+        // Get list type and if single asset, convert to array
+        $type = gettype($assets);
+        if($type=='string')
+            $assets = array($assets);
+        // Add balances for given assets to balances array
+        foreach($data as $balance){
+            if(in_array($balance->asset,$assets) || in_array($balance->asset_longname, $assets))
+                array_push($balances, $balance);
         }
+    } else {
+        $balances = $data;
     }
+    // Old V1 API method
+    // Break asset list up into chunks of 500 (API calls with more than 500 assets fail)
+    // $asset_list   = array_chunk($asset_list, 500);
+    // foreach($asset_list as $assets){
+    //     // Lookup any balance for this address and asset
+    //     $filters  = array(array('field' => 'address', 'op' => '==', 'value' => $address),
+    //                       array('field' => 'asset',   'op' => 'IN', 'value' => $assets));
+    //     $data = $counterparty->execute('get_balances', array('filters' => $filters, 'filterop' => "AND"));
+    //     if(count($data)){
+    //         $balances = array_merge($balances, $data);
+    //     }
+    // }
     return $balances;
 }
 

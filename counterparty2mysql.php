@@ -34,6 +34,26 @@ require_once(__DIR__ . '/includes/config.php');
 initDB(DB_HOST, DB_USER, DB_PASS, DB_DATA, true);
 initCP(CP_HOST, CP_USER, CP_PASS, true);
 
+// Flag to indicate if we should show debugging information
+$debug = true;
+
+// Flag to indicate if we should update market/asset prices as we parse each block
+// Set this to false if you want a faster parse (price updates take a lil while)
+// NOTE: If this is set to false, be sure to run the following scripts after your done with your parse to update asset and market prices
+// ./misc/update_asset_prices.php
+// ./misc/update_market_info.php --update
+$updatePrices = true;
+
+// Flag to indicate if we should update balances as we parse each block
+// Set this to false if you want a faster parse 
+// NOTE: If this is set to false, be sure to run the following scripts after your done with your parse to update all address balances since block_index
+// ./misc/fix_address_balances.php --block=block_index
+$updateBalances = true;
+
+// Flag to indicate if we should save messages in the `messages` table
+// Set this to false if you want a faster parse 
+$saveMessages = true;
+
 // Create a lock file, and bail if we detect an instance is already running
 createLockFile();
 
@@ -92,35 +112,32 @@ if(!$block){
     $block = (isset($last) && $last>=$first) ? (intval($last) + 1) : $first;
 }
 
-// Flag to indicate if we should update market/asset prices as we parse each block
-// Set this to false if you want a faster parse (price updates take a lil while)
-// NOTE: If this is set to false, be sure to run the following scripts after your done with your parse to update asset and market prices
-// ./misc/update_asset_prices.php
-// ./misc/update_market_info.php --update
-$updatePrices = true;
-
-// Flag to indicate if we should update balances as we parse each block
-// Set this to false if you want a faster parse 
-// NOTE: If this is set to false, be sure to run the following scripts after your done with your parse to update all address balances since block_index
-// ./misc/fix_address_balances.php --block=block_index
-$updateBalances = true;
-
 // Get the current block index from status info
-$current = $counterparty->status['last_block']['block_index'];
+$current = $counterparty->status->counterparty_height;
 
-// Define array of fields that contain assets, addresses, transactions, and contracts
+// Define array of fields that contain assets, addresses, transactions, contracts, and integers
 $fields_asset       = array('asset', 'backward_asset', 'dividend_asset', 'forward_asset', 'get_asset', 'give_asset','asset_parent');
-$fields_address     = array('address', 'bet_hash', 'destination', 'feed_address', 'issuer', 'source', 'oracle_address', 'tx0_address', 'tx1_address', 'origin', 'last_status_tx_source', 'destination_address', 'source_address', 'utxo_address');
-$fields_transaction = array('event', 'move_random_hash', 'offer_hash', 'order_hash', 'rps_hash', 'tx_hash', 'tx0_hash', 'tx0_move_random_hash', 'tx1_hash', 'tx1_move_random_hash', 'dispenser_tx_hash', 'last_status_tx_hash', 'dispenser_tx_hash', 'block_hash', 'fairminter_tx_hash', 'utxo');
+$fields_address     = array('address', 'destination', 'feed_address', 'issuer', 'source', 'oracle_address', 'tx0_address', 'tx1_address', 'origin', 'last_status_tx_source', 'destination_address', 'source_address', 'utxo_address');
+$fields_transaction = array('event', 'bet_hash', 'move_random_hash', 'offer_hash', 'order_hash', 'rps_hash', 'tx_hash', 'tx0_hash', 'tx0_move_random_hash', 'tx1_hash', 'tx1_move_random_hash', 'dispenser_tx_hash', 'last_status_tx_hash', 'dispenser_tx_hash', 'block_hash', 'fairminter_tx_hash', 'utxo', 'previous_block_hash','ledger_hash','txlist_hash','messages_hash');
 $fields_contract    = array('contract_id');
+$fields_integer     = array('asset_id','address_id','destination_id','utxo_id','utxo_address_id','locked','btc_amount','fee','fee_fraction_int','call_date','call_price','quantity','fair_minting','move_random_hash_id','last_status_tx_hash_id','reset','description_locked','supported');
 
 // Loop through the blocks until we are current
 while($block <= $current){
     $timer = new Profiler();
     print "processing block {$block}...";
 
-    // create block record
-    createBlock($block);
+    // Get list of block events from counterparty API
+    // $events = $counterparty->getBlockEvents($block);
+
+    // Get list of block messages from counterparty API
+    $messages = $counterparty->getMessages($block);
+
+    // Create records in messages table based off events
+    // createMessages($events);
+
+    // Get list of messages (updates to counterparty tables)
+    // $messages = getMessages($block);
 
     // Define array hold asset/address/tranaction id mappings for this block
     // We want to reset these every block since we use the assets list querying address balances
@@ -128,9 +145,6 @@ while($block <= $current){
     $addresses    = array(); // array of address id mappings
     $transactions = array(); // array of transaction id mappings
     $contracts    = array(); // array of contract id mappings
-
-    // Get list of messages (updates to counterparty tables)
-    $messages = $counterparty->execute('get_messages', array('block_index' => $block));
 
     // Filter out abusive transactions (optional)
     // $data = array();
@@ -149,18 +163,31 @@ while($block <= $current){
         $msg = (object) $message;
         $obj = json_decode($msg->bindings);
         foreach($obj as $field => $value){
+            // Skip any empty or unset values
+            if(!isset($value) || empty($value))
+                continue;
             // assets
             foreach($fields_asset as $name)
                 if($field==$name && !isset($assets[$value]))
                     $assets[$value] = createAsset($value, $block);
             // addresses
-            foreach($fields_address as $name)
-                if($field==$name && !isset($addresses[$value]))
+            foreach($fields_address as $name){
+                if($field==$name && !isset($addresses[$value])){
+                    // Ignore any destinations that are utxos
+                    if($field=='destination' && str_contains($value, ':'))
+                        continue;
                     $addresses[$value] = createAddress($value);
+                }
+            }
             // transactions
-            foreach($fields_transaction as $name)
-                if($field==$name && !isset($transactions[$value]))
+            foreach($fields_transaction as $name){
+                if($field==$name && !isset($transactions[$value])){
+                    // Extract transaction hash from any utxos (remove output index)
+                    if(str_contains($value, ':'))
+                        $value = explode(':',$value)[0];
                     $transactions[$value] = createTransaction($value);
+                }
+            }
             // contracts
             foreach($fields_contract as $name)
                 if($field==$name && !isset($contracts[$value]))
@@ -170,14 +197,19 @@ while($block <= $current){
         if(isset($obj->tx_index) && isset($obj->block_index) && isset($transactions[$obj->tx_hash]) && $msg->category!='transactions' && $msg->category!='transaction_outputs')
             createTxIndex($obj->tx_index, $obj->block_index, $msg->category, $transactions[$obj->tx_hash]);
         // Create record in the messages table (so we can review the CP messages as needed)
-        createMessage($message);
+        if($saveMessages)
+            createMessage($message);        
     }
 
     // Loop through addresses and update any asset balances
     // Doing this first ensures that address balances are correct immediately
     if($updateBalances){
-        foreach($addresses as $address => $address_id)
-            updateAddressBalance($address, array_keys($assets));
+        foreach($addresses as $address => $address_id){
+            // Ignore any multi-sig addresses (address1-address2)
+            if(str_contains($address, '-'))
+                continue;
+            updateAddressBalances($address, array_keys($assets));
+        }
     }
 
     // Loop through the messages and create/update the counterparty tables
@@ -188,7 +220,7 @@ while($block <= $current){
         $command  = $msg->command;
 
         // v10.0.0 - Ignore certain messages for now as they conflict with our already existing tables and bloats database by not indexing addresses/hashes via id
-        if(in_array($table,array('assets', 'blocks', 'transaction_outputs')))
+        if(in_array($table,array('assets')))
             continue;
 
         // Build out array of fields and values
@@ -210,19 +242,34 @@ while($block <= $current){
                     $value = $addresses[$value];
                 }
             // swap transaction for id
-            foreach($fields_transaction as $name)
+            foreach($fields_transaction as $name){
                 if($field==$name){
+                    // Handle UTXO field by separating utxo transaction and utxo output
+                    if($field=='utxo'){
+                        $utxo  = explode(':',$value);
+                        // Add utxo_output to the field and value values to arrays
+                        $field = 'utxo_output';
+                        $value = (isset($utxo) && isset($utxo[1])) ? $utxo[1] : 0;
+                        array_push($fields, $field);
+                        array_push($values, $value);
+                        $fldmap[$field] = $value;
+                        // Treat UTXO tx as normal transaction
+                        $field = 'utxo_id';
+                        $value = (isset($utxo) && isset($utxo[0])) ? $utxo[0] : 0;
+                    } 
                     $field = $name . '_id';
                     $value = $transactions[$value];
                 }
+            }
+            // Force certain fields to always have a numeric value
+            if(in_array($field, $fields_integer) && (!isset($value) || $value==''))
+                $value = intval($value);
             // swap contract for id
             foreach($fields_contract as $name)
                 if($field==$name)
                     $value = $contracts[$value];
             // Force numeric values on some broadcast values
             if($table=='broadcasts'){
-                if(in_array($field,array('locked','fee_fraction_int')))
-                    $value = intval($value);
                 if($field=='value' && $value=='')
                     $value = 0;
                 // Replace 4-byte UTF-8 characters (fixes issue with breaking SQL queries) 
@@ -243,43 +290,44 @@ while($block <= $current){
                 if(in_array($field, array('locked','transfer','divisible','callable')) && $value=='')
                     $ignore = true;
                 // Handle issues with unpacking data where all values are empty
-                if(in_array($field, array('call_date','call_price','quantity')) && $value=='')
-                    $value = 0;
+                // if(in_array($field, array('call_date','call_price','quantity')) && $value=='')
+                //     $value = 0;
                 // Handle fair_minting as false, (real_escape_string of false gives empty string which is not compatible with column type in DB)
-                if (in_array($field, array('fair_minting')) && $value == false)
-                    $value = 0;                
+                // if (in_array($field, array('fair_minting')) && $value == false)
+                //     $value = 0;                
             }
             // Rock / Paper / Sciscors
             if($table=='rps'){
                 // Force move_random_hash_id to numeric value
-                if($field=='move_random_hash_id' && !isset($value))
-                    $value = intval($value);
+                // if($field=='move_random_hash_id' && !isset($value))
+                //     $value = intval($value);
                 // Ignore the 'calling_function'
                 if($field=='calling_function')
                     $ignore = true;
             }
             // Force numeric values on utxo fields
-            if($table=='credits' || $table=='debits'){
-                if(($field=='utxo_id' || $field=='utxo_address_id') && (!isset($value) || is_null($value)))
-                    $value = intval($value);
-            }
+            // if($table=='credits' || $table=='debits'){
+            //     $fields_integer = array('address_id','utxo_id','utxo_address_id')
+            //     if(in_array($field, $fields_integer) && !isset($value))
+            //         $value = intval($value);
+            // }
             if($table=='sends'){
-                if($field=='quantity')
-                    $value = intval($value);
+                // if(in_array($field, array('quantity','destination_id')))
+                //     $value = intval($value);
                 if($field=='msg_index')
                     $ignore = true;
             }
             // Handle btc_amount/fee null cases, (real_escape_string of false/null gives empty string which is not compatible with column type in DB)
-            if($table == 'transactions'){
-                if(($field == 'btc_amount' || $field == 'fee') && !isset($value))
-                    $value = intval($value);
-            }
+            // if($table == 'transactions'){
+            //     if(in_array($field, array('btc_amount','fee','destination_id') && !isset($value))
+            //         $value = intval($value);
+            // }
             if($table=='dispensers'){
                 if($field=='prev_status')
                     $ignore = true;
                 // Force null value to integer value
-                if($field=='last_status_tx_hash_id' && $value==null)
-                    $value = 0;
+                // if($field=='last_status_tx_hash_id' && $value==null)
+                //     $value = 0;
                 // v10.0.0 - Ignore certain fields for now
                 if(in_array($field,array('rowid','dispense_count')))
                     $ignore=true;
@@ -288,15 +336,18 @@ while($block <= $current){
                 if(in_array($field, array('dispenser_quantity','status')))
                     $ignore = true;
             }
-            // Force `reset` to boolean value
-            if($field=='reset'){
-                // Ignore field if this is a destruction
-                if($table=='destructions'){
-                    $ignore = true;
-                } else {
-                    $value = intval($value);
-                }
-            }
+            // Ignore `reset` field if this is a destruction
+            if($table=='destructions' && $field=='reset')
+                $ignore = true;
+            // // Force `reset` to boolean value
+            // if($field=='reset'){
+            //     // Ignore field if this is a destruction
+            //     if($table=='destructions'){
+            //         $ignore = true;
+            //     } else {
+            //         $value = intval($value);
+            //     }
+            // }
             // EVM fields
             if($field=='gasprice')
                 $field = 'gas_price';
@@ -313,6 +364,9 @@ while($block <= $current){
             if(in_array($field,array('asset_longname')) || $ignore)
                 continue;
             // Make value safe for use in SQL queries
+            // print "field={$field}\n";
+            // print "value={$value}\n";
+            // var_dump($value);
             $value = $mysqli->real_escape_string($value);
             // Add final field and value values to arrays
             array_push($fields, $field);
@@ -321,31 +375,33 @@ while($block <= $current){
         }
 
         // Change command to 'replace'
-        if($msg->category=='replace')
-            $command = 'replace';
+        // if($msg->category=='replace')
+        //     $command = 'replace';
 
-        // Handle creating/updating records in the 'addresses' table
-        if($command=='replace'){
-            // Extract data to usable variable name
-            foreach($fields as $ndx => $field)
-                $$field = $values[$ndx];
-            // Check if this record already exists
-            $sql = "SELECT * FROM addresses WHERE address_id='{$address_id}'";
-            $results = $mysqli->query($sql);
-            if($results){
-                // Only create the record if it does not already exist
-                if($results->num_rows==0){
-                    $sql2 = "INSERT INTO addresses (" . implode(",", $fields)  . ") values ('" . implode("', '", $values) . "')";
-                } else {
-                    $sql2 = "UPDATE addresses SET options='{$options}', block_index='{$block_index}' WHERE address_id='{$address_id}'";
-                }
-                $results2 = $mysqli->query($sql2);
-                if(!$results2)
-                    byeLog('Error while trying to create or record in addresses table : ' . $sql2);
-            } else {
-                byeLog('Error while trying to check if record already exists in addresses table : ' . $sql);
-            }
-        }
+        // // Handle creating/updating records in the 'addresses' table
+        // if($command=='replace'){
+        //     // Extract data to usable variable name
+        //     foreach($fields as $ndx => $field)
+        //         $$field = $values[$ndx];
+        //     // Check if this record already exists
+        //     $sql = "SELECT * FROM addresses WHERE address_id='{$address_id}'";
+        //     $results = $mysqli->query($sql);
+        //     if($results){
+        //         // Only create the record if it does not already exist
+        //         if($results->num_rows==0){
+        //             $sql = "INSERT INTO addresses (" . implode(",", $fields)  . ") values ('" . implode("', '", $values) . "')";
+        //         } else {
+        //             $sql = "UPDATE addresses SET options='{$options}', block_index='{$block_index}' WHERE address_id='{$address_id}'";
+        //         }
+        //         if($debug)
+        //             print "{$sql}\n";
+        //         $results = $mysqli->query($sql);
+        //         if(!$results)
+        //             byeLog('Error while trying to create or record in addresses table : ' . $sql2);
+        //     } else {
+        //         byeLog('Error while trying to check if record already exists in addresses table : ' . $sql);
+        //     }
+        // }
 
         // Handle 'insert' commands
         if($command=='insert'){
@@ -369,6 +425,8 @@ while($block <= $current){
                 //on duplicate key statement will update the row if exists already
                 if($results->num_rows==0){
                     $sql = "INSERT INTO {$table} (" . implode(",", $fields)  . ") values ('" . implode("', '", $values) . "') ON DUPLICATE KEY UPDATE $sqlUpdate";
+                    if($debug)
+                        print "{$sql}\n";
                     $results = $mysqli->query($sql);
                     if(!$results && !$silent)
                         byeLog('Error while trying to create record in ' . $table . ' : ' . $sql);
@@ -378,8 +436,8 @@ while($block <= $current){
             }
         }
 
-        // Handle 'update' commands
-        if($command=='update'){
+        // Handle 'update' and 'parse' commands
+        if($command=='update' || $command=='parse'){
             $sql   = "UPDATE {$table} SET";
             $where = "";
             foreach($fields as $index => $field){
@@ -398,6 +456,12 @@ while($block <= $current){
                 // Update nonces table using address_id
                 } else if($table=='nonces' && $field=='address_id'){
                     $where .= " {$field}='{$values[$index]}'";
+                // Update nonces table using address_id
+                } else if($table=='transactions' && $field=='tx_index'){
+                    $where = " tx_index='{$values[$index]}'";
+                // Update nonces table using address_id
+                } else if($table=='blocks' && $field=='block_index'){
+                    $where = " block_index='{$values[$index]}'";
                 // Set correct whereSQL for dispenser updates
                 } else if($table=='dispensers' && in_array($field, array('block_index','status','asset_id', 'tx_index','action'))){
                     // Skip updates on certain fields
@@ -427,7 +491,8 @@ while($block <= $current){
             } else {
                 byeLog('Error - no WHERE criteria found');
             }
-            // print "{$sql}\n";
+            if($debug)
+                print "{$sql}\n";
             $results = $mysqli->query($sql);
             if(!$results)
                 byeLog('Error while trying to update record in ' . $table . ' : ' . $sql);

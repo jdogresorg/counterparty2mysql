@@ -10,7 +10,10 @@ CREATE TABLE credits (
     calling_function TEXT,
     -- event         TEXT,
     event_id         INTEGER UNSIGNED,  -- id of record in index_transactions
+    -- utxo          TEXT,
     utxo_id          INTEGER UNSIGNED,  -- id of record in index_transactions
+    utxo_output      INTEGER UNSIGNED,  -- utxo output index
+    -- utxo_address  TEXT,
     utxo_address_id  INTEGER UNSIGNED   -- id of record in index_addresses
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
