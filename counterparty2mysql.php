@@ -164,9 +164,12 @@ while($block <= $current){
             // addresses
             foreach($fields_address as $name){
                 if($field==$name && !isset($addresses[$value])){
-                    // Ignore any destinations that are utxos
-                    if($field=='destination' && str_contains($value, ':'))
+                    // Extract transaction hash from any utxos (remove output index)
+                    if(str_contains($value, ':')){
+                        $value = explode(':',$value)[0];
+                        $transactions[$value] = createTransaction($value);
                         continue;
+                    }
                     $addresses[$value] = createAddress($value);
                 }
             }
@@ -229,29 +232,48 @@ while($block <= $current){
             // swap address for id
             foreach($fields_address as $name){
                 if($field==$name){
-                    $field = $name . '_id';
-                    $value = $addresses[$value];
+                    // Handle UTXO fields by separating utxo transaction and utxo output 
+                    if(in_array($field,array('source','destination')) && str_contains($value, ':')){
+                        $utxo = explode(':',$value);
+                        $fld  = $field;
+                        // Add utxo_output to the field and value values to arrays
+                        $field = $fld . '_utxo_output';
+                        $value = (isset($utxo) && isset($utxo[1])) ? $utxo[1] : 0;
+                        array_push($fields, $field);
+                        array_push($values, $value);
+                        // Add utxo_id to the field and values arrays
+                        $field = $fld . '_utxo_id';
+                        $value = (isset($utxo) && isset($utxo[0])) ? $transactions[$utxo[0]] : 0;
+                    } else {
+                        $field = $name . '_id';
+                        $value = $addresses[$value];
+                    }
                 }
             }
             // swap transaction for id
             foreach($fields_transaction as $name){
                 if($field==$name){
-                    // Handle UTXO field by separating utxo transaction and utxo output
+                    // Handle UTXO fields by separating utxo transaction and utxo output 
                     if($field=='utxo'){
                         $utxo  = explode(':',$value);
-                        // Add utxo_output to the field and value values to arrays
+                        // Add utxo_output to the field and values arrays
                         $field = 'utxo_output';
                         $value = (isset($utxo) && isset($utxo[1])) ? $utxo[1] : 0;
                         array_push($fields, $field);
                         array_push($values, $value);
-                        // Treat UTXO tx as normal transaction
+                        // Add utxo_id to the field and values arrays
                         $field = 'utxo_id';
                         $value = (isset($utxo) && isset($utxo[0])) ? $utxo[0] : 0;
-                    } 
-                    $field = $name . '_id';
-                    $value = $transactions[$value];
+                    }  else {
+                        $field = $name . '_id';
+                        $value = $transactions[$value];
+                    }
                 }
             }
+            // if($table=='sends'){
+            //     print "field={$field}\n";
+            //     print "value={$value}\n";
+            // }
             // swap contract for id
             foreach($fields_contract as $name){
                 if($field==$name)
