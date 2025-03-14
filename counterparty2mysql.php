@@ -37,6 +37,10 @@ initCP(CP_HOST, CP_USER, CP_PASS, true);
 // Flag to indicate if we should show debugging information
 $debug = true;
 
+// Flag to indicate if we should save messages in the `messages` table
+// Set this to false if you want a faster parse 
+$saveMessages = true;
+
 // Flag to indicate if we should update market/asset prices as we parse each block
 // Set this to false if you want a faster parse (price updates take a lil while)
 // NOTE: If this is set to false, be sure to run the following scripts after your done with your parse to update asset and market prices
@@ -49,10 +53,6 @@ $updatePrices = true;
 // NOTE: If this is set to false, be sure to run the following scripts after your done with your parse to update all address balances since block_index
 // ./misc/fix_address_balances.php --block=block_index
 $updateBalances = true;
-
-// Flag to indicate if we should save messages in the `messages` table
-// Set this to false if you want a faster parse 
-$saveMessages = true;
 
 // Create a lock file, and bail if we detect an instance is already running
 createLockFile();
