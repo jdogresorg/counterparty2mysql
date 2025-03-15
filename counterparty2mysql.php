@@ -61,6 +61,7 @@ createLockFile();
 if($rollback){
     $block_index = $mysqli->real_escape_string($rollback);
     $tables = [
+        'addresses',
         'bets',
         'bet_expirations', 
         'bet_match_expirations',
@@ -95,7 +96,9 @@ if($rollback){
         'rpsresolves',
         'sends',
         'sweeps',
-        'transactions'
+        'transactions',
+        'transaction_count',
+        'transaction_outputs'
     ];
     foreach($tables as $table){
         $results = $mysqli->query("DELETE FROM {$table} WHERE block_index>{$block_index}");
