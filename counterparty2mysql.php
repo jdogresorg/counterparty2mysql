@@ -220,6 +220,24 @@ while($block <= $current){
         // Build out array of fields and values
         $fields = array();
         $values = array();
+
+        // Add some extra fields which are missing from messages table 
+        // Handle setting send_type based off event (field is missing from messages data)
+        if($table=='sends'){
+            $type = '';
+            if(in_array($msg->event,array('SEND','ENHANCED_SEND','MPMA_SEND')))
+                $type = 'send';
+            if($msg->event=='ATTACH_TO_UTXO')
+                $type = 'attach';
+            if($msg->event=='DETACH_FROM_UTXO')
+                $type = 'detach';
+            if($msg->event=='UTXO_MOVE')
+                $type = 'move';
+            array_push($fields, 'send_type');
+            array_push($values, $type);
+        }
+
+        // Process bindings data to make it safe for use in SQL queries
         foreach($bindings as $field => $value){
             $ignore = false;
             // swap asset name for id
@@ -263,17 +281,13 @@ while($block <= $current){
                         array_push($values, $value);
                         // Add utxo_id to the field and values arrays
                         $field = 'utxo_id';
-                        $value = (isset($utxo) && isset($utxo[0])) ? $utxo[0] : 0;
+                        $value = (isset($utxo) && isset($utxo[0])) ? $transactions[$utxo[0]] : 0;
                     }  else {
                         $field = $name . '_id';
                         $value = $transactions[$value];
                     }
                 }
             }
-            // if($table=='sends'){
-            //     print "field={$field}\n";
-            //     print "value={$value}\n";
-            // }
             // swap contract for id
             foreach($fields_contract as $name){
                 if($field==$name)
