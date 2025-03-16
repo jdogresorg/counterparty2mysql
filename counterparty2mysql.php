@@ -224,22 +224,6 @@ while($block <= $current){
         $fields = array();
         $values = array();
 
-        // Add some extra fields which are missing from messages table 
-        // Handle setting send_type based off event (field is missing from messages data)
-        if($table=='sends'){
-            $type = '';
-            if(in_array($msg->event,array('SEND','ENHANCED_SEND','MPMA_SEND')))
-                $type = 'send';
-            if($msg->event=='ATTACH_TO_UTXO')
-                $type = 'attach';
-            if($msg->event=='DETACH_FROM_UTXO')
-                $type = 'detach';
-            if($msg->event=='UTXO_MOVE')
-                $type = 'move';
-            array_push($fields, 'send_type');
-            array_push($values, $type);
-        }
-
         // Process bindings data to make it safe for use in SQL queries
         foreach($bindings as $field => $value){
             $ignore = false;
@@ -318,6 +302,8 @@ while($block <= $current){
                 $ignore = true;
             if($field=='asset_longname')
                 $ignore = true;
+            if(in_array($field,array('source_address_id','destination_address_id')))
+                $ignore = true;
             // EVM fields
             if($field=='gasprice')
                 $field = 'gas_price';
@@ -341,6 +327,22 @@ while($block <= $current){
             // Add final field and value values to arrays
             array_push($fields, $field);
             array_push($values, $value);
+        }
+
+        // Add some extra fields if they are missing from messages table
+        // Handle setting send_type based off event (field is missing from messages data)
+        if($table=='sends' && !in_array('send_type', $fields)){
+            $type = '';
+            if(in_array($msg->event,array('SEND','ENHANCED_SEND','MPMA_SEND')))
+                $type = 'send';
+            if($msg->event=='ATTACH_TO_UTXO')
+                $type = 'attach';
+            if($msg->event=='DETACH_FROM_UTXO')
+                $type = 'detach';
+            if($msg->event=='UTXO_MOVE')
+                $type = 'move';
+            array_push($fields, 'send_type');
+            array_push($values, $type);
         }
 
         // Handle 'insert' commands
