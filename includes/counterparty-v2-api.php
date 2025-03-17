@@ -261,15 +261,11 @@ class CounterpartyV2API {
                 $message->category = strtolower($event->event . 's');
         }
         // Cleanup bindings data by removing extra values
-        // unset($event->params->asset_info);
-        // unset($event->params->get_asset_info);
-        // unset($event->params->give_asset_info);
-        // unset($event->params->forward_asset_info);
-        // unset($event->params->backward_asset_info);
-        // Remove all 'normalized' values
         foreach($event->params as $key => $value){
+            // Remove all 'normalized' values
             if(str_contains($key, '_normalized'))
                 unset($event->params->{$key});
+            // Remove all extra 'info' values
             if(str_contains($key, '_info'))
                 unset($event->params->{$key});
         }
