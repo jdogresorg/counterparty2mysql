@@ -53,19 +53,21 @@ if($block){
     $results = $mysqli->query($sql);
     if($results){
         while($row = $results->fetch_assoc()){
-            if(!in_array($row['address'],$addresses))
-                array_push($addresses,$row['address']);
+            $addresses[$row['address']] = true;
         }
     } else {
         bye('Error looking up addresses associated with blocks');
     }
 }
 
+// Sort addresses alphabetically by key
+ksort($addresses);
+
 $total = count($addresses);
 print "Updating {$total} addresses...\n";
 
 // Loop through addresses and update each
-foreach($addresses as $address){
+foreach($addresses as $address => $value){
     $cnt++;
     print "[{$cnt} / {$total}] Updating balances for {$address}...\n";
 
