@@ -715,7 +715,14 @@ function updateAssetPrice( $asset=null ){
 
 // Handle looping through a list of DEX markets and creating/updating the market information
 function createUpdateMarkets($markets){
+    global $debug;
+    $total = count($markets);
+    $cnt   = 0;
     foreach($markets as $market => $value){
+        if($debug){
+            $cnt++;
+            print "[{$cnt} / {$total}] Processing market...\n";
+        }
         list($asset1, $asset2) = explode('|',$market);
         $market_id = createMarket($asset1, $asset2);
         updateMarketInfo($market_id);
