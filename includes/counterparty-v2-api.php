@@ -220,7 +220,7 @@ class CounterpartyV2API {
             case 'BET_UPDATE':
                 $message->category = 'bets';
                 break;
-            // core devs dunno how to spell... lol
+            // support proper spelling and the bad spelling of counterparty 2.0 core-devs
             case 'BET_MATCH_RESOLUTON':
             case 'BET_MATCH_RESOLUTION':
                 $message->category = 'bet_match_resolutions';
