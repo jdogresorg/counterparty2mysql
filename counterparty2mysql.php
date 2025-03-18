@@ -35,7 +35,7 @@ initDB(DB_HOST, DB_USER, DB_PASS, DB_DATA, true);
 initCP(CP_HOST, CP_USER, CP_PASS, true);
 
 // Flag to indicate if we should show debugging information
-$debug = true;
+$debug = false;
 
 // Flag to indicate if we should save messages in the `messages` table
 // Set this to false if you want a faster parse 
