@@ -530,18 +530,21 @@ function getAddressBalances($address=null, $assets=null){
     $balances = array();
     // V2 API method
     $data = $counterparty->getAddressBalances($address);
-    if(isset($assets)){
-        // Get list type and if single asset, convert to array
-        $type = gettype($assets);
-        if($type=='string')
-            $assets = array($assets);
-        // Add balances for given assets to balances array
-        foreach($data as $balance){
-            if(in_array($balance->asset,$assets) || in_array($balance->asset_longname, $assets))
-                array_push($balances, $balance);
+    // Return empty balances if we detected an error
+    if(!isset($data->error)){
+        if(isset($assets)){
+            // Get list type and if single asset, convert to array
+            $type = gettype($assets);
+            if($type=='string')
+                $assets = array($assets);
+            // Add balances for given assets to balances array
+            foreach($data as $balance){
+                if(in_array($balance->asset,$assets) || in_array($balance->asset_longname, $assets))
+                    array_push($balances, $balance);
+            }
+        } else {
+            $balances = $data;
         }
-    } else {
-        $balances = $data;
     }
     // Old V1 API method
     // Break asset list up into chunks of 500 (API calls with more than 500 assets fail)
