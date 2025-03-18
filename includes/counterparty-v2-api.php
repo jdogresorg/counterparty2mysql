@@ -23,9 +23,9 @@ class CounterpartyV2API {
     // Handle initializing curl request handler
     function init(){
         $this->curl = curl_init();
-        curl_setopt($this->curl, CURLOPT_RETURNTRANSFER, true);
         curl_setopt($this->curl, CURLOPT_FOLLOWLOCATION, true);
-        curl_setopt($this->curl, CURLOPT_FAILONERROR,    true);        
+        curl_setopt($this->curl, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($this->curl, CURLOPT_FAILONERROR,    false);        
         $this->setTimeout($this->timeout);
     }
 
@@ -43,7 +43,10 @@ class CounterpartyV2API {
 
     // Handle making an API request
     // TODO: Handle adding `cursor` support to request all data recursively (only needed if not able to get all data in a single request)
-    function request($url, $timeout=NULL){
+    // * URL         = Request URL
+    // * TIMEOUT     = Request Timeout in seconds
+    // * BODYONERROR = Return response body on error
+    function request($url, $timeout=NULL, $bodyOnError=false){
         // print "making request to {$url}...\n";
         $curl = $this->curl;
         if(isset($timeout) && $timeout != $this->timeout)
@@ -51,21 +54,17 @@ class CounterpartyV2API {
         if(isset($url) && $url != $this->url)
             $this->setUrl($url);
         // Execute the curl request
-        $response=curl_exec($curl);
-        // Detect any curl error
-        if(curl_errno($curl)){
-            $error = curl_error($curl);
+        $response = curl_exec($curl);
+        // Decode the json (if any)
+        $data = json_decode($response);
+        // Detect any errors
+        if(curl_errno($curl))
+            $error = ($data->error) ? $data->error : curl_error($curl);
+        if($error && $bodyOnError==false)
             byeLog('CURL Error : ' . $error);
-        } else {
-            // Decode the json
-            $data = json_decode($response);
-            if(isset($data) && isset($data->result)){
-                return $data->result;
-            } else {
-                $error = ($data->error) ? $data->error : 'Error getting Counterparty data';
-                byeLog('Request Error :' . $error);
-            }
-        }        
+        if(isset($data) && isset($data->result))
+            $data = $data->result;
+        return $data;
     }
 
     // Handle getting API status
@@ -108,7 +107,7 @@ class CounterpartyV2API {
     // Handle getting address balances
     function getAddressBalances( $address ){
         $url  = CP_HOST . '/v2/addresses/' . $address . '/balances?limit=1000000';
-        $data = $this->request($url);
+        $data = $this->request($url, null, true);
         return $data;
     }
 
