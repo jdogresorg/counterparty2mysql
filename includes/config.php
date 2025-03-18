@@ -45,7 +45,7 @@ if($runtype=='regtest'){
 }
 
 // Require various libraries
-require_once('jsonRPC/Client.php');
+require_once('counterparty-v2-api.php');
 require_once('functions.php');
 require_once('profiler.php');
 
