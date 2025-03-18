@@ -26,7 +26,8 @@ initCP(CP_HOST, CP_USER, CP_PASS, true);
 $addresses = array();
 
 // Add a specific address to the address list to fix
-// array_push($addresses, '1GJYJoRqR16AtCUFDkajtioAvXMCoZAN9g');
+// $addresses['3QzBioKocwwyEWUTfovWxpNu1ZgMWeNWse'] = true;
+// $addresses['bc1pssrf32kh3fwpaa5d2ryfxxaxmvp0plvx3jg6pu'] = true;
 
 // Build out a list of addresses used in blocks
 if($block){
