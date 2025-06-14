@@ -24,7 +24,9 @@ CREATE TABLE issuances (
     status             TEXT,
     description_locked VARCHAR(1) DEFAULT 0,
     fair_minting       VARCHAR(1), 
-    asset_events       TEXT
+    asset_events       TEXT,
+    mime_type          VARCHAR(250) DEFAULT 'text/plain'
+
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
 CREATE        INDEX tx_index     ON issuances (tx_index);
