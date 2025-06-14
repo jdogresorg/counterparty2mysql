@@ -30,7 +30,9 @@ CREATE TABLE fairminters (
     status                      VARCHAR(250),
     earned_quantity             VARCHAR(250),
     commission                  VARCHAR(250),
-    paid_quantity               VARCHAR(250)
+    paid_quantity               VARCHAR(250),
+    max_mint_per_address        VARCHAR(250),
+    mime_type                   VARCHAR(250) DEFAULT 'text/plain'
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
 CREATE INDEX tx_hash_id      ON fairminters (tx_hash_id);
