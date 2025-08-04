@@ -355,6 +355,8 @@ while($block <= $current){
             }
             $sql  = rtrim($sql,  " AND");
             $sql2 = rtrim($sql2, " AND");
+            if($debug)
+                print "{$sql}\n";
             $results = $mysqli->query($sql);
             if($results){
                 // Duplicate key statement will update the row if exists already

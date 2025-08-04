@@ -11,6 +11,7 @@ CREATE TABLE broadcasts (
     fee_fraction_int BIGINT,
     text             TEXT,
     locked           BOOL,
+    mime_type        VARCHAR(250) DEFAULT 'text/plain',
     status           TEXT
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
