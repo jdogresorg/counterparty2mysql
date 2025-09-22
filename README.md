@@ -36,8 +36,8 @@ cat sql/*.sql | mysql Dogeparty_Testnet
 
 Bootstrap Information
 ---
-- [Dogeparty.sql.gz](bootstrap/Dogeparty.sql.gz) (Mainnet Block # 5,541,437)
-- [Dogeparty_Testnet.sql.gz](bootstrap/Dogeparty_Testnet.sql.gz) (Testnet Block # 7,034,584)
+- [Dogeparty](bootstrap/Dogeparty/) (Mainnet Block # 5,887,802)
+- [Dogeparty_Testnet](bootstrap/Dogeparty_Testnet.sql.gz) (Testnet Block # 7,034,584)
 
 Command line arguments 
 ---
