@@ -13,7 +13,7 @@ CREATE TABLE fairminters (
     asset_longname              VARCHAR(255),
     description                 VARCHAR(10000),
     price                       INTEGER UNSIGNED,
-    quantity_by_price           INTEGER UNSIGNED,
+    quantity_by_price           VARCHAR(250),
     hard_cap                    VARCHAR(250),
     burn_payment                VARCHAR(250),
     max_mint_per_tx             VARCHAR(250),
