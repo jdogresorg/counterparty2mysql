@@ -140,7 +140,7 @@ function createAsset( $asset=null, $block_index=null ){
     $data->owner_id           = createAddress($data->owner);
     $data->divisible          = ($data->divisible) ? 1 : 0;  // convert to boolean
     $data->locked             = ($data->locked) ? 1 : 0 ;    // convert to boolean
-    $data->supply             = intval($data->supply);
+    $data->supply             = ($data->supply > 0) ? intval($data->supply) : 0;
     $data->description        = $mysqli->real_escape_string($description);
     $data->description_locked = ($data->description_locked) ? 1 : 0 ;    // convert to boolean
     $data->asset_longname     = $mysqli->real_escape_string($data->asset_longname);
