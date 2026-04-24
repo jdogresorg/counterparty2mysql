@@ -22,3 +22,4 @@ INSERT INTO assets (asset_id, asset, divisible, locked, xdp_price) values (1,'XD
 CREATE UNIQUE INDEX asset     ON assets (asset);
 CREATE        INDEX issuer_id ON assets (issuer_id);
 CREATE        INDEX owner_id  ON assets (owner_id);
+CREATE        INDEX asset_longname ON assets (asset_longname);
