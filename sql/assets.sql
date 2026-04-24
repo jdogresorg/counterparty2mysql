@@ -22,6 +22,7 @@ INSERT INTO assets (asset_id, asset, divisible, locked, xcp_price) values (1,'XC
 CREATE UNIQUE INDEX asset     ON assets (asset);
 CREATE        INDEX issuer_id ON assets (issuer_id);
 CREATE        INDEX owner_id  ON assets (owner_id);
+CREATE        INDEX asset_longname ON assets (asset_longname);
 
 -- ALTER TABLE assets ADD btc_price BIGINT UNSIGNED AFTER xcp_price;
 -- ALTER TABLE assets MODIFY description VARCHAR(10000);
