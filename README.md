@@ -85,6 +85,7 @@ Database Information
 - [assets](sql/assets.sql)
 - [balances](sql/balances.sql)
 - [blocks](sql/blocks.sql)
+- [icons](sql/icons.sql)
 - [markets](sql/markets.sql)
 - [index_addresses](sql/index_addresses.sql)
 - [index_transactions](sql/index_transactions.sql)
