@@ -107,4 +107,7 @@ Database Information
 - [transaction_counts](sql/transaction_counts.sql)
 - [transaction_outputs](sql/transaction_outputs.sql)
 
+**TokenScan-related tables** (populated externally by the tokenscan.io icon worker)
+- [icons](sql/icons.sql)
+
 Helpful? Donate BTC, XCP or any Counterparty asset to 1JDogZS6tQcSxwfxhv6XKKjcyicYA4Feev
