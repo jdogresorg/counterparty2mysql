@@ -14,7 +14,9 @@ CREATE TABLE assets (
     supply             BIGINT  UNSIGNED,
     type               TINYINT(1),           -- asset type (1=Named, 2=Numeric, 3=Subasset, 4=Failed issuance)
     xcp_price          BIGINT  UNSIGNED,     -- last price of XCP matched order on DEX
-    btc_price          BIGINT  UNSIGNED      -- last price of BTC matched order on DEX or Dispense
+    xcp_price_block    INTEGER UNSIGNED,     -- block_index that xcp_price was set from
+    btc_price          BIGINT  UNSIGNED,     -- last price of BTC matched order on DEX or Dispense
+    btc_price_block    INTEGER UNSIGNED      -- block_index that btc_price was set from
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
 INSERT INTO assets (asset_id, asset, divisible, locked) values (0,'BTC', 1, 1);
@@ -27,3 +29,4 @@ CREATE        INDEX asset_longname ON assets (asset_longname);
 
 -- ALTER TABLE assets ADD btc_price BIGINT UNSIGNED AFTER xcp_price;
 -- ALTER TABLE assets MODIFY description VARCHAR(10000);
+-- ALTER TABLE assets ADD xcp_price_block INTEGER UNSIGNED AFTER xcp_price, ADD btc_price_block INTEGER UNSIGNED AFTER btc_price;
