@@ -542,6 +542,7 @@ function updateAssetPrice( $asset=null ){
         return;
     // Lookup last order match for XDP
     $sql = "SELECT
+                m.block_index,
                 m.forward_asset_id,
                 m.forward_quantity,
                 m.backward_asset_id,
@@ -552,8 +553,8 @@ function updateAssetPrice( $asset=null ){
                 ((m.forward_asset_id=2 AND m.backward_asset_id='{$asset_id}') OR
                 ( m.forward_asset_id='{$asset_id}' AND m.backward_asset_id=2)) AND
                 m.status='completed'
-            ORDER BY 
-                m.block_index DESC 
+            ORDER BY
+                m.block_index DESC
             LIMIT 1";
     $results  = $mysqli->query($sql);
     if($results){
@@ -565,7 +566,8 @@ function updateAssetPrice( $asset=null ){
             $xxx_qty   = ($divisible) ? number_format($xxx_amt * 0.00000001,8,'.','') : number_format($xxx_amt,0,'.','');
             $price     = number_format($xdp_qty / $xxx_qty,8,'.','');
             $price_int = number_format($price * 100000000,0,'.','');
-            $results   = $mysqli->query("UPDATE assets SET xdp_price='{$price_int}' WHERE id='{$asset_id}'");
+            $xdp_block = intval($data['block_index']);
+            $results   = $mysqli->query("UPDATE assets SET xdp_price='{$price_int}', xdp_price_block='{$xdp_block}' WHERE id='{$asset_id}'");
             if(!$results)
                 byeLog('Error updating XDP price for asset ' . $asset);
         }
@@ -669,9 +671,10 @@ function updateAssetPrice( $asset=null ){
     }
     // Update DOGE price to use most recent transaction price (block_index)
     if(count($doge_prices)){
-        ksort($doge_prices);
-        $price_int = array_pop($doge_prices);
-        $results   = $mysqli->query("UPDATE assets SET doge_price='{$price_int}' WHERE id='{$asset_id}'");
+        $doge_block = max(array_keys($doge_prices));
+        $price_int  = $doge_prices[$doge_block];
+        $doge_block = intval($doge_block);
+        $results    = $mysqli->query("UPDATE assets SET doge_price='{$price_int}', doge_price_block='{$doge_block}' WHERE id='{$asset_id}'");
         if(!$results)
             byeLog('Error updating DOGE price for asset ' . $asset);
     }
