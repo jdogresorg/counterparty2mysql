@@ -12,7 +12,7 @@ CREATE TABLE fairminters (
     asset_parent_id             INTEGER UNSIGNED, -- id of record in assets table
     asset_longname              VARCHAR(255),
     description                 VARCHAR(10000),
-    price                       INTEGER UNSIGNED,
+    price                       VARCHAR(250),
     quantity_by_price           VARCHAR(250),
     hard_cap                    VARCHAR(250),
     burn_payment                VARCHAR(250),
