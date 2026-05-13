@@ -315,6 +315,12 @@ function createTransactionHistory( $tx = null ){
     if(!isset($tx) || $tx=='')
         return;
     $tx             = (object) $tx; // Force conversion to object
+    // Mirror counterparty-classic-lib's own guard (blocks.py parse_tx): multi-source or
+    // multi-destination transactions have no protocol effect and are skipped by the lib
+    // before any send/burn/issuance/dispense logic. Recording them just pollutes the
+    // transactions table with junk (e.g. block 948671 had a 1373-char destination).
+    if(strpos($tx->source, '-') !== false || (isset($tx->destination) && strpos($tx->destination, '-') !== false))
+        return;
     $tx_hash_id     = createTransaction($tx->tx_hash);
     $block_hash_id  = createTransaction($tx->block_hash);
     $source_id      = createAddress($tx->source);
