@@ -335,6 +335,9 @@ function createMessage( $message=null ){
     $event         = $mysqli->real_escape_string($msg->event);
     $tx_hash       = $mysqli->real_escape_string($msg->tx_hash);
     $event_hash    = $mysqli->real_escape_string($msg->event_hash);
+    // timestamp is an unquoted numeric column; some Counterparty 2.0 events (eg CREDIT)
+    // arrive with no timestamp, so fall back to NULL to avoid a malformed SQL value
+    $timestamp     = ($timestamp === '' || $timestamp === null) ? 'NULL' : $timestamp;
     $results       = $mysqli->query("SELECT message_index FROM messages WHERE `message_index`='{$message_index}' LIMIT 1");
     if($results){
         if($results->num_rows==0){
