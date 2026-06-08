@@ -245,6 +245,20 @@ class CounterpartyV2API {
             case 'RPS_RESOLVE':
                 $message->category = 'rpsresolves';
                 break;
+            // Liquidity Pools (AMM)
+            case 'OPEN_POOL':
+            case 'POOL_UPDATE':
+                $message->category = 'pools';
+                break;
+            case 'NEW_POOL_DEPOSIT':
+                $message->category = 'pool_deposits';
+                break;
+            case 'NEW_POOL_WITHDRAWAL':
+                $message->category = 'pool_withdrawals';
+                break;
+            case 'POOL_MATCH':
+                $message->category = 'pool_matches';
+                break;
             // Defaults
             case 'BET_EXPIRATION':
             case 'BET_MATCH_EXPIRATION':

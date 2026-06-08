@@ -89,6 +89,10 @@ if($rollback){
         'order_expirations',
         'order_match_expirations',
         'order_matches',
+        'pools',
+        'pool_deposits',
+        'pool_matches',
+        'pool_withdrawals',
         'rps',
         'rps_expirations',
         'rps_match_expirations',
@@ -119,11 +123,11 @@ if(!$block){
 $current = $counterparty->status->counterparty_height;
 
 // Define array of fields that contain assets, addresses, transactions, contracts, and integers
-$fields_asset       = array('asset', 'backward_asset', 'dividend_asset', 'forward_asset', 'get_asset', 'give_asset','asset_parent');
+$fields_asset       = array('asset', 'backward_asset', 'dividend_asset', 'forward_asset', 'get_asset', 'give_asset','asset_parent', 'asset_a', 'asset_b', 'lp_asset');
 $fields_address     = array('address', 'destination', 'feed_address', 'issuer', 'source', 'oracle_address', 'tx0_address', 'tx1_address', 'origin', 'last_status_tx_source', 'destination_address', 'source_address', 'utxo_address');
-$fields_transaction = array('event', 'bet_hash', 'move_random_hash', 'offer_hash', 'order_hash', 'rps_hash', 'tx_hash', 'tx0_hash', 'tx0_move_random_hash', 'tx1_hash', 'tx1_move_random_hash', 'dispenser_tx_hash', 'last_status_tx_hash', 'dispenser_tx_hash', 'block_hash', 'fairminter_tx_hash', 'utxo', 'previous_block_hash','ledger_hash','txlist_hash','messages_hash');
+$fields_transaction = array('event', 'bet_hash', 'move_random_hash', 'offer_hash', 'order_hash', 'rps_hash', 'tx_hash', 'tx0_hash', 'tx0_move_random_hash', 'tx1_hash', 'tx1_move_random_hash', 'dispenser_tx_hash', 'last_status_tx_hash', 'dispenser_tx_hash', 'block_hash', 'fairminter_tx_hash', 'utxo', 'previous_block_hash','ledger_hash','txlist_hash','messages_hash', 'order_tx_hash');
 $fields_contract    = array('contract_id');
-$fields_integer     = array('locked','btc_amount','fee','fee_fraction_int','call_date','call_price','quantity','fair_minting','reset','description_locked','supported');
+$fields_integer     = array('locked','btc_amount','fee','fee_fraction_int','call_date','call_price','quantity','fair_minting','reset','description_locked','supported','expire_index');
 
 // Loop through the blocks until we are current
 while($block <= $current){
@@ -408,6 +412,11 @@ while($block <= $current){
                 // Skip updating the id field unnecessarily when updating an order match
                 } else if($table=='order_matches' && $field=='id'){
                     continue;
+                // Update pools table using asset_a_id and asset_b_id (pool is identified by asset pair)
+                } else if($table=='pools' && in_array($field, array('asset_a_id','asset_b_id'))){
+                    if($where!="")
+                        $where .= " AND ";
+                    $where .= " {$field}='{$values[$index]}'";
                 } else {
                     $sql .= " {$field}='{$values[$index]}',";
                 }
