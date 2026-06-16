@@ -42,7 +42,8 @@ class CounterpartyV2API {
     }
 
     // Handle making an API request
-    // TODO: Handle adding `cursor` support to request all data recursively (only needed if not able to get all data in a single request)
+    // NOTE: For endpoints that can return more than 1000 rows use requestAll()
+    //       which follows `next_cursor` to retrieve the full result set.
     // * URL         = Request URL
     // * TIMEOUT     = Request Timeout in seconds
     // * BODYONERROR = Return response body on error
@@ -67,6 +68,62 @@ class CounterpartyV2API {
         return $data;
     }
 
+    // Handle making a paginated API request, following `next_cursor` until
+    // every row has been retrieved and returning the combined result array.
+    //
+    // Counterparty-core silently clamps the per-request `limit` to a maximum
+    // of 1000 rows and returns a `next_cursor` for the remainder. A single
+    // shot request (e.g. `?limit=1000000`) against a large result set - an
+    // address holding more than 1000 assets, or a block with more than 1000
+    // events - was therefore silently truncated, which caused balances that
+    // sorted past the first page to be dropped during materialization.
+    //
+    // On ANY hard failure (transport error or malformed response) we halt via
+    // byeLog() rather than return partial data, so callers never act on an
+    // incomplete result set.
+    // * URL     = Request URL (without `limit`/`cursor`; they are appended)
+    // * TIMEOUT = Request Timeout in seconds
+    function requestAll($url, $timeout=NULL){
+        $curl   = $this->curl;
+        $rows   = array();
+        $cursor = null;
+        $pages  = 0;
+        $sep    = (strpos($url, '?')===false) ? '?' : '&';
+        if(isset($timeout) && $timeout != $this->timeout)
+            $this->setTimeout($timeout);
+        while(true){
+            // Hard safety stop (1000 pages * 1000 rows = 1,000,000 rows)
+            if(++$pages > 1000)
+                byeLog('requestAll exceeded maximum page count for ' . $url);
+            $pageUrl = $url . $sep . 'limit=1000';
+            if(isset($cursor))
+                $pageUrl .= '&cursor=' . $cursor;
+            $this->setUrl($pageUrl);
+            // Retry transient failures (counterparty-core intermittently drops
+            // requests) before giving up. Only halt if every attempt fails, so
+            // we never return a partial result set.
+            $attempt = 0;
+            while(true){
+                $response = curl_exec($curl);
+                $err  = curl_errno($curl);
+                $data = $err ? null : json_decode($response);
+                if(!$err && isset($data) && isset($data->result) && is_array($data->result))
+                    break;
+                if(++$attempt >= 5)
+                    byeLog('API request failed after ' . $attempt . ' attempts ('
+                        . ($err ? curl_error($curl) : 'malformed response') . ') for ' . $pageUrl);
+                sleep(2);
+            }
+            foreach($data->result as $row)
+                array_push($rows, $row);
+            // Stop once the API signals there are no more pages
+            if(!isset($data->next_cursor) || is_null($data->next_cursor))
+                break;
+            $cursor = $data->next_cursor;
+        }
+        return $rows;
+    }
+
     // Handle getting API status
     function getStatus(){
         $url  = CP_HOST . '/v2/';
@@ -76,8 +133,8 @@ class CounterpartyV2API {
 
     // Handle getting block events
     function getBlockEvents( $block_index ){
-        $url  = CP_HOST . '/v2/blocks/' . $block_index . '/events?verbose=1&limit=1000000';
-        $data = $this->request($url);
+        $url  = CP_HOST . '/v2/blocks/' . $block_index . '/events?verbose=1';
+        $data = $this->requestAll($url);
         // Reverse the order of events since the API hands back in descending order
         $data = array_reverse($data);
         // Store block_index and timestamp in every event (needed when creating messages)
@@ -104,11 +161,11 @@ class CounterpartyV2API {
         return $messages;
     }
 
-    // Handle getting address balances
+    // Handle getting address balances (follows next_cursor for addresses
+    // holding more assets than fit in a single 1000-row API page)
     function getAddressBalances( $address ){
-        $url  = CP_HOST . '/v2/addresses/' . $address . '/balances?limit=1000000';
-        $data = $this->request($url, null, true);
-        return $data;
+        $url  = CP_HOST . '/v2/addresses/' . $address . '/balances';
+        return $this->requestAll($url);
     }
 
     // Handle getting asset information

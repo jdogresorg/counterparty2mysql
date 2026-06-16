@@ -476,6 +476,14 @@ function updateAddressBalances( $address=null, $asset_list=null ){
     global $mysqli, $counterparty;
     // Lookup any balance for this address and asset
     $balances   = getAddressBalances($address, $asset_list);
+    // If the balance fetch failed (NULL), halt before touching the table. We
+    // must NOT delete existing rows when we have no confirmed replacement
+    // data, or we would silently zero out balances. byeLog() removes the lock
+    // and exits so the block is safely re-parsed on the next run.
+    // (getAddressBalances() already halts on a hard API failure, so this is a
+    // defensive backstop.)
+    if(!isset($balances))
+        byeLog('Error: could not retrieve balances for ' . $address . ' - halting to avoid corrupting balance data');
     $address_id = createAddress($address);
     // Delete balances for any assets in the asset list
     if(isset($asset_list)){
@@ -531,8 +539,13 @@ function updateAddressBalances( $address=null, $asset_list=null ){
 function getAddressBalances($address=null, $assets=null){
     global $counterparty;
     $balances = array();
-    // V2 API method
+    // V2 API method (paginated - returns the COMPLETE balance set or halts)
     $data = $counterparty->getAddressBalances($address);
+    // Return NULL on a failed/malformed fetch (vs an empty array for an
+    // address that genuinely holds nothing) so callers can tell the two
+    // apart and never rewrite balances from incomplete data.
+    if(!is_array($data))
+        return null;
     // Return empty balances if we detected an error
     if(!isset($data->error)){
         if(isset($assets)){
