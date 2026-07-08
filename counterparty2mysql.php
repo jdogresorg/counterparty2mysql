@@ -209,6 +209,10 @@ while($block <= $current){
             // Ignore any multi-sig addresses (address1-address2)
             if(str_contains($address, '-'))
                 continue;
+            // Ignore the 'unknown' sentinel counterparty-core emits when it can
+            // not resolve the address behind a UTXO (balance lookups on it fail)
+            if($address=='unknown')
+                continue;
             updateAddressBalances($address, array_keys($assets));
         }
     }
