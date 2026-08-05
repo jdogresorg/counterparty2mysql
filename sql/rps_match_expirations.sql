@@ -1,5 +1,6 @@
 DROP TABLE IF EXISTS rps_match_expirations;
 CREATE TABLE rps_match_expirations (
+    pk_id INT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
     rps_match_id   TEXT,
     -- tx0_address TEXT,
     tx0_address_id INTEGER UNSIGNED, -- id of record in index_addresses

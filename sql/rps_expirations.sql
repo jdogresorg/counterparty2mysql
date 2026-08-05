@@ -1,5 +1,6 @@
 DROP TABLE IF EXISTS rps_expirations;
 CREATE TABLE rps_expirations (
+    pk_id INT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
     rps_index   INTEGER UNSIGNED,
     -- rps_hash TEXT,
     rps_hash_id INTEGER UNSIGNED, -- id of record in index_transactions

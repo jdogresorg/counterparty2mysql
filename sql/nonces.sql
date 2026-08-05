@@ -1,5 +1,6 @@
 DROP TABLE IF EXISTS nonces;
 CREATE TABLE nonces (
+    pk_id INT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
     -- address TEXT,
     address_id INTEGER UNSIGNED, -- id of record in index_addresses
     nonce      INTEGER UNSIGNED

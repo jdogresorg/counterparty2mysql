@@ -1,5 +1,6 @@
 DROP TABLE IF EXISTS messages;
 CREATE TABLE messages (
+    pk_id INT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
     message_index INTEGER UNSIGNED, 
     block_index   INTEGER UNSIGNED,
     command       VARCHAR(50),

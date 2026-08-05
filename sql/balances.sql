@@ -1,5 +1,6 @@
 DROP TABLE IF EXISTS balances;
 CREATE TABLE balances (
+    pk_id INT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
     -- address      TEXT,
     address_id      INTEGER UNSIGNED, -- id of record in index_addresses
     -- asset        TEXT

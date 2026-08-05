@@ -1,5 +1,6 @@
 DROP TABLE IF EXISTS debits;
 CREATE TABLE debits (
+    pk_id INT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
     tx_index         INTEGER UNSIGNED,
     block_index      INTEGER UNSIGNED,
     -- address       TEXT,

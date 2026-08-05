@@ -1,5 +1,6 @@
 DROP TABLE IF EXISTS transaction_count;
 CREATE TABLE transaction_count (
+    pk_id INT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
     block_index                 INTEGER UNSIGNED,
     transaction_id              INTEGER UNSIGNED,
     count                       INTEGER UNSIGNED

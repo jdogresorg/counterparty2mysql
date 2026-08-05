@@ -1,5 +1,6 @@
 DROP TABLE IF EXISTS rps_matches;
 CREATE TABLE rps_matches (
+    pk_id INT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
     id                      TEXT,
     tx0_index               INTEGER UNSIGNED,
     -- tx0_hash             TEXT,

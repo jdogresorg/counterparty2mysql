@@ -1,5 +1,6 @@
 DROP TABLE IF EXISTS bet_match_resolutions;
 CREATE TABLE bet_match_resolutions (
+    pk_id INT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
     bet_match_id      VARCHAR(255),
     bet_match_type_id INTEGER UNSIGNED,
     block_index       INTEGER UNSIGNED,

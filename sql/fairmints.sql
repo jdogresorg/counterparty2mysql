@@ -1,5 +1,6 @@
 DROP TABLE IF EXISTS fairmints;
 CREATE TABLE fairmints (
+    pk_id INT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
     -- tx_hash                  TEXT,
     tx_hash_id                  INTEGER UNSIGNED,
     tx_index                    INTEGER UNSIGNED,
