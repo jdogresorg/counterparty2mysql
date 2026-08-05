@@ -1,5 +1,6 @@
 DROP TABLE IF EXISTS bet_expirations;
 CREATE TABLE bet_expirations (
+    pk_id INT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
     bet_index   INTEGER UNSIGNED,
     -- bet_hash TEXT,
     bet_hash_id INTEGER UNSIGNED, -- id of record in index_transactions

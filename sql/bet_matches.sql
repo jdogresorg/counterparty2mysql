@@ -1,5 +1,6 @@
 DROP TABLE IF EXISTS bet_matches;
 CREATE TABLE bet_matches (
+    pk_id INT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
     id                 TEXT,
     tx0_index          INTEGER,
     -- tx0_hash        TEXT,

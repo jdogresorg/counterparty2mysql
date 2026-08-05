@@ -1,5 +1,6 @@
 DROP TABLE IF EXISTS order_expirations;
 CREATE TABLE order_expirations (
+    pk_id INT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
     order_index   INTEGER UNSIGNED,
     -- order_hash TEXT,
     order_hash_id INTEGER UNSIGNED, -- id of record in index_transactions

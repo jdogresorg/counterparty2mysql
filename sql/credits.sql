@@ -1,5 +1,6 @@
 DROP TABLE IF EXISTS credits;
 CREATE TABLE credits (
+    pk_id INT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
     block_index      INTEGER UNSIGNED,
     -- address       TEXT,
     address_id       INTEGER UNSIGNED, -- id of record in index_addresses

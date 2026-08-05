@@ -1,5 +1,6 @@
 DROP TABLE IF EXISTS issuances;
 CREATE TABLE issuances (
+    pk_id INT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
     tx_index    INTEGER UNSIGNED,
     -- tx_hash  TEXT,
     tx_hash_id  INTEGER UNSIGNED, -- id of record in index_transactions

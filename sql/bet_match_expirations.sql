@@ -1,5 +1,6 @@
 DROP TABLE IF EXISTS bet_match_expirations;
 CREATE TABLE bet_match_expirations (
+    pk_id INT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
     bet_match_id   VARCHAR(255),
     -- tx0_address TEXT,
     tx0_address_id INTEGER UNSIGNED, -- id of record in index_addresses

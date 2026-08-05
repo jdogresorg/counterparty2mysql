@@ -1,5 +1,6 @@
 DROP TABLE IF EXISTS burns;
 CREATE TABLE burns (
+    pk_id INT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
     tx_index    INTEGER UNSIGNED,
     -- tx_hash  TEXT,
     tx_hash_id  INTEGER UNSIGNED, -- id of record in index_transactions
