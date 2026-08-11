@@ -115,7 +115,7 @@ if($rollback){
 // If no block given, load last block from state file, or use first block with CP tx
 if(!$block){
     $last  = file_get_contents(LASTFILE);
-    $first = ($regtest) ? 1 : (($testnet) ? 310000 : 278270);
+    $first = ($regtest) ? 1 : (($testnet) ? 1 : 278270);
     $block = (isset($last) && $last>=$first) ? (intval($last) + 1) : $first;
 }
 
@@ -227,6 +227,23 @@ while($block <= $current){
         // v10.0.0 - Ignore certain messages for now as they conflict with our already existing tables and bloats database by not indexing addresses/hashes via id
         if(in_array($table,array('assets')))
             continue;
+
+        // Skip messages whose category has no matching table (new event types from counterparty-core upgrades)
+        // Warn once per table per run so parsing keeps advancing; the raw message is still saved to the messages
+        // table, so the data is recoverable via a re-parse once a mapping is added in includes/counterparty-v2-api.php
+        if(!isset($existingTables)){
+            $existingTables = array();
+            $tableResults = $mysqli->query("SHOW TABLES");
+            while($tableRow = $tableResults->fetch_row())
+                $existingTables[$tableRow[0]] = true;
+        }
+        if(!isset($existingTables[$table])){
+            if(!isset($warnedTables[$table])){
+                $warnedTables[$table] = true;
+                fwrite(STDERR, "WARNING: skipping '{$table}' messages (no such table; add a mapping in includes/counterparty-v2-api.php and re-parse)\n");
+            }
+            continue;
+        }
 
         // Build out array of fields and values
         $fields = array();

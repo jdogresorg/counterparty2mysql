@@ -316,6 +316,12 @@ class CounterpartyV2API {
             case 'POOL_MATCH':
                 $message->category = 'pool_matches';
                 break;
+            // Sweeps (SWEEP falls through to the default 'sweeps'; INVALID_SWEEP
+            // must be mapped explicitly like INVALID_CANCEL, or the default rule
+            // mints a nonexistent 'invalid_sweeps' table and parsing stalls)
+            case 'INVALID_SWEEP':
+                $message->category = 'sweeps';
+                break;
             // Defaults
             case 'BET_EXPIRATION':
             case 'BET_MATCH_EXPIRATION':
