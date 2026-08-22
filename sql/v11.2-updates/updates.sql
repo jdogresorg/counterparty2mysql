@@ -1,0 +1,32 @@
+-- v11.2 updates - restore the asset_longname index on existing databases
+--
+-- sql/assets.sql has always declared this index:
+--     CREATE INDEX asset_longname ON assets (asset_longname);
+-- but it is absent from every deployed database, so the tables drifted from the
+-- schema. Without it, the `asset = ? OR asset_longname = ?` lookup in
+-- getAssetDatabaseId() cannot use the unique index on `asset` either - the OR
+-- forces a full table scan (EXPLAIN: type=ALL, 266,517 rows on mainnet).
+--
+-- Measured cost of a single lookup on Counterparty.assets (276,072 rows):
+--     PEPEMEMECOIN 57ms, XCERPASS 37ms, BRRRRRRRRRRR 11ms
+-- The parser called this once per asset per address, which is what turned block
+-- 963597 (a dividend crediting 9,424 addresses) into a 50+ minute parse and left
+-- tokenscan.io an hour behind the chain on 2026-08-22.
+--
+-- The parser no longer depends on this being fast (getAssetDatabaseId() memoizes
+-- resolved ids for the life of the run), but the same predicate is reachable from
+-- the web tier, so the index belongs in place regardless.
+--
+-- Adding an index is ONLINE for InnoDB (ALGORITHM=INPLACE, LOCK=NONE): reads and
+-- writes continue, and it replicates to the web01/web02/web03 replicas. To undo:
+--     DROP INDEX asset_longname ON assets;
+--
+-- Apply to existing databases:
+--   cat sql/v11.2-updates/updates.sql | mysql Counterparty
+--   cat sql/v11.2-updates/updates.sql | mysql Counterparty_Testnet
+--   cat sql/v11.2-updates/updates.sql | mysql Counterparty_Classic
+--   cat sql/v11.2-updates/updates.sql | mysql Counterparty_Classic_Testnet
+--   cat sql/v11.2-updates/updates.sql | mysql Dogeparty
+--   cat sql/v11.2-updates/updates.sql | mysql Dogeparty_Testnet
+
+CREATE INDEX IF NOT EXISTS asset_longname ON assets (asset_longname);

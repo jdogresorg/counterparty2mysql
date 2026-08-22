@@ -168,6 +168,28 @@ class CounterpartyV2API {
         return $this->requestAll($url);
     }
 
+    // Handle getting every holder of an asset in one paginated sweep. Rows are
+    // shaped exactly like getAddressBalances() rows (address, utxo,
+    // utxo_address, asset, asset_longname, quantity), so the two are
+    // interchangeable as a source of balance data.
+    function getAssetBalances( $asset ){
+        $url  = CP_HOST . '/v2/assets/' . $asset . '/balances';
+        return $this->requestAll($url);
+    }
+
+    // Handle getting how many balance rows an asset has, via a cheap `limit=1`
+    // probe that reads `result_count`. Lets a caller price a full sweep of an
+    // asset before committing to it. Returns NULL if the count is unavailable.
+    function getAssetBalanceCount( $asset ){
+        $curl = $this->curl;
+        $this->setUrl(CP_HOST . '/v2/assets/' . $asset . '/balances?limit=1');
+        $response = curl_exec($curl);
+        if(curl_errno($curl))
+            return null;
+        $data = json_decode($response);
+        return (isset($data->result_count)) ? (int) $data->result_count : null;
+    }
+
     // Handle getting asset information
     function getAssetInfo( $asset ){
         $url  = CP_HOST . '/v2/assets/' . $asset;

@@ -31,7 +31,11 @@ function bye($msg=null){
 }
 
 // Log/Print an error and exit
-function byeLog($error=null, $log=null){
+// CODE defaults to 1 so a halted parse is visible to whatever supervises the
+// run (parser-guard alerts on a non-zero exit). Exiting 0 here made every
+// failure look like a clean finish, so stalls ran silently. Deliberate
+// success exits must pass 0 explicitly.
+function byeLog($error=null, $log=null, $code=1){
     $logFile   = (strlen($log)) ? $log : ERRORLOG;
     $errorLine = '[' . gmdate("Y-m-d H:i:s") . ' UTC] - '. $error . "\n";
     if(strlen($logFile))
@@ -39,7 +43,7 @@ function byeLog($error=null, $log=null){
     print $errorLine;
     // Try to remove the lockfile, so we can continue running next time
     removeLockFile();
-    exit;
+    exit($code);
 }
 
 
@@ -88,12 +92,24 @@ function initCP($hostname=null, $username=null, $password=null, $log=false){
 // Handle getting database id for a given asset
 function getAssetDatabaseId($asset=null){
     global $mysqli;
+    // Memoize resolved ids for the life of the run. The `asset OR asset_longname`
+    // predicate cannot use the index on `asset` (asset_longname has none), so every
+    // call is a full scan of the assets table - 276k rows and climbing. The parser
+    // calls this once per asset per address, so a block that touches thousands of
+    // addresses turned into tens of thousands of full scans and took hours.
+    // Only hits are cached: a miss may be an asset createAsset() is about to add,
+    // and caching that would pin it to `false` for the rest of the run.
+    static $ids = array();
+    if(isset($ids[$asset]))
+        return $ids[$asset];
     $id = false;
     $results = $mysqli->query("SELECT id FROM assets WHERE asset='{$asset}' OR asset_longname='{$asset}' LIMIT 1");
     if($results){
         $row = $results->fetch_assoc();
         $id  = $row['id'];
     }
+    if($id!==false && isset($id))
+        $ids[$asset] = $id;
     return $id;
 }
 
@@ -471,6 +487,90 @@ function createTxIndex( $tx_index=null, $block_index=null, $tx_type=null, $tx_ha
 }
 
 
+// Per-block balance cache, keyed by address. NULL means no cache is active and
+// balances are looked up one address at a time (the normal path).
+//
+// The parser refreshes balances per address, costing a full
+// `/v2/addresses/<address>/balances` request each. That is fine for a typical
+// block, but a single dividend credits thousands of addresses at once (block
+// 963597 credited 9,424), turning one block into thousands of serial API round
+// trips - hours of parsing during which the site serves stale data and the
+// block never commits. When a block is that wide it is far cheaper to sweep
+// each of its assets' complete holder lists once
+// (`/v2/assets/<asset>/balances`, 1000 rows a page) and answer every
+// per-address lookup from memory. For 963597 that is ~39 requests, not 9,424.
+$balanceCache = null;
+
+// Addresses in a block before a per-asset sweep is even considered
+define('BALANCE_CACHE_MIN_ADDRESSES', 250);
+// Hard ceiling on balance rows buffered in memory for a single block
+define('BALANCE_CACHE_MAX_ROWS', 500000);
+
+// Populate the per-block balance cache, but only when sweeping the block's
+// assets costs fewer API requests than querying each address individually.
+// Returns true when the cache is active. Any doubt (unknown asset size, a
+// sweep that is not clearly cheaper, a failed fetch) falls back to the
+// per-address path, which is slower but always correct.
+function primeBalanceCache( $addresses=null, $asset_list=null ){
+    global $balanceCache, $counterparty;
+    $balanceCache = null;
+    $addressCount = (is_array($addresses)) ? count($addresses) : 0;
+    if($addressCount < BALANCE_CACHE_MIN_ADDRESSES || !is_array($asset_list) || !count($asset_list))
+        return false;
+    // Price the sweep before committing: one request per 1000 holders, per asset
+    $totalRows  = 0;
+    $totalPages = 0;
+    foreach($asset_list as $asset){
+        $count = $counterparty->getAssetBalanceCount($asset);
+        // Unknown size - do not gamble on an unbounded sweep
+        if(!isset($count))
+            return false;
+        $totalRows  += $count;
+        $totalPages += (int) ceil($count / 1000);
+    }
+    // Only worth it if the sweep is genuinely cheaper and fits in memory
+    if($totalRows > BALANCE_CACHE_MAX_ROWS || $totalPages >= $addressCount)
+        return false;
+    print "priming balance cache ({$addressCount} addresses, {$totalRows} rows, ~{$totalPages} requests)...";
+    $cache = array();
+    foreach($asset_list as $asset){
+        $rows = $counterparty->getAssetBalances($asset);
+        // A partial sweep would look like "this address holds nothing" and
+        // silently delete real balances - drop the cache and use the slow path
+        if(!is_array($rows)){
+            $balanceCache = null;
+            return false;
+        }
+        foreach($rows as $row){
+            // Index under the holding address and, for a UTXO-attached balance,
+            // the address controlling the UTXO - updateAddressBalances() deletes
+            // on both, so both must be able to find the row again. Keyed via an
+            // array so an address that is both is only indexed once.
+            $keys = array();
+            if(isset($row->address) && $row->address!='')
+                $keys[$row->address] = true;
+            if(isset($row->utxo_address) && $row->utxo_address!='')
+                $keys[$row->utxo_address] = true;
+            foreach(array_keys($keys) as $key){
+                if(!isset($cache[$key]))
+                    $cache[$key] = array();
+                $cache[$key][] = $row;
+            }
+        }
+    }
+    $balanceCache = $cache;
+    return true;
+}
+
+
+// Release the per-block balance cache so it can never be read against the
+// wrong block's asset list
+function clearBalanceCache(){
+    global $balanceCache;
+    $balanceCache = null;
+}
+
+
 // Create/Update/Delete records in the 'balances' table
 function updateAddressBalances( $address=null, $asset_list=null ){
     global $mysqli, $counterparty;
@@ -537,10 +637,17 @@ function updateAddressBalances( $address=null, $asset_list=null ){
 
 // Handle requesting address balance information for a given address and list of assets
 function getAddressBalances($address=null, $assets=null){
-    global $counterparty;
+    global $counterparty, $balanceCache;
     $balances = array();
-    // V2 API method (paginated - returns the COMPLETE balance set or halts)
-    $data = $counterparty->getAddressBalances($address);
+    if(isset($balanceCache)){
+        // Serve from the per-block cache. It holds every holder of every asset
+        // in the block, so an address that is absent genuinely holds none of
+        // them - an empty result, not a failed lookup.
+        $data = (isset($balanceCache[$address])) ? $balanceCache[$address] : array();
+    } else {
+        // V2 API method (paginated - returns the COMPLETE balance set or halts)
+        $data = $counterparty->getAddressBalances($address);
+    }
     // Return NULL on a failed/malformed fetch (vs an empty array for an
     // address that genuinely holds nothing) so callers can tell the two
     // apart and never rewrite balances from incomplete data.
